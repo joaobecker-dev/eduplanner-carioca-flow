@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,6 +62,42 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				// EduPlanner custom colors
+				edu: {
+					blue: {
+						100: '#EBF2FF',
+						200: '#C3D9FF',
+						300: '#94BBFF',
+						400: '#609CFF',
+						500: '#3B82F6', // Primary blue
+						600: '#1E64D0',
+						700: '#1E40AF', // Darker blue
+						800: '#172554',
+					},
+					yellow: {
+						100: '#FEF9C3',
+						200: '#FEF08A',
+						300: '#FDE047',
+						400: '#FACC15', // Primary yellow
+						500: '#EAB308',
+					},
+					orange: {
+						400: '#FB923C',
+						500: '#F97316', // Primary orange
+						600: '#EA580C',
+					},
+					gray: {
+						100: '#F3F4F6',
+						200: '#E5E7EB',
+						300: '#D1D5DB', 
+						400: '#9CA3AF',
+						500: '#6B7280',
+						600: '#4B5563',
+						700: '#374151',
+						800: '#1F2937',
+						900: '#111827',
+					}
 				}
 			},
 			borderRadius: {
@@ -84,11 +121,22 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'fade-in': {
+					'0%': {
+						opacity: '0',
+						transform: 'translateY(10px)'
+					},
+					'100%': {
+						opacity: '1',
+						transform: 'translateY(0)'
+					}
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'fade-in': 'fade-in 0.3s ease-out'
 			}
 		}
 	},
