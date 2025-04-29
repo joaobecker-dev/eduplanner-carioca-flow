@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Calendar as CalendarIcon, FileText, BarChartBig, FolderOpen, BookOpen } from 'lucide-react';
@@ -8,6 +7,7 @@ import DashboardCard from '@/components/ui-components/DashboardCard';
 import StatsCard from '@/components/ui-components/StatsCard';
 import { CalendarEvent, TeachingPlan, LessonPlan, Assessment, Material } from '@/types';
 import { services } from '@/lib/services';
+import { toast } from '@/hooks/use-toast';
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -52,6 +52,11 @@ const Dashboard: React.FC = () => {
         setUpcomingEvents(eventsData);
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
+        toast({
+          title: "Erro ao carregar dados do dashboard",
+          description: "Não foi possível obter os dados. Por favor, tente novamente.",
+          variant: "destructive",
+        });
       } finally {
         setIsLoading(false);
       }

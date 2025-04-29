@@ -9,7 +9,499 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      academic_periods: {
+        Row: {
+          created_at: string
+          end_date: string
+          id: string
+          name: string
+          start_date: string
+        }
+        Insert: {
+          created_at?: string
+          end_date: string
+          id?: string
+          name: string
+          start_date: string
+        }
+        Update: {
+          created_at?: string
+          end_date?: string
+          id?: string
+          name?: string
+          start_date?: string
+        }
+        Relationships: []
+      }
+      annual_plans: {
+        Row: {
+          academic_period_id: string
+          created_at: string
+          description: string | null
+          evaluation: string
+          general_content: string
+          id: string
+          methodology: string
+          objectives: string[]
+          references_materials: string[]
+          subject_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          academic_period_id: string
+          created_at?: string
+          description?: string | null
+          evaluation: string
+          general_content: string
+          id?: string
+          methodology: string
+          objectives?: string[]
+          references_materials?: string[]
+          subject_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          academic_period_id?: string
+          created_at?: string
+          description?: string | null
+          evaluation?: string
+          general_content?: string
+          id?: string
+          methodology?: string
+          objectives?: string[]
+          references_materials?: string[]
+          subject_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "annual_plans_academic_period_id_fkey"
+            columns: ["academic_period_id"]
+            isOneToOne: false
+            referencedRelation: "academic_periods"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "annual_plans_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      assessments: {
+        Row: {
+          created_at: string
+          date: string
+          description: string | null
+          due_date: string | null
+          id: string
+          subject_id: string
+          teaching_plan_id: string | null
+          title: string
+          total_points: number
+          type: Database["public"]["Enums"]["assessment_type"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          subject_id: string
+          teaching_plan_id?: string | null
+          title: string
+          total_points: number
+          type: Database["public"]["Enums"]["assessment_type"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          subject_id?: string
+          teaching_plan_id?: string | null
+          title?: string
+          total_points?: number
+          type?: Database["public"]["Enums"]["assessment_type"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assessments_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assessments_teaching_plan_id_fkey"
+            columns: ["teaching_plan_id"]
+            isOneToOne: false
+            referencedRelation: "teaching_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      calendar_events: {
+        Row: {
+          all_day: boolean
+          assessment_id: string | null
+          color: string | null
+          created_at: string
+          description: string | null
+          end_date: string | null
+          id: string
+          lesson_plan_id: string | null
+          location: string | null
+          start_date: string
+          subject_id: string | null
+          title: string
+          type: Database["public"]["Enums"]["event_type"]
+        }
+        Insert: {
+          all_day?: boolean
+          assessment_id?: string | null
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          lesson_plan_id?: string | null
+          location?: string | null
+          start_date: string
+          subject_id?: string | null
+          title: string
+          type: Database["public"]["Enums"]["event_type"]
+        }
+        Update: {
+          all_day?: boolean
+          assessment_id?: string | null
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          lesson_plan_id?: string | null
+          location?: string | null
+          start_date?: string
+          subject_id?: string | null
+          title?: string
+          type?: Database["public"]["Enums"]["event_type"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "calendar_events_assessment_id_fkey"
+            columns: ["assessment_id"]
+            isOneToOne: false
+            referencedRelation: "assessments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "calendar_events_lesson_plan_id_fkey"
+            columns: ["lesson_plan_id"]
+            isOneToOne: false
+            referencedRelation: "lesson_plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "calendar_events_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lesson_plans: {
+        Row: {
+          activities: string[]
+          contents: string[]
+          created_at: string
+          date: string
+          duration: number
+          evaluation: string | null
+          homework: string | null
+          id: string
+          material_ids: string[] | null
+          notes: string | null
+          objectives: string[]
+          resources: string[]
+          teaching_plan_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          activities?: string[]
+          contents?: string[]
+          created_at?: string
+          date: string
+          duration: number
+          evaluation?: string | null
+          homework?: string | null
+          id?: string
+          material_ids?: string[] | null
+          notes?: string | null
+          objectives?: string[]
+          resources?: string[]
+          teaching_plan_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          activities?: string[]
+          contents?: string[]
+          created_at?: string
+          date?: string
+          duration?: number
+          evaluation?: string | null
+          homework?: string | null
+          id?: string
+          material_ids?: string[] | null
+          notes?: string | null
+          objectives?: string[]
+          resources?: string[]
+          teaching_plan_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_plans_teaching_plan_id_fkey"
+            columns: ["teaching_plan_id"]
+            isOneToOne: false
+            referencedRelation: "teaching_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      materials: {
+        Row: {
+          created_at: string
+          description: string | null
+          file_path: string | null
+          file_size: number | null
+          id: string
+          subject_id: string | null
+          tags: string[]
+          title: string
+          type: Database["public"]["Enums"]["material_type"]
+          updated_at: string
+          url: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          file_path?: string | null
+          file_size?: number | null
+          id?: string
+          subject_id?: string | null
+          tags?: string[]
+          title: string
+          type: Database["public"]["Enums"]["material_type"]
+          updated_at?: string
+          url?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          file_path?: string | null
+          file_size?: number | null
+          id?: string
+          subject_id?: string | null
+          tags?: string[]
+          title?: string
+          type?: Database["public"]["Enums"]["material_type"]
+          updated_at?: string
+          url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "materials_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      student_assessments: {
+        Row: {
+          assessment_id: string
+          created_at: string
+          feedback: string | null
+          graded_date: string | null
+          id: string
+          score: number
+          student_id: string
+          submitted_date: string | null
+        }
+        Insert: {
+          assessment_id: string
+          created_at?: string
+          feedback?: string | null
+          graded_date?: string | null
+          id?: string
+          score: number
+          student_id: string
+          submitted_date?: string | null
+        }
+        Update: {
+          assessment_id?: string
+          created_at?: string
+          feedback?: string | null
+          graded_date?: string | null
+          id?: string
+          score?: number
+          student_id?: string
+          submitted_date?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_assessments_assessment_id_fkey"
+            columns: ["assessment_id"]
+            isOneToOne: false
+            referencedRelation: "assessments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_assessments_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      students: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          registration: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          registration: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          registration?: string
+        }
+        Relationships: []
+      }
+      subjects: {
+        Row: {
+          academic_period_id: string
+          created_at: string
+          grade: string
+          id: string
+          name: string
+        }
+        Insert: {
+          academic_period_id: string
+          created_at?: string
+          grade: string
+          id?: string
+          name: string
+        }
+        Update: {
+          academic_period_id?: string
+          created_at?: string
+          grade?: string
+          id?: string
+          name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subjects_academic_period_id_fkey"
+            columns: ["academic_period_id"]
+            isOneToOne: false
+            referencedRelation: "academic_periods"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      teaching_plans: {
+        Row: {
+          annual_plan_id: string
+          bncc_references: string[]
+          contents: string[]
+          created_at: string
+          description: string | null
+          end_date: string
+          evaluation: string
+          id: string
+          methodology: string
+          objectives: string[]
+          resources: string[]
+          start_date: string
+          subject_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          annual_plan_id: string
+          bncc_references?: string[]
+          contents?: string[]
+          created_at?: string
+          description?: string | null
+          end_date: string
+          evaluation: string
+          id?: string
+          methodology: string
+          objectives?: string[]
+          resources?: string[]
+          start_date: string
+          subject_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          annual_plan_id?: string
+          bncc_references?: string[]
+          contents?: string[]
+          created_at?: string
+          description?: string | null
+          end_date?: string
+          evaluation?: string
+          id?: string
+          methodology?: string
+          objectives?: string[]
+          resources?: string[]
+          start_date?: string
+          subject_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "teaching_plans_annual_plan_id_fkey"
+            columns: ["annual_plan_id"]
+            isOneToOne: false
+            referencedRelation: "annual_plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "teaching_plans_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -18,7 +510,9 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      assessment_type: "diagnostic" | "formative" | "summative"
+      event_type: "class" | "exam" | "meeting" | "deadline" | "other"
+      material_type: "document" | "video" | "link" | "image" | "other"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -133,6 +627,10 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      assessment_type: ["diagnostic", "formative", "summative"],
+      event_type: ["class", "exam", "meeting", "deadline", "other"],
+      material_type: ["document", "video", "link", "image", "other"],
+    },
   },
 } as const

@@ -1,4 +1,3 @@
-
 import { 
   AcademicPeriod, 
   Subject, 
@@ -12,234 +11,406 @@ import {
   Material,
   ID
 } from '@/types';
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 
-import { 
-  academicPeriods as mockAcademicPeriods,
-  subjects as mockSubjects,
-  annualPlans as mockAnnualPlans,
-  teachingPlans as mockTeachingPlans,
-  lessonPlans as mockLessonPlans,
-  assessments as mockAssessments,
-  students as mockStudents,
-  studentAssessments as mockStudentAssessments,
-  calendarEvents as mockCalendarEvents,
-  materials as mockMaterials
-} from './mock-data';
-
-// Helper function to create unique IDs
-const generateId = (): string => {
-  return Math.random().toString(36).substring(2, 9);
+// Helper function for error handling
+const handleError = (error: any, operation: string): void => {
+  console.error(`Error ${operation}:`, error);
+  toast({
+    title: `Erro ao ${operation}`,
+    description: error.message || "Ocorreu um erro inesperado",
+    variant: "destructive",
+  });
 };
 
-// Helper function to get current ISO date
-const getNowISO = (): string => {
-  return new Date().toISOString();
-};
-
-// Generic service creator
-const createService = <T extends { id: ID }>(mockData: T[]) => {
-  let data = [...mockData];
-  
+// Create generic service for basic CRUD operations
+const createService = <T extends { id: ID }>(tableName: string) => {
   return {
     getAll: async (): Promise<T[]> => {
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 300));
-      return [...data];
+      try {
+        const { data, error } = await supabase
+          .from(tableName)
+          .select('*');
+        
+        if (error) throw error;
+        return data as T[] || [];
+      } catch (error) {
+        handleError(error, `buscar ${tableName}`);
+        return [];
+      }
     },
     
     getById: async (id: ID): Promise<T | null> => {
-      await new Promise(resolve => setTimeout(resolve, 200));
-      const item = data.find(item => item.id === id);
-      return item ? { ...item } : null;
+      try {
+        const { data, error } = await supabase
+          .from(tableName)
+          .select('*')
+          .eq('id', id)
+          .maybeSingle();
+        
+        if (error) throw error;
+        return data as T;
+      } catch (error) {
+        handleError(error, `buscar ${tableName} por ID`);
+        return null;
+      }
     },
     
-    create: async (item: Omit<T, 'id'>): Promise<T> => {
-      await new Promise(resolve => setTimeout(resolve, 500));
-      const newItem = {
-        ...item,
-        id: generateId()
-      } as T;
-      data.push(newItem);
-      return { ...newItem };
+    create: async (item: Omit<T, 'id'>): Promise<T | null> => {
+      try {
+        const { data, error } = await supabase
+          .from(tableName)
+          .insert(item)
+          .select()
+          .single();
+        
+        if (error) throw error;
+        return data as T;
+      } catch (error) {
+        handleError(error, `criar ${tableName}`);
+        return null;
+      }
     },
     
     update: async (id: ID, updates: Partial<T>): Promise<T | null> => {
-      await new Promise(resolve => setTimeout(resolve, 400));
-      const index = data.findIndex(item => item.id === id);
-      if (index === -1) return null;
-      
-      const updatedItem = { 
-        ...data[index], 
-        ...updates,
-        updatedAt: getNowISO()  
-      } as T;
-      
-      data[index] = updatedItem;
-      return { ...updatedItem };
+      try {
+        const { data, error } = await supabase
+          .from(tableName)
+          .update(updates)
+          .eq('id', id)
+          .select()
+          .single();
+        
+        if (error) throw error;
+        return data as T;
+      } catch (error) {
+        handleError(error, `atualizar ${tableName}`);
+        return null;
+      }
     },
     
     delete: async (id: ID): Promise<boolean> => {
-      await new Promise(resolve => setTimeout(resolve, 300));
-      const index = data.findIndex(item => item.id === id);
-      if (index === -1) return false;
-      
-      data.splice(index, 1);
-      return true;
+      try {
+        const { error } = await supabase
+          .from(tableName)
+          .delete()
+          .eq('id', id);
+        
+        if (error) throw error;
+        return true;
+      } catch (error) {
+        handleError(error, `excluir ${tableName}`);
+        return false;
+      }
     }
   };
 };
 
-// Create specific services with additional methods as needed
-export const academicPeriodService = createService<AcademicPeriod>(mockAcademicPeriods);
-export const subjectService = createService<Subject>(mockSubjects);
+// Academic Period Service
+export const academicPeriodService = {
+  ...createService<AcademicPeriod>('academic_periods'),
+};
 
-// Annual Plan Service with custom methods
-export const annualPlanService = {
-  ...createService<AnnualPlan>(mockAnnualPlans),
+// Subject Service
+export const subjectService = {
+  ...createService<Subject>('subjects'),
   
-  // Get all annual plans for a specific subject
-  getBySubject: async (subjectId: ID): Promise<AnnualPlan[]> => {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    return mockAnnualPlans.filter(plan => plan.subjectId === subjectId);
+  // Get all subjects for a specific academic period
+  getByAcademicPeriod: async (academicPeriodId: ID): Promise<Subject[]> => {
+    try {
+      const { data, error } = await supabase
+        .from('subjects')
+        .select('*')
+        .eq('academic_period_id', academicPeriodId);
+      
+      if (error) throw error;
+      return data as Subject[] || [];
+    } catch (error) {
+      handleError(error, 'buscar disciplinas por período acadêmico');
+      return [];
+    }
   }
 };
 
-// Teaching Plan Service with custom methods
+// Annual Plan Service
+export const annualPlanService = {
+  ...createService<AnnualPlan>('annual_plans'),
+  
+  // Get all annual plans for a specific subject
+  getBySubject: async (subjectId: ID): Promise<AnnualPlan[]> => {
+    try {
+      const { data, error } = await supabase
+        .from('annual_plans')
+        .select('*')
+        .eq('subject_id', subjectId);
+      
+      if (error) throw error;
+      return data as AnnualPlan[] || [];
+    } catch (error) {
+      handleError(error, 'buscar planos anuais por disciplina');
+      return [];
+    }
+  }
+};
+
+// Teaching Plan Service
 export const teachingPlanService = {
-  ...createService<TeachingPlan>(mockTeachingPlans),
+  ...createService<TeachingPlan>('teaching_plans'),
   
   // Get all teaching plans for a specific annual plan
   getByAnnualPlan: async (annualPlanId: ID): Promise<TeachingPlan[]> => {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    return mockTeachingPlans.filter(plan => plan.annualPlanId === annualPlanId);
+    try {
+      const { data, error } = await supabase
+        .from('teaching_plans')
+        .select('*')
+        .eq('annual_plan_id', annualPlanId);
+      
+      if (error) throw error;
+      return data as TeachingPlan[] || [];
+    } catch (error) {
+      handleError(error, 'buscar planos de ensino por plano anual');
+      return [];
+    }
   },
   
   // Get all teaching plans for a specific subject
   getBySubject: async (subjectId: ID): Promise<TeachingPlan[]> => {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    return mockTeachingPlans.filter(plan => plan.subjectId === subjectId);
+    try {
+      const { data, error } = await supabase
+        .from('teaching_plans')
+        .select('*')
+        .eq('subject_id', subjectId);
+      
+      if (error) throw error;
+      return data as TeachingPlan[] || [];
+    } catch (error) {
+      handleError(error, 'buscar planos de ensino por disciplina');
+      return [];
+    }
   }
 };
 
-// Lesson Plan Service with custom methods
+// Lesson Plan Service
 export const lessonPlanService = {
-  ...createService<LessonPlan>(mockLessonPlans),
+  ...createService<LessonPlan>('lesson_plans'),
   
   // Get all lesson plans for a specific teaching plan
   getByTeachingPlan: async (teachingPlanId: ID): Promise<LessonPlan[]> => {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    return mockLessonPlans.filter(plan => plan.teachingPlanId === teachingPlanId);
+    try {
+      const { data, error } = await supabase
+        .from('lesson_plans')
+        .select('*')
+        .eq('teaching_plan_id', teachingPlanId);
+      
+      if (error) throw error;
+      return data as LessonPlan[] || [];
+    } catch (error) {
+      handleError(error, 'buscar planos de aula por plano de ensino');
+      return [];
+    }
   }
 };
 
-// Assessment Service with custom methods
+// Assessment Service
 export const assessmentService = {
-  ...createService<Assessment>(mockAssessments),
+  ...createService<Assessment>('assessments'),
   
   // Get all assessments for a specific subject
   getBySubject: async (subjectId: ID): Promise<Assessment[]> => {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    return mockAssessments.filter(assessment => assessment.subjectId === subjectId);
+    try {
+      const { data, error } = await supabase
+        .from('assessments')
+        .select('*')
+        .eq('subject_id', subjectId);
+      
+      if (error) throw error;
+      return data as Assessment[] || [];
+    } catch (error) {
+      handleError(error, 'buscar avaliações por disciplina');
+      return [];
+    }
   },
   
   // Get all assessments for a specific teaching plan
   getByTeachingPlan: async (teachingPlanId: ID): Promise<Assessment[]> => {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    return mockAssessments.filter(assessment => assessment.teachingPlanId === teachingPlanId);
+    try {
+      const { data, error } = await supabase
+        .from('assessments')
+        .select('*')
+        .eq('teaching_plan_id', teachingPlanId);
+      
+      if (error) throw error;
+      return data as Assessment[] || [];
+    } catch (error) {
+      handleError(error, 'buscar avaliações por plano de ensino');
+      return [];
+    }
   }
 };
 
 // Student Service
-export const studentService = createService<Student>(mockStudents);
+export const studentService = {
+  ...createService<Student>('students'),
+};
 
-// Student Assessment Service with custom methods
+// Student Assessment Service
 export const studentAssessmentService = {
-  ...createService<StudentAssessment>(mockStudentAssessments),
+  ...createService<StudentAssessment>('student_assessments'),
   
   // Get all assessments for a specific student
   getByStudent: async (studentId: ID): Promise<StudentAssessment[]> => {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    return mockStudentAssessments.filter(sa => sa.studentId === studentId);
+    try {
+      const { data, error } = await supabase
+        .from('student_assessments')
+        .select('*')
+        .eq('student_id', studentId);
+      
+      if (error) throw error;
+      return data as StudentAssessment[] || [];
+    } catch (error) {
+      handleError(error, 'buscar avaliações por aluno');
+      return [];
+    }
   },
   
   // Get all student assessments for a specific assessment
   getByAssessment: async (assessmentId: ID): Promise<StudentAssessment[]> => {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    return mockStudentAssessments.filter(sa => sa.assessmentId === assessmentId);
+    try {
+      const { data, error } = await supabase
+        .from('student_assessments')
+        .select('*')
+        .eq('assessment_id', assessmentId);
+      
+      if (error) throw error;
+      return data as StudentAssessment[] || [];
+    } catch (error) {
+      handleError(error, 'buscar notas de alunos por avaliação');
+      return [];
+    }
   },
   
   // Get average score for a specific assessment
   getAssessmentAverage: async (assessmentId: ID): Promise<number> => {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    const assessments = mockStudentAssessments.filter(sa => sa.assessmentId === assessmentId);
-    if (assessments.length === 0) return 0;
-    
-    const sum = assessments.reduce((acc, curr) => acc + curr.score, 0);
-    return sum / assessments.length;
+    try {
+      const { data, error } = await supabase
+        .from('student_assessments')
+        .select('score')
+        .eq('assessment_id', assessmentId);
+      
+      if (error) throw error;
+      
+      if (!data || data.length === 0) return 0;
+      
+      const sum = data.reduce((acc, curr) => acc + Number(curr.score), 0);
+      return sum / data.length;
+    } catch (error) {
+      handleError(error, 'calcular média da avaliação');
+      return 0;
+    }
   }
 };
 
-// Calendar Event Service with custom methods
+// Calendar Event Service
 export const calendarEventService = {
-  ...createService<CalendarEvent>(mockCalendarEvents),
+  ...createService<CalendarEvent>('calendar_events'),
   
   // Get all events between two dates
   getByDateRange: async (startDate: string, endDate: string): Promise<CalendarEvent[]> => {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    return mockCalendarEvents.filter(event => {
-      const eventStart = new Date(event.startDate);
-      const rangeStart = new Date(startDate);
-      const rangeEnd = new Date(endDate);
+    try {
+      const { data, error } = await supabase
+        .from('calendar_events')
+        .select('*')
+        .gte('start_date', startDate)
+        .lte('start_date', endDate);
       
-      return eventStart >= rangeStart && eventStart <= rangeEnd;
-    });
+      if (error) throw error;
+      return data as CalendarEvent[] || [];
+    } catch (error) {
+      handleError(error, 'buscar eventos por período');
+      return [];
+    }
   },
   
   // Get all events for a specific subject
   getBySubject: async (subjectId: ID): Promise<CalendarEvent[]> => {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    return mockCalendarEvents.filter(event => event.subjectId === subjectId);
-  },
-  
-  // Get all events by type
-  getByType: async (type: CalendarEvent['type']): Promise<CalendarEvent[]> => {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    return mockCalendarEvents.filter(event => event.type === type);
+    try {
+      const { data, error } = await supabase
+        .from('calendar_events')
+        .select('*')
+        .eq('subject_id', subjectId);
+      
+      if (error) throw error;
+      return data as CalendarEvent[] || [];
+    } catch (error) {
+      handleError(error, 'buscar eventos por disciplina');
+      return [];
+    }
   }
 };
 
-// Material Service with custom methods
+// Material Service
 export const materialService = {
-  ...createService<Material>(mockMaterials),
+  ...createService<Material>('materials'),
   
   // Get all materials for a specific subject
   getBySubject: async (subjectId: ID): Promise<Material[]> => {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    return mockMaterials.filter(material => material.subjectId === subjectId);
-  },
-  
-  // Search materials by tags or title
-  search: async (query: string): Promise<Material[]> => {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    const normalizedQuery = query.toLowerCase();
-    
-    return mockMaterials.filter(material => {
-      const titleMatch = material.title.toLowerCase().includes(normalizedQuery);
-      const descMatch = material.description?.toLowerCase().includes(normalizedQuery) || false;
-      const tagMatch = material.tags.some(tag => tag.toLowerCase().includes(normalizedQuery));
+    try {
+      const { data, error } = await supabase
+        .from('materials')
+        .select('*')
+        .eq('subject_id', subjectId);
       
-      return titleMatch || descMatch || tagMatch;
-    });
+      if (error) throw error;
+      return data as Material[] || [];
+    } catch (error) {
+      handleError(error, 'buscar materiais por disciplina');
+      return [];
+    }
   },
   
-  // Get materials by type
-  getByType: async (type: Material['type']): Promise<Material[]> => {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    return mockMaterials.filter(material => material.type === type);
+  // Get all materials by type
+  getByType: async (type: string): Promise<Material[]> => {
+    try {
+      const { data, error } = await supabase
+        .from('materials')
+        .select('*')
+        .eq('type', type);
+      
+      if (error) throw error;
+      return data as Material[] || [];
+    } catch (error) {
+      handleError(error, 'buscar materiais por tipo');
+      return [];
+    }
+  },
+  
+  // Search materials by query in title, description or tags
+  search: async (query: string): Promise<Material[]> => {
+    try {
+      const { data, error } = await supabase
+        .from('materials')
+        .select('*')
+        .or(`title.ilike.%${query}%,description.ilike.%${query}%`);
+      
+      if (error) throw error;
+      
+      // We need to filter manually for tags since it's an array column
+      const filteredData = data.filter(material => 
+        material.tags.some((tag: string) => 
+          tag.toLowerCase().includes(query.toLowerCase())
+        )
+      );
+      
+      return filteredData as Material[] || [];
+    } catch (error) {
+      handleError(error, 'buscar materiais');
+      return [];
+    }
   }
 };
 
-// Export an object with all services
+// We'll keep the same service export structure for compatibility
 export const services = {
   academicPeriod: academicPeriodService,
   subject: subjectService,
