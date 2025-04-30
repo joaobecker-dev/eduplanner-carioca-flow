@@ -3,7 +3,26 @@ import React from 'react';
 import { RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import StatsCard from '@/components/ui-components/StatsCard';
-import { AcademicPeriod, Subject, AnnualPlan, TeachingPlan, LessonPlan, Assessment, Material, CalendarEvent } from '@/types';
+import { 
+  FileText, 
+  BookOpen, 
+  BarChart, 
+  CalendarIcon, 
+  Users,
+  PenTool,
+  FolderOpen,
+  Layers
+} from 'lucide-react';
+import { 
+  AcademicPeriod, 
+  Subject, 
+  AnnualPlan,
+  TeachingPlan, 
+  LessonPlan, 
+  Assessment,
+  Material,
+  CalendarEvent
+} from '@/types';
 
 interface DashboardSummaryProps {
   isLoading: boolean;
@@ -15,7 +34,7 @@ interface DashboardSummaryProps {
   assessments: Assessment[];
   materials: Material[];
   upcomingEvents: CalendarEvent[];
-  onRefresh: () => void;
+  onRefresh?: () => void;
 }
 
 const DashboardSummary: React.FC<DashboardSummaryProps> = ({
@@ -30,107 +49,120 @@ const DashboardSummary: React.FC<DashboardSummaryProps> = ({
   upcomingEvents,
   onRefresh
 }) => {
-  // Calculate the number of events per type
-  const classEvents = upcomingEvents.filter(event => event.type === 'class').length;
-  const examEvents = upcomingEvents.filter(event => event.type === 'exam').length;
-  const otherEvents = upcomingEvents.length - classEvents - examEvents;
-
-  // Calculate the number of days until the next event
-  const getNextEventDays = () => {
-    if (upcomingEvents.length === 0) return null;
-    
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    const nextEventDate = upcomingEvents
-      .map(event => new Date(event.startDate))
-      .sort((a, b) => a.getTime() - b.getTime())[0];
-    
-    const diffTime = nextEventDate.getTime() - today.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
-    return diffDays;
-  };
+  // Count for upcoming week events
+  const upcomingWeekEvents = upcomingEvents.filter(event => {
+    const eventDate = new Date(event.startDate);
+    const now = new Date();
+    const weekFromNow = new Date();
+    weekFromNow.setDate(now.getDate() + 7);
+    return eventDate >= now && eventDate <= weekFromNow;
+  }).length;
   
-  const nextEventDays = getNextEventDays();
+  // Count Teaching Plans by status
+  const activePlans = teachingPlans.filter(plan => {
+    const now = new Date();
+    const startDate = new Date(plan.startDate);
+    const endDate = new Date(plan.endDate);
+    return startDate <= now && now <= endDate;
+  }).length;
 
-  // Calculate the number of materials per type
-  const documentMaterials = materials.filter(material => material.type === 'document').length;
-  const videoMaterials = materials.filter(material => material.type === 'video').length;
-  const otherMaterials = materials.length - documentMaterials - videoMaterials;
+  // Count Lesson Plans by status
+  const upcomingLessons = lessonPlans.filter(lesson => {
+    const lessonDate = new Date(lesson.date);
+    const now = new Date();
+    return lessonDate > now;
+  }).length;
+  
+  // Count evaluations by type
+  const testsCount = assessments.filter(assessment => 
+    assessment.type === "diagnostic" || assessment.type === "formative" || assessment.type === "summative"
+  ).length;
+  
+  const assignmentsCount = assessments.length - testsCount;
+  
+  // Calculate materials by type distribution
+  const documentCount = materials.filter(material => material.type === "document").length;
+  const videoCount = materials.filter(material => material.type === "video").length;
+  const linkCount = materials.filter(material => material.type === "link").length;
+  const imageCount = materials.filter(material => material.type === "image").length;
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <h2 className="text-lg font-semibold">Resumo</h2>
-        <Button 
-          variant="outline" 
-          size="sm" 
-          onClick={onRefresh} 
-          disabled={isLoading}
-          className="flex items-center gap-2"
-        >
-          <RefreshCw size={14} className={isLoading ? 'animate-spin' : ''} />
-          {isLoading ? 'Atualizando...' : 'Atualizar dados'}
-        </Button>
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-semibold">Visão Geral</h3>
+        {onRefresh && (
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={onRefresh} 
+            disabled={isLoading}
+            className="h-8 w-8"
+          >
+            <RefreshCw size={16} className={isLoading ? "animate-spin" : ""} />
+          </Button>
+        )}
       </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatsCard
-          title="Períodos e Disciplinas"
-          value={`${academicPeriods.length} / ${subjects.length}`}
-          description={`${academicPeriods.length} períodos e ${subjects.length} disciplinas`}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <StatsCard 
+          title="Períodos Acadêmicos" 
+          value={academicPeriods.length} 
+          icon={Layers}
+          color="indigo"
+          isLoading={isLoading}
+        />
+        
+        <StatsCard 
+          title="Disciplinas" 
+          value={subjects.length}
+          icon={BookOpen}
           color="blue"
+          isLoading={isLoading}
         />
         
-        <StatsCard
-          title="Planos"
-          value={annualPlans.length + teachingPlans.length + lessonPlans.length}
-          description={`${annualPlans.length} anuais, ${teachingPlans.length} de ensino, ${lessonPlans.length} de aula`}
+        <StatsCard 
+          title="Planos de Ensino"
+          value={teachingPlans.length}
+          subtitle={`${activePlans} ativos`}
+          icon={FileText}
           color="green"
+          isLoading={isLoading}
         />
         
-        <StatsCard
+        <StatsCard 
+          title="Planos de Aula"
+          value={lessonPlans.length}
+          subtitle={`${upcomingLessons} próximas`}
+          icon={PenTool}
+          color="teal"
+          isLoading={isLoading}
+        />
+        
+        <StatsCard 
           title="Avaliações"
           value={assessments.length}
-          description={nextEventDays !== null ? `Próxima em ${nextEventDays} dias` : 'Nenhuma próxima avaliação'}
+          subtitle={`${testsCount} provas, ${assignmentsCount} trabalhos`}
+          icon={BarChart}
           color="orange"
+          isLoading={isLoading}
         />
         
-        <StatsCard
+        <StatsCard 
           title="Materiais"
           value={materials.length}
-          description={`${documentMaterials} documentos, ${videoMaterials} vídeos, ${otherMaterials} outros`}
+          subtitle={`${documentCount} docs, ${videoCount} vídeos, ${linkCount} links`}
+          icon={FolderOpen}
           color="purple"
+          isLoading={isLoading}
         />
-      </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <StatsCard
-          title="Eventos no Calendário"
+        
+        <StatsCard 
+          title="Eventos"
           value={upcomingEvents.length}
-          description={`${classEvents} aulas, ${examEvents} avaliações, ${otherEvents} outros`}
-          color="blue"
-        />
-        
-        <StatsCard
-          title="Atividades Avaliativas"
-          value={assessments.filter(a => a.type === 'test' || a.type === 'project').length}
-          description={`${assessments.filter(a => a.type === 'test').length} provas, ${assessments.filter(a => a.type === 'project').length} projetos`}
-          color="orange"
-        />
-        
-        <StatsCard
-          title="Planos de Aula Esta Semana"
-          value={lessonPlans.filter(plan => {
-            const planDate = new Date(plan.date);
-            const today = new Date();
-            const nextWeek = new Date(today);
-            nextWeek.setDate(today.getDate() + 7);
-            return planDate >= today && planDate <= nextWeek;
-          }).length}
-          description="Planos para os próximos 7 dias"
-          color="green"
+          subtitle={`${upcomingWeekEvents} nesta semana`}
+          icon={CalendarIcon}
+          color="yellow"
+          isLoading={isLoading}
         />
       </div>
     </div>

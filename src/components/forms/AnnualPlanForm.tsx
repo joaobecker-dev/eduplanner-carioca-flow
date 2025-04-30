@@ -1,10 +1,13 @@
 
-import React, { useEffect } from 'react';
+import React from 'react';
+import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
+import { Plus, X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
 import {
   Form,
   FormControl,
@@ -22,269 +25,356 @@ import {
 } from '@/components/ui/select';
 import { AnnualPlan, Subject, AcademicPeriod } from '@/types';
 
-const formSchema = z.object({
-  title: z.string().min(3, { message: 'Título deve ter pelo menos 3 caracteres' }),
+const annualPlanSchema = z.object({
+  title: z.string().min(3, "O título deve ter pelo menos 3 caracteres"),
   description: z.string().optional(),
-  subjectId: z.string().min(1, { message: 'Selecione uma disciplina' }),
-  academicPeriodId: z.string().min(1, { message: 'Selecione um período acadêmico' }),
-  objectives: z.string().optional(),
-  generalContent: z.string().min(3, { message: 'Conteúdo geral é obrigatório' }),
-  methodology: z.string().min(3, { message: 'Metodologia é obrigatória' }),
-  evaluation: z.string().min(3, { message: 'Avaliação é obrigatória' }),
-  referencesMaterials: z.string().optional(),
+  academicPeriodId: z.string().nonempty("Selecione um período acadêmico"),
+  subjectId: z.string().nonempty("Selecione uma disciplina"),
+  objectives: z.array(z.string()).min(1, "Adicione pelo menos um objetivo"),
+  generalContent: z.string().min(10, "O conteúdo geral deve ter pelo menos 10 caracteres"),
+  methodology: z.string().min(10, "A metodologia deve ter pelo menos 10 caracteres"),
+  evaluation: z.string().min(10, "O método de avaliação deve ter pelo menos 10 caracteres"),
+  referenceMaterials: z.array(z.string()),
 });
 
+type AnnualPlanFormValues = z.infer<typeof annualPlanSchema>;
+
 interface AnnualPlanFormProps {
-  onSubmit: (data: any) => void;
-  initialData?: Partial<AnnualPlan>;
+  onSubmit: (data: AnnualPlanFormValues) => void;
   subjects: Subject[];
   academicPeriods: AcademicPeriod[];
+  initialData?: AnnualPlan;
   isSubmitting?: boolean;
 }
 
 const AnnualPlanForm: React.FC<AnnualPlanFormProps> = ({
   onSubmit,
-  initialData,
   subjects,
   academicPeriods,
-  isSubmitting = false,
+  initialData,
+  isSubmitting = false
 }) => {
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      title: initialData?.title || '',
-      description: initialData?.description || '',
-      subjectId: initialData?.subjectId || '',
-      academicPeriodId: initialData?.academicPeriodId || '',
-      objectives: initialData?.objectives ? initialData.objectives.join('\n') : '',
-      generalContent: initialData?.generalContent || '',
-      methodology: initialData?.methodology || '',
-      evaluation: initialData?.evaluation || '',
-      referencesMaterials: initialData?.referencesMaterials ? initialData.referencesMaterials.join('\n') : '',
-    },
+  // Filter subjects based on selected academic period
+  const [filteredSubjects, setFilteredSubjects] = React.useState<Subject[]>(subjects);
+  
+  const form = useForm<AnnualPlanFormValues>({
+    resolver: zodResolver(annualPlanSchema),
+    defaultValues: initialData ? {
+      ...initialData,
+      // Convert DB value (referencesMaterials) to form value (referenceMaterials)
+      referenceMaterials: initialData.referenceMaterials || []
+    } : {
+      title: "",
+      description: "",
+      objectives: [],
+      generalContent: "",
+      methodology: "",
+      evaluation: "",
+      referenceMaterials: [],
+    }
   });
 
-  useEffect(() => {
-    if (initialData) {
-      form.reset({
-        title: initialData.title || '',
-        description: initialData.description || '',
-        subjectId: initialData.subjectId || '',
-        academicPeriodId: initialData.academicPeriodId || '',
-        objectives: initialData.objectives ? initialData.objectives.join('\n') : '',
-        generalContent: initialData.generalContent || '',
-        methodology: initialData.methodology || '',
-        evaluation: initialData.evaluation || '',
-        referencesMaterials: initialData.referencesMaterials ? initialData.referencesMaterials.join('\n') : '',
-      });
-    }
-  }, [initialData, form]);
+  // Dynamic array fields management
+  const [newObjective, setNewObjective] = React.useState<string>("");
+  const [newReferenceMaterial, setNewReferenceMaterial] = React.useState<string>("");
 
-  const handleSubmit = (values: z.infer<typeof formSchema>) => {
+  // Update filtered subjects when academic period changes
+  React.useEffect(() => {
+    const academicPeriodId = form.watch("academicPeriodId");
+    if (academicPeriodId) {
+      const filtered = subjects.filter(subject => subject.academicPeriodId === academicPeriodId);
+      setFilteredSubjects(filtered);
+      
+      // If current selected subject doesn't belong to this academic period, reset it
+      const currentSubject = form.watch("subjectId");
+      if (currentSubject && !filtered.some(s => s.id === currentSubject)) {
+        form.setValue("subjectId", "");
+      }
+    } else {
+      setFilteredSubjects([]);
+    }
+  }, [form.watch("academicPeriodId"), subjects]);
+
+  const addObjective = () => {
+    if (newObjective.trim()) {
+      const currentObjectives = form.getValues("objectives") || [];
+      form.setValue("objectives", [...currentObjectives, newObjective.trim()]);
+      setNewObjective("");
+    }
+  };
+  
+  const removeObjective = (index: number) => {
+    const currentObjectives = form.getValues("objectives") || [];
+    form.setValue("objectives", currentObjectives.filter((_, i) => i !== index));
+  };
+  
+  const addReferenceMaterial = () => {
+    if (newReferenceMaterial.trim()) {
+      const currentReferences = form.getValues("referenceMaterials") || [];
+      form.setValue("referenceMaterials", [...currentReferences, newReferenceMaterial.trim()]);
+      setNewReferenceMaterial("");
+    }
+  };
+  
+  const removeReferenceMaterial = (index: number) => {
+    const currentReferences = form.getValues("referenceMaterials") || [];
+    form.setValue("referenceMaterials", currentReferences.filter((_, i) => i !== index));
+  };
+
+  const handleFormSubmit = (data: AnnualPlanFormValues) => {
+    // Convert form value (referenceMaterials) to DB value (referencesMaterials)
     const formattedData = {
-      ...values,
-      objectives: values.objectives ? values.objectives.split('\n').filter(item => item.trim() !== '') : [],
-      referencesMaterials: values.referencesMaterials ? values.referencesMaterials.split('\n').filter(item => item.trim() !== '') : [],
+      ...data,
+      referencesMaterials: data.referenceMaterials
     };
-    onSubmit(formattedData);
+    
+    // @ts-ignore - We need to delete the referenceMaterials field that's not in the API
+    delete formattedData.referenceMaterials;
+    
+    onSubmit(formattedData as any);
   };
 
   return (
     <Form {...form}>
-      <form className="space-y-4" onSubmit={form.handleSubmit(handleSubmit)}>
-        <FormField
-          control={form.control}
-          name="title"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Título*</FormLabel>
-              <FormControl>
-                <Input {...field} disabled={isSubmitting} placeholder="Plano Anual de Matemática 2025" />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Basic Information Section */}
+          <div className="space-y-4">
+            <FormField
+              control={form.control}
+              name="title"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Título do Plano Anual</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Ex: Plano Anual de Matemática - 5º Ano" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Descrição (opcional)</FormLabel>
+                  <FormControl>
+                    <Textarea placeholder="Breve descrição sobre este plano anual" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="academicPeriodId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Período Acadêmico</FormLabel>
+                    <Select 
+                      onValueChange={field.onChange} 
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione o período" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {academicPeriods.map((period) => (
+                          <SelectItem key={period.id} value={period.id}>
+                            {period.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="subjectId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Disciplina</FormLabel>
+                    <Select 
+                      onValueChange={field.onChange} 
+                      defaultValue={field.value}
+                      disabled={!form.watch("academicPeriodId") || filteredSubjects.length === 0}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione a disciplina" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {filteredSubjects.map((subject) => (
+                          <SelectItem key={subject.id} value={subject.id}>
+                            {subject.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          </div>
+          
+          {/* Objectives Section */}
           <FormField
             control={form.control}
-            name="academicPeriodId"
+            name="objectives"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Período Acadêmico*</FormLabel>
-                <Select
-                  disabled={isSubmitting}
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                  value={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione um período" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {academicPeriods.map(period => (
-                      <SelectItem key={period.id} value={period.id}>
-                        {period.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="subjectId"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Disciplina*</FormLabel>
-                <Select
-                  disabled={isSubmitting}
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                  value={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione uma disciplina" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {subjects.map(subject => (
-                      <SelectItem key={subject.id} value={subject.id}>
-                        {subject.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <FormLabel>Objetivos</FormLabel>
+                <div className="flex space-x-2">
+                  <Input
+                    placeholder="Digite um objetivo"
+                    value={newObjective}
+                    onChange={(e) => setNewObjective(e.target.value)}
+                  />
+                  <Button 
+                    type="button" 
+                    onClick={addObjective}
+                    variant="secondary"
+                  >
+                    <Plus size={16} />
+                  </Button>
+                </div>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {field.value?.map((objective, index) => (
+                    <Badge 
+                      key={index} 
+                      variant="secondary"
+                      className="px-2 py-1 text-sm flex items-center gap-1"
+                    >
+                      {objective}
+                      <X 
+                        size={14} 
+                        className="cursor-pointer text-gray-500 hover:text-red-500"
+                        onClick={() => removeObjective(index)} 
+                      />
+                    </Badge>
+                  ))}
+                </div>
                 <FormMessage />
               </FormItem>
             )}
           />
         </div>
-
-        <FormField
-          control={form.control}
-          name="description"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Descrição</FormLabel>
-              <FormControl>
-                <Textarea
-                  {...field}
-                  disabled={isSubmitting}
-                  placeholder="Breve descrição do plano anual"
-                  className="min-h-[80px]"
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="objectives"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Objetivos (um por linha)</FormLabel>
-              <FormControl>
-                <Textarea
-                  {...field}
-                  disabled={isSubmitting}
-                  placeholder="Desenvolver habilidades de resolução de problemas
-Compreender conceitos fundamentais de álgebra
-Aplicar conhecimentos em situações práticas"
-                  className="min-h-[120px]"
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="generalContent"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Conteúdo Geral*</FormLabel>
-              <FormControl>
-                <Textarea
-                  {...field}
-                  disabled={isSubmitting}
-                  placeholder="Conteúdos a serem abordados durante o ano letivo"
-                  className="min-h-[120px]"
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="methodology"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Metodologia*</FormLabel>
-              <FormControl>
-                <Textarea
-                  {...field}
-                  disabled={isSubmitting}
-                  placeholder="Metodologias de ensino a serem utilizadas"
-                  className="min-h-[120px]"
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="evaluation"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Avaliação*</FormLabel>
-              <FormControl>
-                <Textarea
-                  {...field}
-                  disabled={isSubmitting}
-                  placeholder="Métodos de avaliação a serem aplicados"
-                  className="min-h-[120px]"
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="referencesMaterials"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Referências e Materiais (um por linha)</FormLabel>
-              <FormControl>
-                <Textarea
-                  {...field}
-                  disabled={isSubmitting}
-                  placeholder="Livro Matemática Fundamental - Autor X
-Site educacional www.exemplo.com.br
-Material didático próprio"
-                  className="min-h-[120px]"
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <FormField
+            control={form.control}
+            name="generalContent"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Conteúdo Geral</FormLabel>
+                <FormControl>
+                  <Textarea 
+                    rows={4}
+                    placeholder="Descreva o conteúdo geral que será abordado durante o ano" 
+                    {...field} 
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="methodology"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Metodologia</FormLabel>
+                <FormControl>
+                  <Textarea 
+                    rows={4}
+                    placeholder="Descreva a metodologia que será utilizada" 
+                    {...field} 
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <FormField
+            control={form.control}
+            name="evaluation"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Avaliação</FormLabel>
+                <FormControl>
+                  <Textarea 
+                    rows={4}
+                    placeholder="Descreva os métodos de avaliação que serão utilizados" 
+                    {...field} 
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="referenceMaterials"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Materiais de Referência (opcional)</FormLabel>
+                <div className="flex space-x-2">
+                  <Input
+                    placeholder="Ex: Livro X, Apostila Y"
+                    value={newReferenceMaterial}
+                    onChange={(e) => setNewReferenceMaterial(e.target.value)}
+                  />
+                  <Button 
+                    type="button" 
+                    onClick={addReferenceMaterial}
+                    variant="secondary"
+                  >
+                    <Plus size={16} />
+                  </Button>
+                </div>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {field.value?.map((reference, index) => (
+                    <Badge 
+                      key={index} 
+                      variant="secondary"
+                      className="px-2 py-1 text-sm flex items-center gap-1"
+                    >
+                      {reference}
+                      <X 
+                        size={14} 
+                        className="cursor-pointer text-gray-500 hover:text-red-500"
+                        onClick={() => removeReferenceMaterial(index)} 
+                      />
+                    </Badge>
+                  ))}
+                </div>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+      
+        <div className="flex justify-end space-x-2">
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? "Salvando..." : initialData ? "Atualizar" : "Criar"}
+          </Button>
+        </div>
       </form>
     </Form>
   );

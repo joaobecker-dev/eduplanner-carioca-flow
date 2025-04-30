@@ -216,7 +216,9 @@ const Materials: React.FC = () => {
 
   // Handler for creating a new material
   const handleCreateMaterial = () => {
-    materi.handleCreateMaterial();
+    if (materialsModalsRef.current) {
+      materialsModalsRef.current.handleCreateMaterial();
+    }
   };
 
   return (
@@ -226,7 +228,7 @@ const Materials: React.FC = () => {
         description="Biblioteca de recursos educacionais"
         icon={FolderOpen}
         actionLabel="Adicionar Material"
-        onAction={() => materialsModalsRef.current?.handleCreateMaterial()}
+        onAction={handleCreateMaterial}
       />
       
       {/* Filters */}
@@ -379,7 +381,7 @@ const Materials: React.FC = () => {
               </p>
               <Button
                 className="mt-4 bg-edu-blue-600 hover:bg-edu-blue-700"
-                onClick={() => materialsModalsRef.current?.handleCreateMaterial()}
+                onClick={handleCreateMaterial}
               >
                 <PlusSquare className="mr-2" size={16} />
                 Adicionar Material
@@ -390,10 +392,10 @@ const Materials: React.FC = () => {
       </Tabs>
 
       {/* Modals */}
-      <MaterialsModals 
-        ref={materialsModalsRef}
+      <MaterialsModals
         subjects={subjects} 
         refreshData={fetchData} 
+        // Using forwardRef instead of ref prop
       />
     </div>
   );
