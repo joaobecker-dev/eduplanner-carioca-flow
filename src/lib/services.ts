@@ -1,3 +1,4 @@
+
 import { 
   AcademicPeriod, 
   Subject, 
@@ -25,8 +26,13 @@ const handleError = (error: any, operation: string): void => {
   });
 };
 
+// Type for valid table names
+type TableName = "academic_periods" | "subjects" | "annual_plans" | 
+  "teaching_plans" | "lesson_plans" | "assessments" | "students" | 
+  "student_assessments" | "calendar_events" | "materials";
+
 // Create generic service for basic CRUD operations
-const createService = <T extends { id: ID }>(tableName: string) => {
+const createService = <T extends { id: ID }>(tableName: TableName) => {
   return {
     getAll: async (): Promise<T[]> => {
       try {
@@ -35,7 +41,7 @@ const createService = <T extends { id: ID }>(tableName: string) => {
           .select('*');
         
         if (error) throw error;
-        return (data as any[]).map(item => mapToCamelCase<T>(item)) || [];
+        return data ? (data as any[]).map(item => mapToCamelCase<T>(item)) : [];
       } catch (error) {
         handleError(error, `buscar ${tableName}`);
         return [];
@@ -51,7 +57,7 @@ const createService = <T extends { id: ID }>(tableName: string) => {
           .maybeSingle();
         
         if (error) throw error;
-        return data ? mapToCamelCase<T>(data) : null;
+        return data ? mapToCamelCase<T>(data as any) : null;
       } catch (error) {
         handleError(error, `buscar ${tableName} por ID`);
         return null;
@@ -62,12 +68,12 @@ const createService = <T extends { id: ID }>(tableName: string) => {
       try {
         const { data, error } = await supabase
           .from(tableName)
-          .insert(item)
+          .insert(item as any)
           .select()
           .single();
         
         if (error) throw error;
-        return data ? mapToCamelCase<T>(data) : null;
+        return data ? mapToCamelCase<T>(data as any) : null;
       } catch (error) {
         handleError(error, `criar ${tableName}`);
         return null;
@@ -78,13 +84,13 @@ const createService = <T extends { id: ID }>(tableName: string) => {
       try {
         const { data, error } = await supabase
           .from(tableName)
-          .update(updates)
+          .update(updates as any)
           .eq('id', id)
           .select()
           .single();
         
         if (error) throw error;
-        return data ? mapToCamelCase<T>(data) : null;
+        return data ? mapToCamelCase<T>(data as any) : null;
       } catch (error) {
         handleError(error, `atualizar ${tableName}`);
         return null;
@@ -110,18 +116,18 @@ const createService = <T extends { id: ID }>(tableName: string) => {
 
 // Academic Period Service
 export const academicPeriodService = {
-  ...createService<AcademicPeriod>('academic_periods'),
+  ...createService<AcademicPeriod>("academic_periods"),
 };
 
 // Subject Service
 export const subjectService = {
-  ...createService<Subject>('subjects'),
+  ...createService<Subject>("subjects"),
   
   // Get all subjects for a specific academic period
   getByAcademicPeriod: async (academicPeriodId: ID): Promise<Subject[]> => {
     try {
       const { data, error } = await supabase
-        .from('subjects')
+        .from("subjects")
         .select('*')
         .eq('academic_period_id', academicPeriodId);
       
@@ -136,18 +142,18 @@ export const subjectService = {
 
 // Annual Plan Service
 export const annualPlanService = {
-  ...createService<AnnualPlan>('annual_plans'),
+  ...createService<AnnualPlan>("annual_plans"),
   
   // Get all annual plans for a specific subject
   getBySubject: async (subjectId: ID): Promise<AnnualPlan[]> => {
     try {
       const { data, error } = await supabase
-        .from('annual_plans')
+        .from("annual_plans")
         .select('*')
         .eq('subject_id', subjectId);
       
       if (error) throw error;
-      return data as AnnualPlan[] || [];
+      return data ? data.map(item => mapToCamelCase<AnnualPlan>(item)) : [];
     } catch (error) {
       handleError(error, 'buscar planos anuais por disciplina');
       return [];
@@ -157,18 +163,18 @@ export const annualPlanService = {
 
 // Teaching Plan Service
 export const teachingPlanService = {
-  ...createService<TeachingPlan>('teaching_plans'),
+  ...createService<TeachingPlan>("teaching_plans"),
   
   // Get all teaching plans for a specific annual plan
   getByAnnualPlan: async (annualPlanId: ID): Promise<TeachingPlan[]> => {
     try {
       const { data, error } = await supabase
-        .from('teaching_plans')
+        .from("teaching_plans")
         .select('*')
         .eq('annual_plan_id', annualPlanId);
       
       if (error) throw error;
-      return data as TeachingPlan[] || [];
+      return data ? data.map(item => mapToCamelCase<TeachingPlan>(item)) : [];
     } catch (error) {
       handleError(error, 'buscar planos de ensino por plano anual');
       return [];
@@ -179,12 +185,12 @@ export const teachingPlanService = {
   getBySubject: async (subjectId: ID): Promise<TeachingPlan[]> => {
     try {
       const { data, error } = await supabase
-        .from('teaching_plans')
+        .from("teaching_plans")
         .select('*')
         .eq('subject_id', subjectId);
       
       if (error) throw error;
-      return data as TeachingPlan[] || [];
+      return data ? data.map(item => mapToCamelCase<TeachingPlan>(item)) : [];
     } catch (error) {
       handleError(error, 'buscar planos de ensino por disciplina');
       return [];
@@ -194,18 +200,18 @@ export const teachingPlanService = {
 
 // Lesson Plan Service
 export const lessonPlanService = {
-  ...createService<LessonPlan>('lesson_plans'),
+  ...createService<LessonPlan>("lesson_plans"),
   
   // Get all lesson plans for a specific teaching plan
   getByTeachingPlan: async (teachingPlanId: ID): Promise<LessonPlan[]> => {
     try {
       const { data, error } = await supabase
-        .from('lesson_plans')
+        .from("lesson_plans")
         .select('*')
         .eq('teaching_plan_id', teachingPlanId);
       
       if (error) throw error;
-      return data as LessonPlan[] || [];
+      return data ? data.map(item => mapToCamelCase<LessonPlan>(item)) : [];
     } catch (error) {
       handleError(error, 'buscar planos de aula por plano de ensino');
       return [];
@@ -215,18 +221,18 @@ export const lessonPlanService = {
 
 // Assessment Service
 export const assessmentService = {
-  ...createService<Assessment>('assessments'),
+  ...createService<Assessment>("assessments"),
   
   // Get all assessments for a specific subject
   getBySubject: async (subjectId: ID): Promise<Assessment[]> => {
     try {
       const { data, error } = await supabase
-        .from('assessments')
+        .from("assessments")
         .select('*')
         .eq('subject_id', subjectId);
       
       if (error) throw error;
-      return data as Assessment[] || [];
+      return data ? data.map(item => mapToCamelCase<Assessment>(item)) : [];
     } catch (error) {
       handleError(error, 'buscar avaliações por disciplina');
       return [];
@@ -237,12 +243,12 @@ export const assessmentService = {
   getByTeachingPlan: async (teachingPlanId: ID): Promise<Assessment[]> => {
     try {
       const { data, error } = await supabase
-        .from('assessments')
+        .from("assessments")
         .select('*')
         .eq('teaching_plan_id', teachingPlanId);
       
       if (error) throw error;
-      return data as Assessment[] || [];
+      return data ? data.map(item => mapToCamelCase<Assessment>(item)) : [];
     } catch (error) {
       handleError(error, 'buscar avaliações por plano de ensino');
       return [];
@@ -252,23 +258,23 @@ export const assessmentService = {
 
 // Student Service
 export const studentService = {
-  ...createService<Student>('students'),
+  ...createService<Student>("students"),
 };
 
 // Student Assessment Service
 export const studentAssessmentService = {
-  ...createService<StudentAssessment>('student_assessments'),
+  ...createService<StudentAssessment>("student_assessments"),
   
   // Get all assessments for a specific student
   getByStudent: async (studentId: ID): Promise<StudentAssessment[]> => {
     try {
       const { data, error } = await supabase
-        .from('student_assessments')
+        .from("student_assessments")
         .select('*')
         .eq('student_id', studentId);
       
       if (error) throw error;
-      return data as StudentAssessment[] || [];
+      return data ? data.map(item => mapToCamelCase<StudentAssessment>(item)) : [];
     } catch (error) {
       handleError(error, 'buscar avaliações por aluno');
       return [];
@@ -279,12 +285,12 @@ export const studentAssessmentService = {
   getByAssessment: async (assessmentId: ID): Promise<StudentAssessment[]> => {
     try {
       const { data, error } = await supabase
-        .from('student_assessments')
+        .from("student_assessments")
         .select('*')
         .eq('assessment_id', assessmentId);
       
       if (error) throw error;
-      return data as StudentAssessment[] || [];
+      return data ? data.map(item => mapToCamelCase<StudentAssessment>(item)) : [];
     } catch (error) {
       handleError(error, 'buscar notas de alunos por avaliação');
       return [];
@@ -295,7 +301,7 @@ export const studentAssessmentService = {
   getAssessmentAverage: async (assessmentId: ID): Promise<number> => {
     try {
       const { data, error } = await supabase
-        .from('student_assessments')
+        .from("student_assessments")
         .select('score')
         .eq('assessment_id', assessmentId);
       
@@ -314,19 +320,19 @@ export const studentAssessmentService = {
 
 // Calendar Event Service
 export const calendarEventService = {
-  ...createService<CalendarEvent>('calendar_events'),
+  ...createService<CalendarEvent>("calendar_events"),
   
   // Get all events between two dates
   getByDateRange: async (startDate: string, endDate: string): Promise<CalendarEvent[]> => {
     try {
       const { data, error } = await supabase
-        .from('calendar_events')
+        .from("calendar_events")
         .select('*')
         .gte('start_date', startDate)
         .lte('start_date', endDate);
       
       if (error) throw error;
-      return data as CalendarEvent[] || [];
+      return data ? data.map(item => mapToCamelCase<CalendarEvent>(item)) : [];
     } catch (error) {
       handleError(error, 'buscar eventos por período');
       return [];
@@ -337,12 +343,12 @@ export const calendarEventService = {
   getBySubject: async (subjectId: ID): Promise<CalendarEvent[]> => {
     try {
       const { data, error } = await supabase
-        .from('calendar_events')
+        .from("calendar_events")
         .select('*')
         .eq('subject_id', subjectId);
       
       if (error) throw error;
-      return data as CalendarEvent[] || [];
+      return data ? data.map(item => mapToCamelCase<CalendarEvent>(item)) : [];
     } catch (error) {
       handleError(error, 'buscar eventos por disciplina');
       return [];
@@ -350,20 +356,23 @@ export const calendarEventService = {
   }
 };
 
+// Define valid material types for TypeScript validation
+type MaterialType = "document" | "video" | "link" | "image" | "other";
+
 // Material Service
 export const materialService = {
-  ...createService<Material>('materials'),
+  ...createService<Material>("materials"),
   
   // Get all materials for a specific subject
   getBySubject: async (subjectId: ID): Promise<Material[]> => {
     try {
       const { data, error } = await supabase
-        .from('materials')
+        .from("materials")
         .select('*')
         .eq('subject_id', subjectId);
       
       if (error) throw error;
-      return data as Material[] || [];
+      return data ? data.map(item => mapToCamelCase<Material>(item)) : [];
     } catch (error) {
       handleError(error, 'buscar materiais por disciplina');
       return [];
@@ -371,15 +380,15 @@ export const materialService = {
   },
   
   // Get all materials by type
-  getByType: async (type: string): Promise<Material[]> => {
+  getByType: async (type: MaterialType): Promise<Material[]> => {
     try {
       const { data, error } = await supabase
-        .from('materials')
+        .from("materials")
         .select('*')
         .eq('type', type);
       
       if (error) throw error;
-      return data as Material[] || [];
+      return data ? data.map(item => mapToCamelCase<Material>(item)) : [];
     } catch (error) {
       handleError(error, 'buscar materiais por tipo');
       return [];
@@ -390,7 +399,7 @@ export const materialService = {
   search: async (query: string): Promise<Material[]> => {
     try {
       const { data, error } = await supabase
-        .from('materials')
+        .from("materials")
         .select('*')
         .or(`title.ilike.%${query}%,description.ilike.%${query}%`);
       
@@ -403,7 +412,7 @@ export const materialService = {
         )
       );
       
-      return filteredData as Material[] || [];
+      return filteredData.map(item => mapToCamelCase<Material>(item));
     } catch (error) {
       handleError(error, 'buscar materiais');
       return [];
