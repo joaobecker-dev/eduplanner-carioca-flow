@@ -9,7 +9,8 @@ import {
   StudentAssessment,
   CalendarEvent,
   Material,
-  ID
+  ID,
+  mapToCamelCase
 } from '@/types';
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
@@ -34,7 +35,7 @@ const createService = <T extends { id: ID }>(tableName: string) => {
           .select('*');
         
         if (error) throw error;
-        return data as T[] || [];
+        return (data as any[]).map(item => mapToCamelCase<T>(item)) || [];
       } catch (error) {
         handleError(error, `buscar ${tableName}`);
         return [];
@@ -50,7 +51,7 @@ const createService = <T extends { id: ID }>(tableName: string) => {
           .maybeSingle();
         
         if (error) throw error;
-        return data as T;
+        return data ? mapToCamelCase<T>(data) : null;
       } catch (error) {
         handleError(error, `buscar ${tableName} por ID`);
         return null;
@@ -66,7 +67,7 @@ const createService = <T extends { id: ID }>(tableName: string) => {
           .single();
         
         if (error) throw error;
-        return data as T;
+        return data ? mapToCamelCase<T>(data) : null;
       } catch (error) {
         handleError(error, `criar ${tableName}`);
         return null;
@@ -83,7 +84,7 @@ const createService = <T extends { id: ID }>(tableName: string) => {
           .single();
         
         if (error) throw error;
-        return data as T;
+        return data ? mapToCamelCase<T>(data) : null;
       } catch (error) {
         handleError(error, `atualizar ${tableName}`);
         return null;
@@ -125,7 +126,7 @@ export const subjectService = {
         .eq('academic_period_id', academicPeriodId);
       
       if (error) throw error;
-      return data as Subject[] || [];
+      return data ? data.map(item => mapToCamelCase<Subject>(item)) : [];
     } catch (error) {
       handleError(error, 'buscar disciplinas por período acadêmico');
       return [];

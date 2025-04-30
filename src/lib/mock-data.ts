@@ -1,4 +1,3 @@
-
 import { 
   AcademicPeriod, 
   Subject, 
@@ -72,7 +71,7 @@ export const annualPlans: AnnualPlan[] = [
     generalContent: "Números inteiros, frações, decimais, geometria básica, introdução à álgebra",
     methodology: "Aulas expositivas, resolução de problemas em grupo, jogos matemáticos, projetos interdisciplinares",
     evaluation: "Avaliações bimestrais, trabalhos em grupo, participação em sala",
-    references: [
+    reference_materials: [
       "DANTE, Luiz Roberto. Matemática: Contexto e Aplicações. São Paulo: Ática, 2020.",
       "IEZZI, Gelson et al. Matemática: Ciência e Aplicações. São Paulo: Saraiva, 2019."
     ],
@@ -93,7 +92,7 @@ export const annualPlans: AnnualPlan[] = [
     generalContent: "Meio ambiente, seres vivos, corpo humano, matéria e energia",
     methodology: "Aulas práticas em laboratório, experimentos demonstrativos, pesquisas, trabalho de campo",
     evaluation: "Relatórios de experiências, provas teóricas e práticas, trabalhos em grupo",
-    references: [
+    reference_materials: [
       "GEWANDSZNAJDER, Fernando. Ciências: Planeta Terra. São Paulo: Ática, 2019.",
       "CANTO, Eduardo Leite do. Ciências Naturais: Aprendendo com o Cotidiano. São Paulo: Moderna, 2018."
     ],
