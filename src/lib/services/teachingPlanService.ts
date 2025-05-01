@@ -37,11 +37,25 @@ export async function getById(id: string): Promise<TeachingPlan> {
 
 /**
  * Create a new teaching plan
- * @param teachingPlan 
+ * @param teachingPlanForm 
  * @returns Promise<TeachingPlan>
  */
-export async function create(teachingPlan: TeachingPlanFormValues): Promise<TeachingPlan> {
-  const teachingPlanData = mapToSnakeCase<Record<string, any>>(teachingPlan);
+export async function create(teachingPlanForm: TeachingPlanFormValues): Promise<TeachingPlan> {
+  // Convert form data to database structure
+  const teachingPlanData = {
+    title: teachingPlanForm.title,
+    description: teachingPlanForm.description,
+    annual_plan_id: teachingPlanForm.annualPlanId,
+    subject_id: teachingPlanForm.subjectId,
+    start_date: teachingPlanForm.startDate.toISOString(),
+    end_date: teachingPlanForm.endDate.toISOString(),
+    objectives: Array.isArray(teachingPlanForm.objectives) ? teachingPlanForm.objectives : [],
+    bncc_references: Array.isArray(teachingPlanForm.bnccReferences) ? teachingPlanForm.bnccReferences : [],
+    contents: Array.isArray(teachingPlanForm.contents) ? teachingPlanForm.contents : [],
+    methodology: teachingPlanForm.methodology,
+    resources: Array.isArray(teachingPlanForm.resources) ? teachingPlanForm.resources : [],
+    evaluation: teachingPlanForm.evaluation
+  };
   
   const { data, error } = await supabase
     .from(tableName)
@@ -56,15 +70,39 @@ export async function create(teachingPlan: TeachingPlanFormValues): Promise<Teac
 /**
  * Update a teaching plan
  * @param id 
- * @param teachingPlan 
+ * @param teachingPlanForm 
  * @returns Promise<TeachingPlan>
  */
-export async function update(id: string, teachingPlan: Partial<TeachingPlanFormValues>): Promise<TeachingPlan> {
-  const teachingPlanData = mapToSnakeCase<Record<string, any>>(teachingPlan);
+export async function update(id: string, teachingPlanForm: Partial<TeachingPlanFormValues>): Promise<TeachingPlan> {
+  // Build the update data object
+  const updateData: Record<string, any> = {};
+  
+  if (teachingPlanForm.title) updateData.title = teachingPlanForm.title;
+  if (teachingPlanForm.description !== undefined) updateData.description = teachingPlanForm.description;
+  if (teachingPlanForm.annualPlanId) updateData.annual_plan_id = teachingPlanForm.annualPlanId;
+  if (teachingPlanForm.subjectId) updateData.subject_id = teachingPlanForm.subjectId;
+  if (teachingPlanForm.startDate) updateData.start_date = teachingPlanForm.startDate.toISOString();
+  if (teachingPlanForm.endDate) updateData.end_date = teachingPlanForm.endDate.toISOString();
+  
+  if (teachingPlanForm.objectives) updateData.objectives = Array.isArray(teachingPlanForm.objectives) ? 
+    teachingPlanForm.objectives : [];
+    
+  if (teachingPlanForm.bnccReferences) updateData.bncc_references = Array.isArray(teachingPlanForm.bnccReferences) ? 
+    teachingPlanForm.bnccReferences : [];
+    
+  if (teachingPlanForm.contents) updateData.contents = Array.isArray(teachingPlanForm.contents) ? 
+    teachingPlanForm.contents : [];
+    
+  if (teachingPlanForm.methodology) updateData.methodology = teachingPlanForm.methodology;
+  
+  if (teachingPlanForm.resources) updateData.resources = Array.isArray(teachingPlanForm.resources) ? 
+    teachingPlanForm.resources : [];
+    
+  if (teachingPlanForm.evaluation) updateData.evaluation = teachingPlanForm.evaluation;
   
   const { data, error } = await supabase
     .from(tableName)
-    .update(teachingPlanData)
+    .update(updateData)
     .eq('id', id)
     .select()
     .single();

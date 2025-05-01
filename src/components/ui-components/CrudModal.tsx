@@ -36,11 +36,6 @@ const CrudModal: React.FC<CrudModalProps> = ({
   cancelLabel = 'Cancelar',
   size = 'md',
 }) => {
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    onSubmit(e);
-  };
-
   const getSizeClass = () => {
     switch (size) {
       case 'sm': return 'max-w-sm';
@@ -54,7 +49,7 @@ const CrudModal: React.FC<CrudModalProps> = ({
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className={`${getSizeClass()} max-h-[90vh] overflow-y-auto`}>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={onSubmit}>
           <DialogHeader>
             <DialogTitle>{title}</DialogTitle>
             {description && <DialogDescription>{description}</DialogDescription>}

@@ -37,12 +37,40 @@ export async function getById(id: string): Promise<LessonPlan> {
 
 /**
  * Create a new lesson plan
- * @param lessonPlan 
+ * @param lessonPlanForm Form values from the lesson plan form
  * @returns Promise<LessonPlan>
  */
-export async function create(lessonPlan: LessonPlanFormValues): Promise<LessonPlan> {
-  // Convert data to snake_case and ensure it meets the required structure
-  const lessonPlanData = mapToSnakeCase<Record<string, any>>(lessonPlan);
+export async function create(lessonPlanForm: LessonPlanFormValues): Promise<LessonPlan> {
+  // Convert form values to proper DB structure
+  const lessonPlanData = {
+    title: lessonPlanForm.title,
+    teaching_plan_id: lessonPlanForm.teachingPlanId,
+    date: lessonPlanForm.date.toISOString(),
+    duration: lessonPlanForm.duration,
+    objectives: lessonPlanForm.objectives ? 
+      (Array.isArray(lessonPlanForm.objectives) ? 
+        lessonPlanForm.objectives : 
+        lessonPlanForm.objectives.split('\n').filter(item => item.trim() !== '')
+      ) : [],
+    contents: lessonPlanForm.contents ? 
+      (Array.isArray(lessonPlanForm.contents) ? 
+        lessonPlanForm.contents : 
+        lessonPlanForm.contents.split('\n').filter(item => item.trim() !== '')
+      ) : [],
+    activities: lessonPlanForm.activities ? 
+      (Array.isArray(lessonPlanForm.activities) ? 
+        lessonPlanForm.activities : 
+        lessonPlanForm.activities.split('\n').filter(item => item.trim() !== '')
+      ) : [],
+    resources: lessonPlanForm.resources ? 
+      (Array.isArray(lessonPlanForm.resources) ? 
+        lessonPlanForm.resources : 
+        lessonPlanForm.resources.split('\n').filter(item => item.trim() !== '')
+      ) : [],
+    homework: lessonPlanForm.homework,
+    evaluation: lessonPlanForm.evaluation,
+    notes: lessonPlanForm.notes
+  };
   
   const { data, error } = await supabase
     .from(tableName)
@@ -57,15 +85,51 @@ export async function create(lessonPlan: LessonPlanFormValues): Promise<LessonPl
 /**
  * Update a lesson plan
  * @param id 
- * @param lessonPlan 
+ * @param lessonPlanForm 
  * @returns Promise<LessonPlan>
  */
-export async function update(id: string, lessonPlan: Partial<LessonPlanFormValues>): Promise<LessonPlan> {
-  const lessonPlanData = mapToSnakeCase<Record<string, any>>(lessonPlan);
+export async function update(id: string, lessonPlanForm: Partial<LessonPlanFormValues>): Promise<LessonPlan> {
+  // Build update data object
+  const updateData: Record<string, any> = {};
+  
+  if (lessonPlanForm.title) updateData.title = lessonPlanForm.title;
+  if (lessonPlanForm.teachingPlanId) updateData.teaching_plan_id = lessonPlanForm.teachingPlanId;
+  if (lessonPlanForm.date) updateData.date = lessonPlanForm.date.toISOString();
+  if (lessonPlanForm.duration !== undefined) updateData.duration = lessonPlanForm.duration;
+  
+  // Handle array fields that might be strings from form input
+  if (lessonPlanForm.objectives) {
+    updateData.objectives = Array.isArray(lessonPlanForm.objectives) ? 
+      lessonPlanForm.objectives : 
+      lessonPlanForm.objectives.split('\n').filter(item => item.trim() !== '');
+  }
+  
+  if (lessonPlanForm.contents) {
+    updateData.contents = Array.isArray(lessonPlanForm.contents) ? 
+      lessonPlanForm.contents : 
+      lessonPlanForm.contents.split('\n').filter(item => item.trim() !== '');
+  }
+  
+  if (lessonPlanForm.activities) {
+    updateData.activities = Array.isArray(lessonPlanForm.activities) ? 
+      lessonPlanForm.activities : 
+      lessonPlanForm.activities.split('\n').filter(item => item.trim() !== '');
+  }
+  
+  if (lessonPlanForm.resources) {
+    updateData.resources = Array.isArray(lessonPlanForm.resources) ? 
+      lessonPlanForm.resources : 
+      lessonPlanForm.resources.split('\n').filter(item => item.trim() !== '');
+  }
+  
+  // Optional string fields
+  if (lessonPlanForm.homework !== undefined) updateData.homework = lessonPlanForm.homework;
+  if (lessonPlanForm.evaluation !== undefined) updateData.evaluation = lessonPlanForm.evaluation;
+  if (lessonPlanForm.notes !== undefined) updateData.notes = lessonPlanForm.notes;
   
   const { data, error } = await supabase
     .from(tableName)
-    .update(lessonPlanData)
+    .update(updateData)
     .eq('id', id)
     .select()
     .single();

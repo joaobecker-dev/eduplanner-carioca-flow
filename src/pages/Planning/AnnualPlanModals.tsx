@@ -94,6 +94,12 @@ const AnnualPlanModals: React.FC<AnnualPlanModalsProps> = ({
     }
   };
 
+  // Wrapper function to handle form submission from CrudModal
+  const handleSubmitForm = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    // The actual submission happens in the AnnualPlanForm's onSubmit prop
+  };
+
   return (
     <>
       {/* Annual Plan Modal */}
@@ -103,7 +109,7 @@ const AnnualPlanModals: React.FC<AnnualPlanModalsProps> = ({
         isOpen={isAnnualPlanModalOpen}
         isLoading={isSubmitting}
         onClose={() => setIsAnnualPlanModalOpen(false)}
-        onSubmit={handleAnnualPlanSubmit}
+        onSubmit={handleSubmitForm}
         submitLabel={selectedAnnualPlan ? "Atualizar" : "Criar"}
         size="lg"
       >

@@ -94,6 +94,12 @@ const TeachingPlanModals: React.FC<TeachingPlanModalsProps> = ({
     }
   };
 
+  // Wrapper function to handle form submission from CrudModal
+  const handleSubmitForm = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    // The actual submission happens in the TeachingPlanForm's onSubmit prop
+  };
+
   return (
     <>
       {/* Teaching Plan Modal */}
@@ -103,13 +109,13 @@ const TeachingPlanModals: React.FC<TeachingPlanModalsProps> = ({
         isOpen={isTeachingPlanModalOpen}
         isLoading={isSubmitting}
         onClose={() => setIsTeachingPlanModalOpen(false)}
-        onSubmit={handleTeachingPlanSubmit}
+        onSubmit={handleSubmitForm}
         submitLabel={selectedTeachingPlan ? "Atualizar" : "Criar"}
         size="lg"
       >
         <TeachingPlanForm
           onSubmit={handleTeachingPlanSubmit}
-          initialData={selectedTeachingPlan as TeachingPlan}
+          initialData={selectedTeachingPlan || {} as TeachingPlan}
           subjects={subjects}
           annualPlans={annualPlans}
           isSubmitting={isSubmitting}

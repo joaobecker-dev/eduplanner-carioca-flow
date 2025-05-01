@@ -5,12 +5,14 @@
  * Supabase database (snake_case) naming conventions.
  */
 
+type RecordObject = Record<string, any>;
+
 /**
  * Converts object keys from camelCase to snake_case
  * @param item Object with camelCase keys
  * @returns Object with snake_case keys
  */
-export function mapToSnakeCase<T extends Record<string, any>>(item: Record<string, any>): T {
+export function mapToSnakeCase<T>(item: RecordObject): T {
   if (!item || typeof item !== 'object' || Object.keys(item).length === 0) {
     return {} as T;
   }
@@ -35,7 +37,7 @@ export function mapToSnakeCase<T extends Record<string, any>>(item: Record<strin
     
     acc[finalKey] = value;
     return acc;
-  }, {} as Record<string, any>) as T;
+  }, {} as RecordObject) as T;
 }
 
 /**
@@ -43,7 +45,7 @@ export function mapToSnakeCase<T extends Record<string, any>>(item: Record<strin
  * @param item Object with snake_case keys
  * @returns Object with camelCase keys
  */
-export function mapToCamelCase<T extends Record<string, any>>(item: Record<string, any>): T {
+export function mapToCamelCase<T>(item: RecordObject): T {
   if (!item || typeof item !== 'object' || Object.keys(item).length === 0) {
     return {} as T;
   }
@@ -68,5 +70,5 @@ export function mapToCamelCase<T extends Record<string, any>>(item: Record<strin
     
     acc[finalKey] = value;
     return acc;
-  }, {} as Record<string, any>) as T;
+  }, {} as RecordObject) as T;
 }

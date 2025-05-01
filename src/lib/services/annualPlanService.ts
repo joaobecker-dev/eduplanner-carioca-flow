@@ -41,7 +41,13 @@ export async function getById(id: string): Promise<AnnualPlan> {
  * @returns Promise<AnnualPlan>
  */
 export async function create(annualPlan: AnnualPlanFormValues): Promise<AnnualPlan> {
+  // Convert camelCase to snake_case and ensure all required fields
   const annualPlanData = mapToSnakeCase<Record<string, any>>(annualPlan);
+  
+  // Handle specific field mappings if needed
+  if (annualPlan.referenceMaterials) {
+    annualPlanData.references_materials = annualPlan.referenceMaterials;
+  }
   
   const { data, error } = await supabase
     .from(tableName)
@@ -60,7 +66,13 @@ export async function create(annualPlan: AnnualPlanFormValues): Promise<AnnualPl
  * @returns Promise<AnnualPlan>
  */
 export async function update(id: string, annualPlan: Partial<AnnualPlanFormValues>): Promise<AnnualPlan> {
+  // Convert camelCase to snake_case
   const annualPlanData = mapToSnakeCase<Record<string, any>>(annualPlan);
+  
+  // Handle specific field mappings if needed
+  if (annualPlan.referenceMaterials) {
+    annualPlanData.references_materials = annualPlan.referenceMaterials;
+  }
   
   const { data, error } = await supabase
     .from(tableName)

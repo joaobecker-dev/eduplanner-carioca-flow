@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -35,10 +34,10 @@ const formSchema = z.object({
   date: z.date({ required_error: 'Data da aula é obrigatória' }),
   duration: z.number({ required_error: 'Duração é obrigatória' })
     .min(1, { message: 'Duração deve ser pelo menos 1 minuto' }),
-  objectives: z.array(z.string()).optional().default([]),
-  contents: z.array(z.string()).optional().default([]),
-  activities: z.array(z.string()).optional().default([]),
-  resources: z.array(z.string()).optional().default([]),
+  objectives: z.string().optional().default(''),
+  contents: z.string().optional().default(''),
+  activities: z.string().optional().default(''),
+  resources: z.string().optional().default(''),
   homework: z.string().optional(),
   evaluation: z.string().optional(),
   notes: z.string().optional(),
@@ -59,7 +58,7 @@ const LessonPlanForm: React.FC<LessonPlanFormProps> = ({
   teachingPlans,
   isSubmitting = false,
 }) => {
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<LessonPlanFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       title: initialData?.title || '',
@@ -94,7 +93,8 @@ const LessonPlanForm: React.FC<LessonPlanFormProps> = ({
     }
   }, [initialData, form]);
 
-  const handleSubmit = (values: z.infer<typeof formSchema>) => {
+  const handleSubmit = (values: LessonPlanFormValues) => {
+    // Convert string fields with newlines back to arrays
     const formattedData = {
       ...values,
       objectives: values.objectives ? values.objectives.split('\n').filter(item => item.trim() !== '') : [],
