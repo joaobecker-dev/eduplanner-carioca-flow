@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { toast } from '@/hooks/use-toast';
 import { services } from '@/lib/services';
@@ -7,6 +8,7 @@ import DeleteConfirmationDialog from '@/components/ui-components/DeleteConfirmat
 import AnnualPlanForm from '@/components/forms/AnnualPlanForm';
 import TeachingPlanForm from '@/components/forms/TeachingPlanForm';
 import LessonPlanForm from '@/components/forms/LessonPlanForm';
+import lessonPlanService from '@/lib/services/lessonPlanService';
 
 interface PlanningModalsProps {
   subjects: any[];
@@ -203,15 +205,15 @@ const PlanningModals: React.FC<PlanningModalsProps> = ({
     setIsSubmitting(true);
     try {
       if (selectedLessonPlan?.id) {
-        // Update existing plan
-        await services.lessonPlan.update(selectedLessonPlan.id, data);
+        // Update existing plan using enhanced service
+        await lessonPlanService.update(selectedLessonPlan.id, data);
         toast({
           title: "Plano de aula atualizado",
           description: "O plano de aula foi atualizado com sucesso.",
         });
       } else {
-        // Create new plan
-        await services.lessonPlan.create(data);
+        // Create new plan using enhanced service
+        await lessonPlanService.create(data);
         toast({
           title: "Plano de aula criado",
           description: "O plano de aula foi criado com sucesso.",
@@ -235,7 +237,8 @@ const PlanningModals: React.FC<PlanningModalsProps> = ({
     setIsSubmitting(true);
     try {
       if (selectedLessonPlan?.id) {
-        await services.lessonPlan.delete(selectedLessonPlan.id);
+        // Delete using enhanced service
+        await lessonPlanService.delete(selectedLessonPlan.id);
         toast({
           title: "Plano de aula excluído",
           description: "O plano de aula foi excluído com sucesso.",
