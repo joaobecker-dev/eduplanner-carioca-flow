@@ -33,12 +33,28 @@ export const lessonPlanService = {
       }
 
       // Convert to snake_case with proper type assertion
-      const snakeCaseData = mapToSnakeCase(lessonPlan) as Record<string, any>;
+      const snakeCaseData = mapToSnakeCase(lessonPlan);
+      
+      // Explicitly create the insertion data with required fields
+      const insertData = {
+        title: lessonPlan.title,
+        date: lessonPlan.date,
+        duration: lessonPlan.duration,
+        teaching_plan_id: lessonPlan.teachingPlanId,
+        contents: lessonPlan.contents || [],
+        activities: lessonPlan.activities || [],
+        resources: lessonPlan.resources || [],
+        objectives: lessonPlan.objectives || [],
+        homework: lessonPlan.homework,
+        evaluation: lessonPlan.evaluation,
+        notes: lessonPlan.notes,
+        material_ids: lessonPlan.materialIds
+      };
       
       // Create the lesson plan
       const { data, error } = await supabase
         .from("lesson_plans")
-        .insert(snakeCaseData)
+        .insert(insertData)
         .select()
         .single();
       
@@ -60,7 +76,7 @@ export const lessonPlanService = {
   update: async (id: ID, updates: Partial<LessonPlan>): Promise<LessonPlan | null> => {
     try {
       // Convert to snake_case with proper type assertion
-      const snakeCaseData = mapToSnakeCase(updates) as Record<string, any>;
+      const snakeCaseData = mapToSnakeCase(updates);
       
       // Update the lesson plan
       const { data, error } = await supabase
