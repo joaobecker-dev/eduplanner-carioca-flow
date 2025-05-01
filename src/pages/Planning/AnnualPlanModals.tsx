@@ -1,0 +1,135 @@
+
+import React, { useState } from 'react';
+import { toast } from '@/hooks/use-toast';
+import { AnnualPlan } from '@/types';
+import CrudModal from '@/components/ui-components/CrudModal';
+import DeleteConfirmationDialog from '@/components/ui-components/DeleteConfirmationDialog';
+import AnnualPlanForm from '@/components/forms/AnnualPlanForm';
+import { annualPlanService } from '@/lib/services';
+
+interface AnnualPlanModalsProps {
+  subjects: any[];
+  academicPeriods: any[];
+  refreshData: () => void;
+}
+
+const AnnualPlanModals: React.FC<AnnualPlanModalsProps> = ({
+  subjects,
+  academicPeriods,
+  refreshData
+}) => {
+  const [isAnnualPlanModalOpen, setIsAnnualPlanModalOpen] = useState(false);
+  const [isAnnualPlanDeleteOpen, setIsAnnualPlanDeleteOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedAnnualPlan, setSelectedAnnualPlan] = useState<Partial<AnnualPlan> | null>(null);
+
+  const handleCreateAnnualPlan = () => {
+    setSelectedAnnualPlan(null);
+    setIsAnnualPlanModalOpen(true);
+  };
+
+  const handleEditAnnualPlan = (plan: AnnualPlan) => {
+    setSelectedAnnualPlan(plan);
+    setIsAnnualPlanModalOpen(true);
+  };
+
+  const handleDeleteAnnualPlan = (plan: AnnualPlan) => {
+    setSelectedAnnualPlan(plan);
+    setIsAnnualPlanDeleteOpen(true);
+  };
+
+  const handleAnnualPlanSubmit = async (data: any) => {
+    setIsSubmitting(true);
+    try {
+      if (selectedAnnualPlan?.id) {
+        // Update existing plan
+        await annualPlanService.update(selectedAnnualPlan.id, data);
+        toast({
+          title: "Plano anual atualizado",
+          description: "O plano anual foi atualizado com sucesso.",
+        });
+      } else {
+        // Create new plan
+        await annualPlanService.create(data);
+        toast({
+          title: "Plano anual criado",
+          description: "O plano anual foi criado com sucesso.",
+        });
+      }
+      setIsAnnualPlanModalOpen(false);
+      refreshData();
+    } catch (error) {
+      console.error('Error saving annual plan:', error);
+      toast({
+        title: "Erro ao salvar",
+        description: "Ocorreu um erro ao salvar o plano anual.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleAnnualPlanDelete = async () => {
+    setIsSubmitting(true);
+    try {
+      if (selectedAnnualPlan?.id) {
+        await annualPlanService.delete(selectedAnnualPlan.id);
+        toast({
+          title: "Plano anual excluído",
+          description: "O plano anual foi excluído com sucesso.",
+        });
+        setIsAnnualPlanDeleteOpen(false);
+        refreshData();
+      }
+    } catch (error) {
+      console.error('Error deleting annual plan:', error);
+      toast({
+        title: "Erro ao excluir",
+        description: "Ocorreu um erro ao excluir o plano anual.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <>
+      {/* Annual Plan Modal */}
+      <CrudModal
+        title={selectedAnnualPlan ? "Editar Plano Anual" : "Novo Plano Anual"}
+        description="Preencha os campos para criar ou editar um plano anual."
+        isOpen={isAnnualPlanModalOpen}
+        isLoading={isSubmitting}
+        onClose={() => setIsAnnualPlanModalOpen(false)}
+        onSubmit={handleAnnualPlanSubmit}
+        submitLabel={selectedAnnualPlan ? "Atualizar" : "Criar"}
+        size="lg"
+      >
+        <AnnualPlanForm
+          onSubmit={handleAnnualPlanSubmit}
+          initialData={selectedAnnualPlan || {}}
+          subjects={subjects}
+          academicPeriods={academicPeriods}
+          isSubmitting={isSubmitting}
+        />
+      </CrudModal>
+
+      {/* Annual Plan Delete Confirmation */}
+      <DeleteConfirmationDialog
+        isOpen={isAnnualPlanDeleteOpen}
+        isLoading={isSubmitting}
+        title="Excluir Plano Anual"
+        description={`Tem certeza que deseja excluir o plano anual "${selectedAnnualPlan?.title}"? Esta ação não pode ser desfeita.`}
+        onClose={() => setIsAnnualPlanDeleteOpen(false)}
+        onConfirm={handleAnnualPlanDelete}
+      />
+    </>
+  );
+};
+
+export { 
+  AnnualPlanModals,
+  type AnnualPlanModalsProps 
+};

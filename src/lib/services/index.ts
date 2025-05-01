@@ -10,21 +10,7 @@ import { studentAssessmentService } from './studentAssessmentService';
 import { calendarEventService } from './calendarEventService';
 import { materialService } from './materialService';
 
-// Export all services in a single object for backward compatibility
-export const services = {
-  academicPeriod: academicPeriodService,
-  subject: subjectService,
-  annualPlan: annualPlanService,
-  teachingPlan: teachingPlanService,
-  lessonPlan: lessonPlanService,
-  assessment: assessmentService,
-  student: studentService,
-  studentAssessment: studentAssessmentService,
-  calendarEvent: calendarEventService,
-  material: materialService
-};
-
-// Also export each service individually for direct imports
+// Export all services individually for direct imports
 export {
   academicPeriodService,
   subjectService,
@@ -36,4 +22,18 @@ export {
   studentAssessmentService,
   calendarEventService,
   materialService
+};
+
+// For backward compatibility during migration only - this should be removed in future releases
+export const services = {
+  academicPeriod: academicPeriodService,
+  subject: subjectService,
+  annualPlan: annualPlanService,
+  teachingPlan: teachingPlanService,
+  lessonPlan: lessonPlanService,
+  assessment: assessmentService,
+  student: studentService,
+  studentAssessment: studentAssessmentService,
+  calendarEvent: calendarEventService,
+  material: materialService
 };

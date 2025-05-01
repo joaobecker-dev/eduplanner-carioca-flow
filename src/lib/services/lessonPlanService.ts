@@ -27,10 +27,18 @@ export const lessonPlanService = {
   // Create with calendar event
   create: async (lessonPlan: Omit<LessonPlan, 'id'>): Promise<LessonPlan | null> => {
     try {
+      // Validate required fields
+      if (!lessonPlan.title || !lessonPlan.date || !lessonPlan.duration || !lessonPlan.teachingPlanId) {
+        throw new Error('Campos obrigatórios faltando: título, data, duração ou plano de ensino');
+      }
+
+      // Convert to snake_case with proper type assertion
+      const snakeCaseData = mapToSnakeCase(lessonPlan) as Record<string, any>;
+      
       // Create the lesson plan
       const { data, error } = await supabase
         .from("lesson_plans")
-        .insert(mapToSnakeCase(lessonPlan))
+        .insert(snakeCaseData)
         .select()
         .single();
       
@@ -51,10 +59,13 @@ export const lessonPlanService = {
   // Update with calendar event
   update: async (id: ID, updates: Partial<LessonPlan>): Promise<LessonPlan | null> => {
     try {
+      // Convert to snake_case with proper type assertion
+      const snakeCaseData = mapToSnakeCase(updates) as Record<string, any>;
+      
       // Update the lesson plan
       const { data, error } = await supabase
         .from("lesson_plans")
-        .update(mapToSnakeCase(updates))
+        .update(snakeCaseData)
         .eq('id', id)
         .select()
         .single();
