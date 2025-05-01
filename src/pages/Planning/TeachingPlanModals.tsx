@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { toast } from '@/hooks/use-toast';
 import { TeachingPlan } from '@/types';
@@ -41,16 +40,32 @@ const TeachingPlanModals: React.FC<TeachingPlanModalsProps> = ({
   const handleTeachingPlanSubmit = async (data: TeachingPlanFormValues) => {
     setIsSubmitting(true);
     try {
+      // Prepare the data for database insertion
+      const teachingPlanData = {
+        title: data.title,
+        description: data.description,
+        annualPlanId: data.annualPlanId,
+        subjectId: data.subjectId,
+        startDate: data.startDate,
+        endDate: data.endDate,
+        objectives: data.objectives || [],
+        bnccReferences: data.bnccReferences || [],
+        contents: data.contents || [],
+        methodology: data.methodology,
+        resources: data.resources || [],
+        evaluation: data.evaluation
+      };
+
       if (selectedTeachingPlan?.id) {
         // Update existing plan
-        await teachingPlanService.update(selectedTeachingPlan.id, data);
+        await teachingPlanService.update(selectedTeachingPlan.id, teachingPlanData);
         toast({
           title: "Plano de ensino atualizado",
           description: "O plano de ensino foi atualizado com sucesso.",
         });
       } else {
         // Create new plan
-        await teachingPlanService.create(data);
+        await teachingPlanService.create(teachingPlanData);
         toast({
           title: "Plano de ensino criado",
           description: "O plano de ensino foi criado com sucesso.",
@@ -115,7 +130,7 @@ const TeachingPlanModals: React.FC<TeachingPlanModalsProps> = ({
       >
         <TeachingPlanForm
           onSubmit={handleTeachingPlanSubmit}
-          initialData={selectedTeachingPlan || {} as TeachingPlan}
+          initialData={selectedTeachingPlan || {}}
           subjects={subjects}
           annualPlans={annualPlans}
           isSubmitting={isSubmitting}

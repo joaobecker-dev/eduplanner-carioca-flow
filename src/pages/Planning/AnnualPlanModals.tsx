@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { toast } from '@/hooks/use-toast';
 import { AnnualPlan } from '@/types';
@@ -41,16 +40,31 @@ const AnnualPlanModals: React.FC<AnnualPlanModalsProps> = ({
   const handleAnnualPlanSubmit = async (data: AnnualPlanFormValues) => {
     setIsSubmitting(true);
     try {
+      // Prepare the data for database insertion by including required fields
+      const annualPlanData = {
+        title: data.title,
+        description: data.description,
+        academicPeriodId: data.academicPeriodId,
+        subjectId: data.subjectId,
+        objectives: data.objectives || [],
+        generalContent: data.generalContent,
+        methodology: data.methodology,
+        evaluation: data.evaluation,
+        referenceMaterials: data.referenceMaterials || [],
+        // Add reference_materials to ensure type compatibility with AnnualPlan
+        reference_materials: data.referenceMaterials || []
+      };
+
       if (selectedAnnualPlan?.id) {
         // Update existing plan
-        await annualPlanService.update(selectedAnnualPlan.id, data);
+        await annualPlanService.update(selectedAnnualPlan.id, annualPlanData);
         toast({
           title: "Plano anual atualizado",
           description: "O plano anual foi atualizado com sucesso.",
         });
       } else {
         // Create new plan
-        await annualPlanService.create(data);
+        await annualPlanService.create(annualPlanData);
         toast({
           title: "Plano anual criado",
           description: "O plano anual foi criado com sucesso.",

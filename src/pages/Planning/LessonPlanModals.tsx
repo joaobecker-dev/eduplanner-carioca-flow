@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { toast } from '@/hooks/use-toast';
 import { LessonPlan } from '@/types';
@@ -39,16 +38,31 @@ const LessonPlanModals: React.FC<LessonPlanModalsProps> = ({
   const handleLessonPlanSubmit = async (data: LessonPlanFormValues) => {
     setIsSubmitting(true);
     try {
+      // Format the data for the service - convert string fields to arrays
+      const formattedData = {
+        title: data.title,
+        teachingPlanId: data.teachingPlanId,
+        date: data.date,
+        duration: data.duration,
+        objectives: data.objectives ? data.objectives.split('\n').filter(item => item.trim() !== '') : [],
+        contents: data.contents ? data.contents.split('\n').filter(item => item.trim() !== '') : [],
+        activities: data.activities ? data.activities.split('\n').filter(item => item.trim() !== '') : [],
+        resources: data.resources ? data.resources.split('\n').filter(item => item.trim() !== '') : [],
+        homework: data.homework,
+        evaluation: data.evaluation,
+        notes: data.notes
+      };
+
       if (selectedLessonPlan?.id) {
         // Update existing plan
-        await lessonPlanService.update(selectedLessonPlan.id, data);
+        await lessonPlanService.update(selectedLessonPlan.id, formattedData);
         toast({
           title: "Plano de aula atualizado",
           description: "O plano de aula foi atualizado com sucesso.",
         });
       } else {
         // Create new plan
-        await lessonPlanService.create(data);
+        await lessonPlanService.create(formattedData);
         toast({
           title: "Plano de aula criado",
           description: "O plano de aula foi criado com sucesso.",

@@ -1,7 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { LessonPlan } from "@/types";
-import { mapToCamelCase, mapToSnakeCase } from "@/integrations/supabase/supabaseAdapter";
+import { mapToCamelCase } from "@/integrations/supabase/supabaseAdapter";
 import { LessonPlanFormValues } from "@/components/forms/LessonPlanForm";
 
 const tableName = 'lesson_plans';
@@ -48,25 +48,13 @@ export async function create(lessonPlanForm: LessonPlanFormValues): Promise<Less
     date: lessonPlanForm.date.toISOString(),
     duration: lessonPlanForm.duration,
     objectives: lessonPlanForm.objectives ? 
-      (Array.isArray(lessonPlanForm.objectives) ? 
-        lessonPlanForm.objectives : 
-        lessonPlanForm.objectives.split('\n').filter(item => item.trim() !== '')
-      ) : [],
+      (lessonPlanForm.objectives.split('\n').filter(item => item.trim() !== '')) : [],
     contents: lessonPlanForm.contents ? 
-      (Array.isArray(lessonPlanForm.contents) ? 
-        lessonPlanForm.contents : 
-        lessonPlanForm.contents.split('\n').filter(item => item.trim() !== '')
-      ) : [],
+      (lessonPlanForm.contents.split('\n').filter(item => item.trim() !== '')) : [],
     activities: lessonPlanForm.activities ? 
-      (Array.isArray(lessonPlanForm.activities) ? 
-        lessonPlanForm.activities : 
-        lessonPlanForm.activities.split('\n').filter(item => item.trim() !== '')
-      ) : [],
+      (lessonPlanForm.activities.split('\n').filter(item => item.trim() !== '')) : [],
     resources: lessonPlanForm.resources ? 
-      (Array.isArray(lessonPlanForm.resources) ? 
-        lessonPlanForm.resources : 
-        lessonPlanForm.resources.split('\n').filter(item => item.trim() !== '')
-      ) : [],
+      (lessonPlanForm.resources.split('\n').filter(item => item.trim() !== '')) : [],
     homework: lessonPlanForm.homework,
     evaluation: lessonPlanForm.evaluation,
     notes: lessonPlanForm.notes
@@ -92,34 +80,34 @@ export async function update(id: string, lessonPlanForm: Partial<LessonPlanFormV
   // Build update data object
   const updateData: Record<string, any> = {};
   
-  if (lessonPlanForm.title) updateData.title = lessonPlanForm.title;
-  if (lessonPlanForm.teachingPlanId) updateData.teaching_plan_id = lessonPlanForm.teachingPlanId;
-  if (lessonPlanForm.date) updateData.date = lessonPlanForm.date.toISOString();
+  if (lessonPlanForm.title !== undefined) updateData.title = lessonPlanForm.title;
+  if (lessonPlanForm.teachingPlanId !== undefined) updateData.teaching_plan_id = lessonPlanForm.teachingPlanId;
+  if (lessonPlanForm.date !== undefined) updateData.date = lessonPlanForm.date.toISOString();
   if (lessonPlanForm.duration !== undefined) updateData.duration = lessonPlanForm.duration;
   
   // Handle array fields that might be strings from form input
-  if (lessonPlanForm.objectives) {
-    updateData.objectives = Array.isArray(lessonPlanForm.objectives) ? 
-      lessonPlanForm.objectives : 
-      lessonPlanForm.objectives.split('\n').filter(item => item.trim() !== '');
+  if (lessonPlanForm.objectives !== undefined) {
+    updateData.objectives = typeof lessonPlanForm.objectives === 'string' ? 
+      lessonPlanForm.objectives.split('\n').filter(item => item.trim() !== '') : 
+      lessonPlanForm.objectives || [];
   }
   
-  if (lessonPlanForm.contents) {
-    updateData.contents = Array.isArray(lessonPlanForm.contents) ? 
-      lessonPlanForm.contents : 
-      lessonPlanForm.contents.split('\n').filter(item => item.trim() !== '');
+  if (lessonPlanForm.contents !== undefined) {
+    updateData.contents = typeof lessonPlanForm.contents === 'string' ? 
+      lessonPlanForm.contents.split('\n').filter(item => item.trim() !== '') : 
+      lessonPlanForm.contents || [];
   }
   
-  if (lessonPlanForm.activities) {
-    updateData.activities = Array.isArray(lessonPlanForm.activities) ? 
-      lessonPlanForm.activities : 
-      lessonPlanForm.activities.split('\n').filter(item => item.trim() !== '');
+  if (lessonPlanForm.activities !== undefined) {
+    updateData.activities = typeof lessonPlanForm.activities === 'string' ? 
+      lessonPlanForm.activities.split('\n').filter(item => item.trim() !== '') : 
+      lessonPlanForm.activities || [];
   }
   
-  if (lessonPlanForm.resources) {
-    updateData.resources = Array.isArray(lessonPlanForm.resources) ? 
-      lessonPlanForm.resources : 
-      lessonPlanForm.resources.split('\n').filter(item => item.trim() !== '');
+  if (lessonPlanForm.resources !== undefined) {
+    updateData.resources = typeof lessonPlanForm.resources === 'string' ? 
+      lessonPlanForm.resources.split('\n').filter(item => item.trim() !== '') : 
+      lessonPlanForm.resources || [];
   }
   
   // Optional string fields

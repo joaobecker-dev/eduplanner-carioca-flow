@@ -94,15 +94,9 @@ const LessonPlanForm: React.FC<LessonPlanFormProps> = ({
   }, [initialData, form]);
 
   const handleSubmit = (values: LessonPlanFormValues) => {
-    // Convert string fields with newlines back to arrays
-    const formattedData = {
-      ...values,
-      objectives: values.objectives ? values.objectives.split('\n').filter(item => item.trim() !== '') : [],
-      contents: values.contents ? values.contents.split('\n').filter(item => item.trim() !== '') : [],
-      activities: values.activities ? values.activities.split('\n').filter(item => item.trim() !== '') : [],
-      resources: values.resources ? values.resources.split('\n').filter(item => item.trim() !== '') : [],
-    };
-    onSubmit(formattedData);
+    // Keep the form values as they are defined in the schema
+    // Let the consumer of the component handle the conversion to arrays as needed
+    onSubmit(values);
   };
 
   return (

@@ -1,7 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { TeachingPlan } from "@/types";
-import { mapToCamelCase, mapToSnakeCase } from "@/integrations/supabase/supabaseAdapter";
+import { mapToCamelCase } from "@/integrations/supabase/supabaseAdapter";
 import { TeachingPlanFormValues } from "@/components/forms/TeachingPlanForm";
 
 const tableName = 'teaching_plans';
@@ -77,28 +77,28 @@ export async function update(id: string, teachingPlanForm: Partial<TeachingPlanF
   // Build the update data object
   const updateData: Record<string, any> = {};
   
-  if (teachingPlanForm.title) updateData.title = teachingPlanForm.title;
+  if (teachingPlanForm.title !== undefined) updateData.title = teachingPlanForm.title;
   if (teachingPlanForm.description !== undefined) updateData.description = teachingPlanForm.description;
-  if (teachingPlanForm.annualPlanId) updateData.annual_plan_id = teachingPlanForm.annualPlanId;
-  if (teachingPlanForm.subjectId) updateData.subject_id = teachingPlanForm.subjectId;
-  if (teachingPlanForm.startDate) updateData.start_date = teachingPlanForm.startDate.toISOString();
-  if (teachingPlanForm.endDate) updateData.end_date = teachingPlanForm.endDate.toISOString();
+  if (teachingPlanForm.annualPlanId !== undefined) updateData.annual_plan_id = teachingPlanForm.annualPlanId;
+  if (teachingPlanForm.subjectId !== undefined) updateData.subject_id = teachingPlanForm.subjectId;
+  if (teachingPlanForm.startDate !== undefined) updateData.start_date = teachingPlanForm.startDate.toISOString();
+  if (teachingPlanForm.endDate !== undefined) updateData.end_date = teachingPlanForm.endDate.toISOString();
   
-  if (teachingPlanForm.objectives) updateData.objectives = Array.isArray(teachingPlanForm.objectives) ? 
+  if (teachingPlanForm.objectives !== undefined) updateData.objectives = Array.isArray(teachingPlanForm.objectives) ? 
     teachingPlanForm.objectives : [];
     
-  if (teachingPlanForm.bnccReferences) updateData.bncc_references = Array.isArray(teachingPlanForm.bnccReferences) ? 
+  if (teachingPlanForm.bnccReferences !== undefined) updateData.bncc_references = Array.isArray(teachingPlanForm.bnccReferences) ? 
     teachingPlanForm.bnccReferences : [];
     
-  if (teachingPlanForm.contents) updateData.contents = Array.isArray(teachingPlanForm.contents) ? 
+  if (teachingPlanForm.contents !== undefined) updateData.contents = Array.isArray(teachingPlanForm.contents) ? 
     teachingPlanForm.contents : [];
     
-  if (teachingPlanForm.methodology) updateData.methodology = teachingPlanForm.methodology;
+  if (teachingPlanForm.methodology !== undefined) updateData.methodology = teachingPlanForm.methodology;
   
-  if (teachingPlanForm.resources) updateData.resources = Array.isArray(teachingPlanForm.resources) ? 
+  if (teachingPlanForm.resources !== undefined) updateData.resources = Array.isArray(teachingPlanForm.resources) ? 
     teachingPlanForm.resources : [];
     
-  if (teachingPlanForm.evaluation) updateData.evaluation = teachingPlanForm.evaluation;
+  if (teachingPlanForm.evaluation !== undefined) updateData.evaluation = teachingPlanForm.evaluation;
   
   const { data, error } = await supabase
     .from(tableName)

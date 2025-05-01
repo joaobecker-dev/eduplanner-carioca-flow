@@ -40,14 +40,19 @@ export async function getById(id: string): Promise<AnnualPlan> {
  * @param annualPlan 
  * @returns Promise<AnnualPlan>
  */
-export async function create(annualPlan: AnnualPlanFormValues): Promise<AnnualPlan> {
-  // Convert camelCase to snake_case and ensure all required fields
-  const annualPlanData = mapToSnakeCase<Record<string, any>>(annualPlan);
-  
-  // Handle specific field mappings if needed
-  if (annualPlan.referenceMaterials) {
-    annualPlanData.references_materials = annualPlan.referenceMaterials;
-  }
+export async function create(annualPlan: AnnualPlanFormValues & { reference_materials?: string[] }): Promise<AnnualPlan> {
+  // Directly construct the object with snake_case keys
+  const annualPlanData = {
+    title: annualPlan.title,
+    description: annualPlan.description,
+    academic_period_id: annualPlan.academicPeriodId,
+    subject_id: annualPlan.subjectId,
+    objectives: annualPlan.objectives || [],
+    general_content: annualPlan.generalContent,
+    methodology: annualPlan.methodology,
+    evaluation: annualPlan.evaluation,
+    reference_materials: annualPlan.referenceMaterials || annualPlan.reference_materials || []
+  };
   
   const { data, error } = await supabase
     .from(tableName)
@@ -65,18 +70,24 @@ export async function create(annualPlan: AnnualPlanFormValues): Promise<AnnualPl
  * @param annualPlan 
  * @returns Promise<AnnualPlan>
  */
-export async function update(id: string, annualPlan: Partial<AnnualPlanFormValues>): Promise<AnnualPlan> {
-  // Convert camelCase to snake_case
-  const annualPlanData = mapToSnakeCase<Record<string, any>>(annualPlan);
+export async function update(id: string, annualPlan: Partial<AnnualPlanFormValues> & { reference_materials?: string[] }): Promise<AnnualPlan> {
+  // Directly construct the update object with snake_case keys
+  const updateData: Record<string, any> = {};
   
-  // Handle specific field mappings if needed
-  if (annualPlan.referenceMaterials) {
-    annualPlanData.references_materials = annualPlan.referenceMaterials;
-  }
+  if (annualPlan.title !== undefined) updateData.title = annualPlan.title;
+  if (annualPlan.description !== undefined) updateData.description = annualPlan.description;
+  if (annualPlan.academicPeriodId !== undefined) updateData.academic_period_id = annualPlan.academicPeriodId;
+  if (annualPlan.subjectId !== undefined) updateData.subject_id = annualPlan.subjectId;
+  if (annualPlan.objectives !== undefined) updateData.objectives = annualPlan.objectives;
+  if (annualPlan.generalContent !== undefined) updateData.general_content = annualPlan.generalContent;
+  if (annualPlan.methodology !== undefined) updateData.methodology = annualPlan.methodology;
+  if (annualPlan.evaluation !== undefined) updateData.evaluation = annualPlan.evaluation;
+  if (annualPlan.referenceMaterials !== undefined) updateData.reference_materials = annualPlan.referenceMaterials;
+  if (annualPlan.reference_materials !== undefined) updateData.reference_materials = annualPlan.reference_materials;
   
   const { data, error } = await supabase
     .from(tableName)
-    .update(annualPlanData)
+    .update(updateData)
     .eq('id', id)
     .select()
     .single();
