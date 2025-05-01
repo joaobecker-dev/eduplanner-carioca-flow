@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { toast } from '@/hooks/use-toast';
 import { TeachingPlan } from '@/types';
@@ -28,7 +29,13 @@ const TeachingPlanModals: React.FC<TeachingPlanModalsProps> = ({
   };
 
   const handleEditTeachingPlan = (plan: TeachingPlan) => {
-    setSelectedTeachingPlan(plan);
+    // Convert ISO date strings to Date objects for the form
+    const planWithDateObjects = {
+      ...plan,
+      startDate: new Date(plan.startDate),
+      endDate: new Date(plan.endDate)
+    };
+    setSelectedTeachingPlan(planWithDateObjects);
     setIsTeachingPlanModalOpen(true);
   };
 
@@ -46,8 +53,8 @@ const TeachingPlanModals: React.FC<TeachingPlanModalsProps> = ({
         description: data.description,
         annualPlanId: data.annualPlanId,
         subjectId: data.subjectId,
-        startDate: data.startDate,
-        endDate: data.endDate,
+        startDate: data.startDate, // Will be converted to ISO string in service
+        endDate: data.endDate, // Will be converted to ISO string in service
         objectives: data.objectives || [],
         bnccReferences: data.bnccReferences || [],
         contents: data.contents || [],
@@ -130,7 +137,7 @@ const TeachingPlanModals: React.FC<TeachingPlanModalsProps> = ({
       >
         <TeachingPlanForm
           onSubmit={handleTeachingPlanSubmit}
-          initialData={selectedTeachingPlan || {}}
+          initialData={selectedTeachingPlan as Partial<TeachingPlan> || {}}
           subjects={subjects}
           annualPlans={annualPlans}
           isSubmitting={isSubmitting}

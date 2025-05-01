@@ -1,7 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { TeachingPlan } from "@/types";
-import { mapToCamelCase } from "@/integrations/supabase/supabaseAdapter";
+import { mapToCamelCase, mapToSnakeCase } from "@/integrations/supabase/supabaseAdapter";
 import { TeachingPlanFormValues } from "@/components/forms/TeachingPlanForm";
 
 const tableName = 'teaching_plans';

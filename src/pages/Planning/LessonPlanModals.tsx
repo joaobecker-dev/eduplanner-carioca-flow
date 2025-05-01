@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { toast } from '@/hooks/use-toast';
 import { LessonPlan } from '@/types';
@@ -38,16 +39,20 @@ const LessonPlanModals: React.FC<LessonPlanModalsProps> = ({
   const handleLessonPlanSubmit = async (data: LessonPlanFormValues) => {
     setIsSubmitting(true);
     try {
-      // Format the data for the service - convert string fields to arrays
+      // Format the data for the service
       const formattedData = {
         title: data.title,
         teachingPlanId: data.teachingPlanId,
-        date: data.date,
+        date: data.date, // Will be converted to ISO string in service
         duration: data.duration,
-        objectives: data.objectives ? data.objectives.split('\n').filter(item => item.trim() !== '') : [],
-        contents: data.contents ? data.contents.split('\n').filter(item => item.trim() !== '') : [],
-        activities: data.activities ? data.activities.split('\n').filter(item => item.trim() !== '') : [],
-        resources: data.resources ? data.resources.split('\n').filter(item => item.trim() !== '') : [],
+        objectives: Array.isArray(data.objectives) ? data.objectives : 
+                  (data.objectives ? data.objectives.split('\n').filter(item => item.trim() !== '') : []),
+        contents: Array.isArray(data.contents) ? data.contents : 
+                (data.contents ? data.contents.split('\n').filter(item => item.trim() !== '') : []),
+        activities: Array.isArray(data.activities) ? data.activities : 
+                  (data.activities ? data.activities.split('\n').filter(item => item.trim() !== '') : []),
+        resources: Array.isArray(data.resources) ? data.resources : 
+                 (data.resources ? data.resources.split('\n').filter(item => item.trim() !== '') : []),
         homework: data.homework,
         evaluation: data.evaluation,
         notes: data.notes

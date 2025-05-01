@@ -1,7 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { AnnualPlan } from "@/types";
-import { mapToCamelCase, mapToSnakeCase } from "@/integrations/supabase/supabaseAdapter";
+import { mapToCamelCase } from "@/integrations/supabase/supabaseAdapter";
 import { AnnualPlanFormValues } from "@/components/forms/AnnualPlanForm";
 
 const tableName = 'annual_plans';
@@ -40,18 +40,18 @@ export async function getById(id: string): Promise<AnnualPlan> {
  * @param annualPlan 
  * @returns Promise<AnnualPlan>
  */
-export async function create(annualPlan: AnnualPlanFormValues & { reference_materials?: string[] }): Promise<AnnualPlan> {
+export async function create(annualPlan: AnnualPlanFormValues): Promise<AnnualPlan> {
   // Directly construct the object with snake_case keys
   const annualPlanData = {
     title: annualPlan.title,
     description: annualPlan.description,
     academic_period_id: annualPlan.academicPeriodId,
     subject_id: annualPlan.subjectId,
-    objectives: annualPlan.objectives || [],
+    objectives: Array.isArray(annualPlan.objectives) ? annualPlan.objectives : [],
     general_content: annualPlan.generalContent,
     methodology: annualPlan.methodology,
     evaluation: annualPlan.evaluation,
-    reference_materials: annualPlan.referenceMaterials || annualPlan.reference_materials || []
+    references_materials: Array.isArray(annualPlan.referenceMaterials) ? annualPlan.referenceMaterials : []
   };
   
   const { data, error } = await supabase
@@ -70,7 +70,7 @@ export async function create(annualPlan: AnnualPlanFormValues & { reference_mate
  * @param annualPlan 
  * @returns Promise<AnnualPlan>
  */
-export async function update(id: string, annualPlan: Partial<AnnualPlanFormValues> & { reference_materials?: string[] }): Promise<AnnualPlan> {
+export async function update(id: string, annualPlan: Partial<AnnualPlanFormValues>): Promise<AnnualPlan> {
   // Directly construct the update object with snake_case keys
   const updateData: Record<string, any> = {};
   
@@ -78,12 +78,16 @@ export async function update(id: string, annualPlan: Partial<AnnualPlanFormValue
   if (annualPlan.description !== undefined) updateData.description = annualPlan.description;
   if (annualPlan.academicPeriodId !== undefined) updateData.academic_period_id = annualPlan.academicPeriodId;
   if (annualPlan.subjectId !== undefined) updateData.subject_id = annualPlan.subjectId;
-  if (annualPlan.objectives !== undefined) updateData.objectives = annualPlan.objectives;
+  if (annualPlan.objectives !== undefined) {
+    updateData.objectives = Array.isArray(annualPlan.objectives) ? annualPlan.objectives : [];
+  }
   if (annualPlan.generalContent !== undefined) updateData.general_content = annualPlan.generalContent;
   if (annualPlan.methodology !== undefined) updateData.methodology = annualPlan.methodology;
   if (annualPlan.evaluation !== undefined) updateData.evaluation = annualPlan.evaluation;
-  if (annualPlan.referenceMaterials !== undefined) updateData.reference_materials = annualPlan.referenceMaterials;
-  if (annualPlan.reference_materials !== undefined) updateData.reference_materials = annualPlan.reference_materials;
+  if (annualPlan.referenceMaterials !== undefined) {
+    updateData.references_materials = Array.isArray(annualPlan.referenceMaterials) ? 
+      annualPlan.referenceMaterials : [];
+  }
   
   const { data, error } = await supabase
     .from(tableName)
