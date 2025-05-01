@@ -45,11 +45,12 @@ const LessonPlanModals: React.FC<LessonPlanModalsProps> = ({
   const handleLessonPlanSubmit = async (data: LessonPlanFormValues) => {
     setIsSubmitting(true);
     try {
-      // Format the data for the service
+      // Format the data for the service - convert Date to string for database
       const formattedData = {
         title: data.title,
         teachingPlanId: data.teachingPlanId,
-        date: data.date, // Will be converted to ISO string in service
+        // Convert Date to ISO string for the service
+        date: data.date?.toISOString(),
         duration: data.duration,
         objectives: Array.isArray(data.objectives) ? data.objectives : 
                   (data.objectives ? data.objectives.split('\n').filter(item => item.trim() !== '') : []),

@@ -40,13 +40,15 @@ export async function getById(id: string): Promise<LessonPlan> {
  * @param lessonPlanForm Form values from the lesson plan form
  * @returns Promise<LessonPlan>
  */
-export async function create(lessonPlanForm: LessonPlanFormValues): Promise<LessonPlan> {
+export async function create(lessonPlanForm: Partial<LessonPlanFormValues>): Promise<LessonPlan> {
   // Convert form values to proper DB structure
   const lessonPlanData = {
     title: lessonPlanForm.title,
     teaching_plan_id: lessonPlanForm.teachingPlanId,
-    date: lessonPlanForm.date instanceof Date ? 
-      lessonPlanForm.date.toISOString() : lessonPlanForm.date,
+    date: typeof lessonPlanForm.date === 'string' ? 
+      lessonPlanForm.date : 
+      lessonPlanForm.date instanceof Date ? 
+        lessonPlanForm.date.toISOString() : new Date().toISOString(),
     duration: lessonPlanForm.duration,
     objectives: Array.isArray(lessonPlanForm.objectives) ? lessonPlanForm.objectives : 
       (typeof lessonPlanForm.objectives === 'string' ? 
@@ -89,8 +91,10 @@ export async function update(id: string, lessonPlanForm: Partial<LessonPlanFormV
   if (lessonPlanForm.teachingPlanId !== undefined) updateData.teaching_plan_id = lessonPlanForm.teachingPlanId;
   
   if (lessonPlanForm.date !== undefined) {
-    updateData.date = lessonPlanForm.date instanceof Date ? 
-      lessonPlanForm.date.toISOString() : lessonPlanForm.date;
+    updateData.date = typeof lessonPlanForm.date === 'string' ? 
+      lessonPlanForm.date : 
+      lessonPlanForm.date instanceof Date ? 
+        lessonPlanForm.date.toISOString() : null;
   }
   
   if (lessonPlanForm.duration !== undefined) updateData.duration = lessonPlanForm.duration;

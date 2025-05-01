@@ -30,14 +30,13 @@ const TeachingPlanModals: React.FC<TeachingPlanModalsProps> = ({
 
   const handleEditTeachingPlan = (plan: TeachingPlan) => {
     // Convert ISO date strings to Date objects for the form
-    // We need to create a new object with proper types for the form without assigning Date objects to the stored state
     const planWithDateObjects = {
       ...plan,
-      // We don't assign these fields directly to selectedTeachingPlan, they're just for the form
+      // We store these as separate properties for the form, without altering the original date strings
       startDateObj: new Date(plan.startDate),
       endDateObj: new Date(plan.endDate)
     };
-    setSelectedTeachingPlan(planWithDateObjects);
+    setSelectedTeachingPlan(planWithDateObjects as Partial<TeachingPlan>);
     setIsTeachingPlanModalOpen(true);
   };
 
@@ -49,14 +48,15 @@ const TeachingPlanModals: React.FC<TeachingPlanModalsProps> = ({
   const handleTeachingPlanSubmit = async (data: TeachingPlanFormValues) => {
     setIsSubmitting(true);
     try {
-      // Prepare the data for database insertion
+      // Prepare the data for database insertion - convert Date to ISO string
       const teachingPlanData = {
         title: data.title,
         description: data.description,
         annualPlanId: data.annualPlanId,
         subjectId: data.subjectId,
-        startDate: data.startDate, // Will be converted to ISO string in service
-        endDate: data.endDate, // Will be converted to ISO string in service
+        // Convert Date objects to ISO strings
+        startDate: data.startDate instanceof Date ? data.startDate.toISOString() : data.startDate,
+        endDate: data.endDate instanceof Date ? data.endDate.toISOString() : data.endDate,
         objectives: data.objectives || [],
         bnccReferences: data.bnccReferences || [],
         contents: data.contents || [],
@@ -139,7 +139,7 @@ const TeachingPlanModals: React.FC<TeachingPlanModalsProps> = ({
       >
         <TeachingPlanForm
           onSubmit={handleTeachingPlanSubmit}
-          initialData={selectedTeachingPlan || {}}
+          initialData={selectedTeachingPlan as TeachingPlan || {}}
           subjects={subjects}
           annualPlans={annualPlans}
           isSubmitting={isSubmitting}
