@@ -1,6 +1,6 @@
 
 import { Student } from '@/types';
-import { createService } from './baseService';
+import { createService, handleError } from './baseService';
 
 // Student Service
 export const studentService = {

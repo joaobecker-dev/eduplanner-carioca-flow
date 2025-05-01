@@ -108,7 +108,7 @@ const DashboardSummary: React.FC<DashboardSummaryProps> = ({
           title="Períodos Acadêmicos" 
           value={academicPeriods.length} 
           icon={Layers}
-          color="indigo"
+          color="purple"
           isLoading={isLoading}
         />
         
@@ -134,7 +134,7 @@ const DashboardSummary: React.FC<DashboardSummaryProps> = ({
           value={lessonPlans.length}
           subtitle={`${upcomingLessons} próximas`}
           icon={PenTool}
-          color="teal"
+          color="blue"
           isLoading={isLoading}
         />
         
@@ -161,7 +161,7 @@ const DashboardSummary: React.FC<DashboardSummaryProps> = ({
           value={upcomingEvents.length}
           subtitle={`${upcomingWeekEvents} nesta semana`}
           icon={CalendarIcon}
-          color="yellow"
+          color="red"
           isLoading={isLoading}
         />
       </div>

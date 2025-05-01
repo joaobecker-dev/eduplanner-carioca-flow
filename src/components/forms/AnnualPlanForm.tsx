@@ -61,8 +61,8 @@ const AnnualPlanForm: React.FC<AnnualPlanFormProps> = ({
     resolver: zodResolver(annualPlanSchema),
     defaultValues: initialData ? {
       ...initialData,
-      // Convert DB value (referencesMaterials) to form value (referenceMaterials)
-      referenceMaterials: initialData.referenceMaterials || []
+      // Convert DB value (references_materials) to form value (referenceMaterials)
+      referenceMaterials: initialData.references_materials || []
     } : {
       title: "",
       description: "",
@@ -122,10 +122,10 @@ const AnnualPlanForm: React.FC<AnnualPlanFormProps> = ({
   };
 
   const handleFormSubmit = (data: AnnualPlanFormValues) => {
-    // Convert form value (referenceMaterials) to DB value (referencesMaterials)
+    // Convert form value (referenceMaterials) to DB value (references_materials)
     const formattedData = {
       ...data,
-      referencesMaterials: data.referenceMaterials
+      references_materials: data.referenceMaterials
     };
     
     // @ts-ignore - We need to delete the referenceMaterials field that's not in the API

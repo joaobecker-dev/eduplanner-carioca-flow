@@ -6,17 +6,21 @@ import { LucideIcon } from 'lucide-react';
 interface StatsCardProps {
   title: string;
   value: string | number;
+  subtitle?: string;
   description?: string;
   icon?: LucideIcon;
   color?: 'blue' | 'green' | 'orange' | 'purple' | 'red';
+  isLoading?: boolean;
 }
 
 const StatsCard: React.FC<StatsCardProps> = ({
   title,
   value,
+  subtitle,
   description,
   icon: Icon,
-  color = 'blue'
+  color = 'blue',
+  isLoading = false
 }) => {
   const getColorClasses = () => {
     switch (color) {
@@ -40,8 +44,15 @@ const StatsCard: React.FC<StatsCardProps> = ({
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm font-medium text-edu-gray-500">{title}</p>
-            <p className="text-2xl font-bold mt-2">{value}</p>
-            {description && (
+            {isLoading ? (
+              <div className="h-8 w-16 bg-gray-200 animate-pulse rounded mt-2"></div>
+            ) : (
+              <p className="text-2xl font-bold mt-2">{value}</p>
+            )}
+            {subtitle && (
+              <p className="text-xs text-edu-gray-500 mt-1">{subtitle}</p>
+            )}
+            {description && !subtitle && (
               <p className="text-xs text-edu-gray-500 mt-1">{description}</p>
             )}
           </div>
