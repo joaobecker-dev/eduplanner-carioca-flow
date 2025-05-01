@@ -59,7 +59,7 @@ interface TeachingPlanFormProps {
   onSubmit: (data: TeachingPlanFormValues) => void;
   subjects: Subject[];
   annualPlans: AnnualPlan[];
-  initialData?: TeachingPlan;
+  initialData?: Partial<TeachingPlan> | Record<string, never>;
   isSubmitting?: boolean;
 }
 
@@ -67,7 +67,7 @@ const TeachingPlanForm: React.FC<TeachingPlanFormProps> = ({
   onSubmit,
   subjects,
   annualPlans,
-  initialData,
+  initialData = {},
   isSubmitting = false
 }) => {
   // Filter annual plans based on selected subject
@@ -75,19 +75,19 @@ const TeachingPlanForm: React.FC<TeachingPlanFormProps> = ({
   
   const form = useForm<TeachingPlanFormValues>({
     resolver: zodResolver(teachingPlanSchema),
-    defaultValues: initialData ? {
-      ...initialData,
-      startDate: new Date(initialData.startDate),
-      endDate: new Date(initialData.endDate),
-    } : {
-      title: "",
-      description: "",
-      objectives: [],
-      contents: [],
-      resources: [],
-      methodology: "",
-      evaluation: "",
-      bnccReferences: [],
+    defaultValues: {
+      title: initialData.title || "",
+      description: initialData.description || "",
+      annualPlanId: initialData.annualPlanId || "",
+      subjectId: initialData.subjectId || "",
+      startDate: initialData.startDate ? new Date(initialData.startDate) : new Date(),
+      endDate: initialData.endDate ? new Date(initialData.endDate) : new Date(),
+      objectives: Array.isArray(initialData.objectives) ? initialData.objectives : [],
+      contents: Array.isArray(initialData.contents) ? initialData.contents : [],
+      methodology: initialData.methodology || "",
+      resources: Array.isArray(initialData.resources) ? initialData.resources : [],
+      evaluation: initialData.evaluation || "",
+      bnccReferences: Array.isArray(initialData.bnccReferences) ? initialData.bnccReferences : [],
     }
   });
 
@@ -555,7 +555,7 @@ const TeachingPlanForm: React.FC<TeachingPlanFormProps> = ({
       
         <div className="flex justify-end space-x-2">
           <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Salvando..." : initialData ? "Atualizar" : "Criar"}
+            {isSubmitting ? "Salvando..." : initialData.id ? "Atualizar" : "Criar"}
           </Button>
         </div>
       </form>

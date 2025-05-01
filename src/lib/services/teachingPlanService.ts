@@ -59,9 +59,9 @@ export async function create(teachingPlanForm: Partial<TeachingPlanFormValues>):
     objectives: Array.isArray(teachingPlanForm.objectives) ? teachingPlanForm.objectives : [],
     bncc_references: Array.isArray(teachingPlanForm.bnccReferences) ? teachingPlanForm.bnccReferences : [],
     contents: Array.isArray(teachingPlanForm.contents) ? teachingPlanForm.contents : [],
-    methodology: teachingPlanForm.methodology,
+    methodology: teachingPlanForm.methodology || '',
     resources: Array.isArray(teachingPlanForm.resources) ? teachingPlanForm.resources : [],
-    evaluation: teachingPlanForm.evaluation
+    evaluation: teachingPlanForm.evaluation || ''
   };
   
   const { data, error } = await supabase
@@ -103,19 +103,19 @@ export async function update(id: string, teachingPlanForm: Partial<TeachingPlanF
         teachingPlanForm.endDate : null);
   }
   
-  if (teachingPlanForm.objectives !== undefined) updateData.objectives = Array.isArray(teachingPlanForm.objectives) ? 
-    teachingPlanForm.objectives : [];
+  if (teachingPlanForm.objectives !== undefined) 
+    updateData.objectives = Array.isArray(teachingPlanForm.objectives) ? teachingPlanForm.objectives : [];
     
-  if (teachingPlanForm.bnccReferences !== undefined) updateData.bncc_references = Array.isArray(teachingPlanForm.bnccReferences) ? 
-    teachingPlanForm.bnccReferences : [];
+  if (teachingPlanForm.bnccReferences !== undefined) 
+    updateData.bncc_references = Array.isArray(teachingPlanForm.bnccReferences) ? teachingPlanForm.bnccReferences : [];
     
-  if (teachingPlanForm.contents !== undefined) updateData.contents = Array.isArray(teachingPlanForm.contents) ? 
-    teachingPlanForm.contents : [];
+  if (teachingPlanForm.contents !== undefined) 
+    updateData.contents = Array.isArray(teachingPlanForm.contents) ? teachingPlanForm.contents : [];
     
   if (teachingPlanForm.methodology !== undefined) updateData.methodology = teachingPlanForm.methodology;
   
-  if (teachingPlanForm.resources !== undefined) updateData.resources = Array.isArray(teachingPlanForm.resources) ? 
-    teachingPlanForm.resources : [];
+  if (teachingPlanForm.resources !== undefined) 
+    updateData.resources = Array.isArray(teachingPlanForm.resources) ? teachingPlanForm.resources : [];
     
   if (teachingPlanForm.evaluation !== undefined) updateData.evaluation = teachingPlanForm.evaluation;
   

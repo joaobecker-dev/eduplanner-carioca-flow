@@ -139,7 +139,7 @@ const TeachingPlanModals: React.FC<TeachingPlanModalsProps> = ({
       >
         <TeachingPlanForm
           onSubmit={handleTeachingPlanSubmit}
-          initialData={selectedTeachingPlan as TeachingPlan || {}}
+          initialData={selectedTeachingPlan || {}}
           subjects={subjects}
           annualPlans={annualPlans}
           isSubmitting={isSubmitting}
