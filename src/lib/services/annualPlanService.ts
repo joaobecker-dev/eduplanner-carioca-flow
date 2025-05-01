@@ -1,26 +1,96 @@
 
-import { AnnualPlan, ID } from '@/types';
-import { createService, handleError } from './baseService';
 import { supabase } from "@/integrations/supabase/client";
-import { mapToCamelCase } from '@/types';
+import { AnnualPlan } from "@/types";
+import { mapToCamelCase, mapToSnakeCase } from "@/integrations/supabase/supabaseAdapter";
+import { AnnualPlanFormValues } from "@/components/forms/AnnualPlanForm";
 
-// Annual Plan Service
-export const annualPlanService = {
-  ...createService<AnnualPlan>("annual_plans"),
+const tableName = 'annual_plans';
+
+/**
+ * Get all annual plans
+ * @returns Promise<AnnualPlan[]>
+ */
+export async function getAll(): Promise<AnnualPlan[]> {
+  const { data, error } = await supabase
+    .from(tableName)
+    .select('*');
   
-  // Get all annual plans for a specific subject
-  getBySubject: async (subjectId: ID): Promise<AnnualPlan[]> => {
-    try {
-      const { data, error } = await supabase
-        .from("annual_plans")
-        .select('*')
-        .eq('subject_id', subjectId);
-      
-      if (error) throw error;
-      return data ? data.map(item => mapToCamelCase<AnnualPlan>(item)) : [];
-    } catch (error) {
-      handleError(error, 'buscar planos anuais por disciplina');
-      return [];
-    }
-  }
+  if (error) throw error;
+  return data.map(item => mapToCamelCase<AnnualPlan>(item));
+}
+
+/**
+ * Get an annual plan by id
+ * @param id 
+ * @returns Promise<AnnualPlan>
+ */
+export async function getById(id: string): Promise<AnnualPlan> {
+  const { data, error } = await supabase
+    .from(tableName)
+    .select('*')
+    .eq('id', id)
+    .single();
+  
+  if (error) throw error;
+  return mapToCamelCase<AnnualPlan>(data);
+}
+
+/**
+ * Create a new annual plan
+ * @param annualPlan 
+ * @returns Promise<AnnualPlan>
+ */
+export async function create(annualPlan: AnnualPlanFormValues): Promise<AnnualPlan> {
+  const annualPlanData = mapToSnakeCase<Record<string, any>>(annualPlan);
+  
+  const { data, error } = await supabase
+    .from(tableName)
+    .insert(annualPlanData)
+    .select()
+    .single();
+  
+  if (error) throw error;
+  return mapToCamelCase<AnnualPlan>(data);
+}
+
+/**
+ * Update an annual plan
+ * @param id 
+ * @param annualPlan 
+ * @returns Promise<AnnualPlan>
+ */
+export async function update(id: string, annualPlan: Partial<AnnualPlanFormValues>): Promise<AnnualPlan> {
+  const annualPlanData = mapToSnakeCase<Record<string, any>>(annualPlan);
+  
+  const { data, error } = await supabase
+    .from(tableName)
+    .update(annualPlanData)
+    .eq('id', id)
+    .select()
+    .single();
+  
+  if (error) throw error;
+  return mapToCamelCase<AnnualPlan>(data);
+}
+
+/**
+ * Delete an annual plan
+ * @param id 
+ * @returns Promise<void>
+ */
+export async function deleteAnnualPlan(id: string): Promise<void> {
+  const { error } = await supabase
+    .from(tableName)
+    .delete()
+    .eq('id', id);
+  
+  if (error) throw error;
+}
+
+export const annualPlanService = {
+  getAll,
+  getById,
+  create,
+  update,
+  delete: deleteAnnualPlan,
 };

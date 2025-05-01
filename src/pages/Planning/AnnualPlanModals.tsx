@@ -4,7 +4,7 @@ import { toast } from '@/hooks/use-toast';
 import { AnnualPlan } from '@/types';
 import CrudModal from '@/components/ui-components/CrudModal';
 import DeleteConfirmationDialog from '@/components/ui-components/DeleteConfirmationDialog';
-import AnnualPlanForm from '@/components/forms/AnnualPlanForm';
+import AnnualPlanForm, { AnnualPlanFormValues } from '@/components/forms/AnnualPlanForm';
 import { annualPlanService } from '@/lib/services';
 
 interface AnnualPlanModalsProps {
@@ -38,7 +38,7 @@ const AnnualPlanModals: React.FC<AnnualPlanModalsProps> = ({
     setIsAnnualPlanDeleteOpen(true);
   };
 
-  const handleAnnualPlanSubmit = async (data: any) => {
+  const handleAnnualPlanSubmit = async (data: AnnualPlanFormValues) => {
     setIsSubmitting(true);
     try {
       if (selectedAnnualPlan?.id) {

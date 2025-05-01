@@ -35,17 +35,19 @@ const formSchema = z.object({
   date: z.date({ required_error: 'Data da aula é obrigatória' }),
   duration: z.number({ required_error: 'Duração é obrigatória' })
     .min(1, { message: 'Duração deve ser pelo menos 1 minuto' }),
-  objectives: z.string().optional(),
-  contents: z.string().optional(),
-  activities: z.string().optional(),
-  resources: z.string().optional(),
+  objectives: z.array(z.string()).optional().default([]),
+  contents: z.array(z.string()).optional().default([]),
+  activities: z.array(z.string()).optional().default([]),
+  resources: z.array(z.string()).optional().default([]),
   homework: z.string().optional(),
   evaluation: z.string().optional(),
   notes: z.string().optional(),
 });
 
+export type LessonPlanFormValues = z.infer<typeof formSchema>;
+
 interface LessonPlanFormProps {
-  onSubmit: (data: any) => void;
+  onSubmit: (data: LessonPlanFormValues) => void;
   initialData?: Partial<LessonPlan>;
   teachingPlans: TeachingPlan[];
   isSubmitting?: boolean;

@@ -4,8 +4,8 @@ import { toast } from '@/hooks/use-toast';
 import { LessonPlan } from '@/types';
 import CrudModal from '@/components/ui-components/CrudModal';
 import DeleteConfirmationDialog from '@/components/ui-components/DeleteConfirmationDialog';
-import LessonPlanForm from '@/components/forms/LessonPlanForm';
-import { lessonPlanService } from '@/lib/services/lessonPlanService';
+import LessonPlanForm, { LessonPlanFormValues } from '@/components/forms/LessonPlanForm';
+import { lessonPlanService } from '@/lib/services';
 
 interface LessonPlanModalsProps {
   teachingPlans: any[];
@@ -36,7 +36,7 @@ const LessonPlanModals: React.FC<LessonPlanModalsProps> = ({
     setIsLessonPlanDeleteOpen(true);
   };
 
-  const handleLessonPlanSubmit = async (data: any) => {
+  const handleLessonPlanSubmit = async (data: LessonPlanFormValues) => {
     setIsSubmitting(true);
     try {
       if (selectedLessonPlan?.id) {
@@ -107,7 +107,6 @@ const LessonPlanModals: React.FC<LessonPlanModalsProps> = ({
       >
         <LessonPlanForm
           onSubmit={handleLessonPlanSubmit}
-          // @ts-ignore - We need this because the form component expects LessonPlan but can handle Partial<LessonPlan>
           initialData={selectedLessonPlan || {}}
           teachingPlans={teachingPlans}
           isSubmitting={isSubmitting}

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
@@ -46,15 +45,15 @@ const teachingPlanSchema = z.object({
   }).refine(data => data, {
     message: "Data de término é obrigatória",
   }),
-  objectives: z.array(z.string()).min(1, "Adicione pelo menos um objetivo"),
-  contents: z.array(z.string()).min(1, "Adicione pelo menos um conteúdo"),
+  objectives: z.array(z.string()).optional().default([]),
+  contents: z.array(z.string()).optional().default([]),
   methodology: z.string().min(10, "Adicione a metodologia com pelo menos 10 caracteres"),
-  resources: z.array(z.string()),
+  resources: z.array(z.string()).optional().default([]),
   evaluation: z.string().min(10, "Adicione os métodos de avaliação"),
-  bnccReferences: z.array(z.string()),
+  bnccReferences: z.array(z.string()).optional().default([]),
 });
 
-type TeachingPlanFormValues = z.infer<typeof teachingPlanSchema>;
+export type TeachingPlanFormValues = z.infer<typeof teachingPlanSchema>;
 
 interface TeachingPlanFormProps {
   onSubmit: (data: TeachingPlanFormValues) => void;

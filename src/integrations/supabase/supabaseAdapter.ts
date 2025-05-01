@@ -1,0 +1,72 @@
+
+/**
+ * Supabase adapter utilities for converting between camelCase and snake_case
+ * These functions help maintain compatibility between frontend (camelCase) and 
+ * Supabase database (snake_case) naming conventions.
+ */
+
+/**
+ * Converts object keys from camelCase to snake_case
+ * @param item Object with camelCase keys
+ * @returns Object with snake_case keys
+ */
+export function mapToSnakeCase<T extends Record<string, any>>(item: Record<string, any>): T {
+  if (!item || typeof item !== 'object' || Object.keys(item).length === 0) {
+    return {} as T;
+  }
+  
+  return Object.keys(item).reduce((acc, key) => {
+    const snakeKey = key.replace(/([A-Z])/g, '_$1').toLowerCase();
+    
+    // Handle special case for referenceMaterials -> reference_materials
+    const finalKey = key === 'referenceMaterials' ? 'reference_materials' : snakeKey;
+    
+    // Handle nested objects and arrays
+    let value = item[key];
+    if (value !== null && typeof value === 'object') {
+      if (Array.isArray(value)) {
+        value = value.map(item => 
+          typeof item === 'object' && item !== null ? mapToSnakeCase(item) : item
+        );
+      } else {
+        value = mapToSnakeCase(value);
+      }
+    }
+    
+    acc[finalKey] = value;
+    return acc;
+  }, {} as Record<string, any>) as T;
+}
+
+/**
+ * Converts object keys from snake_case to camelCase
+ * @param item Object with snake_case keys
+ * @returns Object with camelCase keys
+ */
+export function mapToCamelCase<T extends Record<string, any>>(item: Record<string, any>): T {
+  if (!item || typeof item !== 'object' || Object.keys(item).length === 0) {
+    return {} as T;
+  }
+  
+  return Object.keys(item).reduce((acc, key) => {
+    const camelKey = key.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
+    
+    // Handle special case for reference_materials -> referenceMaterials
+    const finalKey = key === 'reference_materials' ? 'referenceMaterials' : camelKey;
+    
+    // Handle nested objects and arrays
+    let value = item[key];
+    if (value !== null && typeof value === 'object') {
+      if (Array.isArray(value)) {
+        value = value.map(item => 
+          typeof item === 'object' && item !== null ? mapToCamelCase(item) : item
+        );
+      } else {
+        value = mapToCamelCase(value);
+      }
+    }
+    
+    acc[finalKey] = value;
+    return acc;
+  }, {} as Record<string, any>) as T;
+}

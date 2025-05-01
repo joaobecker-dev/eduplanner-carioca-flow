@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
@@ -29,14 +30,14 @@ const annualPlanSchema = z.object({
   description: z.string().optional(),
   academicPeriodId: z.string().nonempty("Selecione um período acadêmico"),
   subjectId: z.string().nonempty("Selecione uma disciplina"),
-  objectives: z.array(z.string()).min(1, "Adicione pelo menos um objetivo"),
+  objectives: z.array(z.string()).optional().default([]),
   generalContent: z.string().min(10, "O conteúdo geral deve ter pelo menos 10 caracteres"),
   methodology: z.string().min(10, "A metodologia deve ter pelo menos 10 caracteres"),
   evaluation: z.string().min(10, "O método de avaliação deve ter pelo menos 10 caracteres"),
-  referenceMaterials: z.array(z.string()),
+  referenceMaterials: z.array(z.string()).optional().default([]),
 });
 
-type AnnualPlanFormValues = z.infer<typeof annualPlanSchema>;
+export type AnnualPlanFormValues = z.infer<typeof annualPlanSchema>;
 
 interface AnnualPlanFormProps {
   onSubmit: (data: AnnualPlanFormValues) => void;
