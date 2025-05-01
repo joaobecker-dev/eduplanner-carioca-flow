@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { toast } from '@/hooks/use-toast';
 import { services } from '@/lib/services';
@@ -271,7 +270,7 @@ const PlanningModals: React.FC<PlanningModalsProps> = ({
       >
         <AnnualPlanForm
           onSubmit={handleAnnualPlanSubmit}
-          initialData={selectedAnnualPlan || undefined}
+          initialData={selectedAnnualPlan || {}}
           subjects={subjects}
           academicPeriods={academicPeriods}
           isSubmitting={isSubmitting}
@@ -301,7 +300,7 @@ const PlanningModals: React.FC<PlanningModalsProps> = ({
       >
         <TeachingPlanForm
           onSubmit={handleTeachingPlanSubmit}
-          initialData={selectedTeachingPlan || undefined}
+          initialData={selectedTeachingPlan || {}}
           subjects={subjects}
           annualPlans={annualPlans}
           isSubmitting={isSubmitting}

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
@@ -43,7 +42,7 @@ interface AnnualPlanFormProps {
   onSubmit: (data: AnnualPlanFormValues) => void;
   subjects: Subject[];
   academicPeriods: AcademicPeriod[];
-  initialData?: AnnualPlan;
+  initialData?: Partial<AnnualPlan>;
   isSubmitting?: boolean;
 }
 
@@ -61,8 +60,8 @@ const AnnualPlanForm: React.FC<AnnualPlanFormProps> = ({
     resolver: zodResolver(annualPlanSchema),
     defaultValues: initialData ? {
       ...initialData,
-      // Convert DB value (references_materials) to form value (referenceMaterials)
-      referenceMaterials: initialData.references_materials || []
+      // Convert DB value (reference_materials) to form value (referenceMaterials)
+      referenceMaterials: initialData.reference_materials || []
     } : {
       title: "",
       description: "",
@@ -122,10 +121,10 @@ const AnnualPlanForm: React.FC<AnnualPlanFormProps> = ({
   };
 
   const handleFormSubmit = (data: AnnualPlanFormValues) => {
-    // Convert form value (referenceMaterials) to DB value (references_materials)
+    // Convert form value (referenceMaterials) to DB value (reference_materials)
     const formattedData = {
       ...data,
-      references_materials: data.referenceMaterials
+      reference_materials: data.referenceMaterials
     };
     
     // @ts-ignore - We need to delete the referenceMaterials field that's not in the API

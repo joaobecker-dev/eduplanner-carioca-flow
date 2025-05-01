@@ -45,7 +45,7 @@ export interface AnnualPlan {
   general_content?: string; // For Supabase DB compatibility
   methodology: string;
   evaluation: string;
-  reference_materials: string[]; // Updated from 'references' to 'reference_materials'
+  reference_materials: string[]; // Changed from 'references_materials' to 'reference_materials'
   createdAt?: DateISO;
   updatedAt?: DateISO;
   created_at?: DateISO; // For Supabase DB compatibility
