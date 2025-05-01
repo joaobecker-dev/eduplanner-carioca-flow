@@ -44,11 +44,13 @@ export async function create(teachingPlanForm: TeachingPlanFormValues): Promise<
   // Convert form data to database structure
   const teachingPlanData = {
     title: teachingPlanForm.title,
-    description: teachingPlanForm.description,
+    description: teachingPlanForm.description || null,
     annual_plan_id: teachingPlanForm.annualPlanId,
     subject_id: teachingPlanForm.subjectId,
-    start_date: teachingPlanForm.startDate.toISOString(),
-    end_date: teachingPlanForm.endDate.toISOString(),
+    start_date: teachingPlanForm.startDate instanceof Date ? 
+      teachingPlanForm.startDate.toISOString() : teachingPlanForm.startDate,
+    end_date: teachingPlanForm.endDate instanceof Date ? 
+      teachingPlanForm.endDate.toISOString() : teachingPlanForm.endDate,
     objectives: Array.isArray(teachingPlanForm.objectives) ? teachingPlanForm.objectives : [],
     bncc_references: Array.isArray(teachingPlanForm.bnccReferences) ? teachingPlanForm.bnccReferences : [],
     contents: Array.isArray(teachingPlanForm.contents) ? teachingPlanForm.contents : [],
@@ -81,8 +83,16 @@ export async function update(id: string, teachingPlanForm: Partial<TeachingPlanF
   if (teachingPlanForm.description !== undefined) updateData.description = teachingPlanForm.description;
   if (teachingPlanForm.annualPlanId !== undefined) updateData.annual_plan_id = teachingPlanForm.annualPlanId;
   if (teachingPlanForm.subjectId !== undefined) updateData.subject_id = teachingPlanForm.subjectId;
-  if (teachingPlanForm.startDate !== undefined) updateData.start_date = teachingPlanForm.startDate.toISOString();
-  if (teachingPlanForm.endDate !== undefined) updateData.end_date = teachingPlanForm.endDate.toISOString();
+  
+  if (teachingPlanForm.startDate !== undefined) {
+    updateData.start_date = teachingPlanForm.startDate instanceof Date ? 
+      teachingPlanForm.startDate.toISOString() : teachingPlanForm.startDate;
+  }
+  
+  if (teachingPlanForm.endDate !== undefined) {
+    updateData.end_date = teachingPlanForm.endDate instanceof Date ? 
+      teachingPlanForm.endDate.toISOString() : teachingPlanForm.endDate;
+  }
   
   if (teachingPlanForm.objectives !== undefined) updateData.objectives = Array.isArray(teachingPlanForm.objectives) ? 
     teachingPlanForm.objectives : [];

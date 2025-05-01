@@ -30,10 +30,12 @@ const TeachingPlanModals: React.FC<TeachingPlanModalsProps> = ({
 
   const handleEditTeachingPlan = (plan: TeachingPlan) => {
     // Convert ISO date strings to Date objects for the form
+    // We need to create a new object with proper types for the form without assigning Date objects to the stored state
     const planWithDateObjects = {
       ...plan,
-      startDate: new Date(plan.startDate),
-      endDate: new Date(plan.endDate)
+      // We don't assign these fields directly to selectedTeachingPlan, they're just for the form
+      startDateObj: new Date(plan.startDate),
+      endDateObj: new Date(plan.endDate)
     };
     setSelectedTeachingPlan(planWithDateObjects);
     setIsTeachingPlanModalOpen(true);
@@ -137,7 +139,7 @@ const TeachingPlanModals: React.FC<TeachingPlanModalsProps> = ({
       >
         <TeachingPlanForm
           onSubmit={handleTeachingPlanSubmit}
-          initialData={selectedTeachingPlan as Partial<TeachingPlan> || {}}
+          initialData={selectedTeachingPlan || {}}
           subjects={subjects}
           annualPlans={annualPlans}
           isSubmitting={isSubmitting}

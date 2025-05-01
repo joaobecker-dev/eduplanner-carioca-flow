@@ -45,7 +45,8 @@ export async function create(lessonPlanForm: LessonPlanFormValues): Promise<Less
   const lessonPlanData = {
     title: lessonPlanForm.title,
     teaching_plan_id: lessonPlanForm.teachingPlanId,
-    date: lessonPlanForm.date instanceof Date ? lessonPlanForm.date.toISOString() : lessonPlanForm.date,
+    date: lessonPlanForm.date instanceof Date ? 
+      lessonPlanForm.date.toISOString() : lessonPlanForm.date,
     duration: lessonPlanForm.duration,
     objectives: Array.isArray(lessonPlanForm.objectives) ? lessonPlanForm.objectives : 
       (typeof lessonPlanForm.objectives === 'string' ? 
@@ -86,10 +87,12 @@ export async function update(id: string, lessonPlanForm: Partial<LessonPlanFormV
   
   if (lessonPlanForm.title !== undefined) updateData.title = lessonPlanForm.title;
   if (lessonPlanForm.teachingPlanId !== undefined) updateData.teaching_plan_id = lessonPlanForm.teachingPlanId;
+  
   if (lessonPlanForm.date !== undefined) {
     updateData.date = lessonPlanForm.date instanceof Date ? 
       lessonPlanForm.date.toISOString() : lessonPlanForm.date;
   }
+  
   if (lessonPlanForm.duration !== undefined) updateData.duration = lessonPlanForm.duration;
   
   // Handle array fields that might be strings from form input

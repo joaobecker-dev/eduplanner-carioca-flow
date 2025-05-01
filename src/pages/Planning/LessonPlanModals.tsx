@@ -27,7 +27,13 @@ const LessonPlanModals: React.FC<LessonPlanModalsProps> = ({
   };
 
   const handleEditLessonPlan = (plan: LessonPlan) => {
-    setSelectedLessonPlan(plan);
+    // Create a new object for the form with a Date object for the date field
+    const planWithDateObject = {
+      ...plan,
+      // Store as dateObj for the form, but don't update the actual date property
+      dateObj: new Date(plan.date)
+    };
+    setSelectedLessonPlan(planWithDateObject);
     setIsLessonPlanModalOpen(true);
   };
 
