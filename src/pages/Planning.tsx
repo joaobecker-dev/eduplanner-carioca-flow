@@ -33,7 +33,12 @@ import {
 
 import SectionHeader from '@/components/ui-components/SectionHeader';
 import { AnnualPlan, TeachingPlan, LessonPlan, Subject } from '@/types';
-import { services } from '@/lib/services';
+import { 
+  annualPlanService,
+  teachingPlanService,
+  lessonPlanService,
+  subjectService
+} from '@/lib/services';
 
 const Planning: React.FC = () => {
   const navigate = useNavigate();
@@ -57,10 +62,10 @@ const Planning: React.FC = () => {
       setIsLoading(true);
       try {
         const [subjectsData, annualPlansData, teachingPlansData, lessonPlansData] = await Promise.all([
-          services.subject.getAll(),
-          services.annualPlan.getAll(),
-          services.teachingPlan.getAll(),
-          services.lessonPlan.getAll()
+          subjectService.getAll(),
+          annualPlanService.getAll(),
+          teachingPlanService.getAll(),
+          lessonPlanService.getAll()
         ]);
         
         setSubjects(subjectsData);

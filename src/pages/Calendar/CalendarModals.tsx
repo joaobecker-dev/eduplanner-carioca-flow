@@ -1,7 +1,6 @@
-
 import React, { useState } from 'react';
 import { toast } from '@/hooks/use-toast';
-import { services } from '@/lib/services';
+import { calendarEventService } from '@/lib/services';
 import { CalendarEvent, Subject, Assessment, LessonPlan } from '@/types';
 import CrudModal from '@/components/ui-components/CrudModal';
 import DeleteConfirmationDialog from '@/components/ui-components/DeleteConfirmationDialog';
@@ -47,14 +46,14 @@ const CalendarModals: React.FC<CalendarModalsProps> = ({
     try {
       if (selectedEvent?.id) {
         // Update existing event
-        await services.calendarEvent.update(selectedEvent.id, data);
+        await calendarEventService.update(selectedEvent.id, data);
         toast({
           title: "Evento atualizado",
           description: "O evento foi atualizado com sucesso.",
         });
       } else {
         // Create new event
-        await services.calendarEvent.create(data);
+        await calendarEventService.create(data);
         toast({
           title: "Evento criado",
           description: "O evento foi criado com sucesso.",
@@ -78,7 +77,7 @@ const CalendarModals: React.FC<CalendarModalsProps> = ({
     setIsSubmitting(true);
     try {
       if (selectedEvent?.id) {
-        await services.calendarEvent.delete(selectedEvent.id);
+        await calendarEventService.delete(selectedEvent.id);
         toast({
           title: "Evento excluído",
           description: "O evento foi excluído com sucesso.",
