@@ -10,6 +10,8 @@ import { ArrowLeft } from 'lucide-react';
 import AssessmentForm from '@/components/forms/AssessmentForm';
 import { toast } from '@/hooks/use-toast';
 import { AssessmentFormValues } from '@/components/forms/AssessmentForm';
+import { normalizeToISO } from '@/integrations/supabase/supabaseAdapter';
+import { Assessment } from '@/types';
 
 const AssessmentEdit: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -47,7 +49,16 @@ const AssessmentEdit: React.FC = () => {
 
   // Update mutation
   const mutation = useMutation({
-    mutationFn: (values: AssessmentFormValues) => assessmentService.update(id as string, values),
+    mutationFn: (values: AssessmentFormValues) => {
+      // Normalize date fields before sending to service
+      const normalizedValues: Partial<Assessment> = {
+        ...values,
+        date: normalizeToISO(values.date),
+        dueDate: normalizeToISO(values.dueDate),
+      };
+      
+      return assessmentService.update(id as string, normalizedValues);
+    },
     onSuccess: () => {
       toast({
         title: "Avaliação atualizada",
@@ -119,7 +130,7 @@ const AssessmentEdit: React.FC = () => {
       <AssessmentForm
         initialData={formInitialData}
         onSubmit={mutation.mutate}
-        isSubmitting={mutation.isLoading}
+        isSubmitting={mutation.isPending}
         subjects={subjects}
         teachingPlans={teachingPlans}
       />

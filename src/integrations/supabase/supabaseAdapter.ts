@@ -115,3 +115,23 @@ export function formatDisplayDate(date?: string | Date | null, format?: string):
     return '';
   }
 }
+
+/**
+ * Normalize date fields in an object by converting Date objects to ISO strings
+ * @param obj The object containing date fields
+ * @param dateFields Array of field names that should be converted to ISO strings
+ * @returns A new object with normalized date fields
+ */
+export function normalizeDates<T extends Record<string, any>>(obj: T, dateFields: string[]): T {
+  if (!obj) return obj;
+  
+  const result = { ...obj };
+  
+  dateFields.forEach(field => {
+    if (field in result && result[field] instanceof Date) {
+      result[field] = toISO(result[field]);
+    }
+  });
+  
+  return result;
+}

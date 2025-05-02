@@ -18,6 +18,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { normalizeToISO } from '@/integrations/supabase/supabaseAdapter';
+import { useCalendarTheme } from './components/CalendarThemeProvider';
 
 interface NewEventModalProps {
   isOpen: boolean;
@@ -31,6 +32,8 @@ const NewEventModal: React.FC<NewEventModalProps> = ({ isOpen, onClose, onSave, 
     queryKey: ['subjects'],
     queryFn: subjectService.getAll,
   });
+  
+  const { eventColors } = useCalendarTheme();
 
   const form = useForm<EventFormValues>({
     resolver: zodResolver(eventSchema),
@@ -41,7 +44,7 @@ const NewEventModal: React.FC<NewEventModalProps> = ({ isOpen, onClose, onSave, 
       startDate: new Date(),
       endDate: new Date(),
       allDay: true,
-      color: '#3b82f6', // Default blue
+      color: eventColors.class, // Default blue
       subjectId: null,
     }
   });
@@ -52,11 +55,11 @@ const NewEventModal: React.FC<NewEventModalProps> = ({ isOpen, onClose, onSave, 
       form.reset({
         title: eventToEdit.title,
         description: eventToEdit.description || '',
-        type: eventToEdit.type,
+        type: eventToEdit.type as any,
         startDate: new Date(eventToEdit.startDate),
         endDate: eventToEdit.endDate ? new Date(eventToEdit.endDate) : null,
         allDay: eventToEdit.allDay,
-        color: eventToEdit.color || '#3b82f6',
+        color: eventToEdit.color || eventColors.class,
         subjectId: eventToEdit.subjectId || null,
       });
     } else {
@@ -67,11 +70,11 @@ const NewEventModal: React.FC<NewEventModalProps> = ({ isOpen, onClose, onSave, 
         startDate: new Date(),
         endDate: new Date(),
         allDay: true,
-        color: '#3b82f6',
+        color: eventColors.class,
         subjectId: null,
       });
     }
-  }, [eventToEdit, form]);
+  }, [eventToEdit, form, eventColors]);
 
   const handleSubmit = async (values: EventFormValues) => {
     try {
@@ -93,6 +96,13 @@ const NewEventModal: React.FC<NewEventModalProps> = ({ isOpen, onClose, onSave, 
       console.error('Error saving event:', error);
     }
   };
+
+  // Update color when type changes
+  const watchType = form.watch('type');
+  useEffect(() => {
+    const newColor = eventColors[watchType as keyof typeof eventColors] || eventColors.other;
+    form.setValue('color', newColor);
+  }, [watchType, form, eventColors]);
 
   return (
     <CrudModal
@@ -296,11 +306,11 @@ const NewEventModal: React.FC<NewEventModalProps> = ({ isOpen, onClose, onSave, 
                     <input 
                       type="color" 
                       className="w-10 h-10 rounded cursor-pointer" 
-                      value={field.value || '#3b82f6'} 
+                      value={field.value || eventColors.class} 
                       onChange={field.onChange} 
                     />
                     <Input 
-                      value={field.value || '#3b82f6'} 
+                      value={field.value || eventColors.class} 
                       onChange={field.onChange} 
                       className="flex-grow"
                     />

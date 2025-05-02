@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery, useMutation } from '@tanstack/react-query';
@@ -110,9 +109,8 @@ const TeachingPlanEdit: React.FC = () => {
       <TeachingPlanForm
         initialData={teachingPlan}
         onSubmit={mutation.mutate}
-        isSubmitting={mutation.isLoading}
+        isSubmitting={mutation.isPending}
         subjects={subjects}
-        annualPlans={annualPlans}
       />
     </div>
   );

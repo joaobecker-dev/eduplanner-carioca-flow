@@ -1,13 +1,14 @@
 
 import React from 'react';
-import CalendarView from './CalendarView';
+import { CalendarThemeProvider } from './components/CalendarThemeProvider';
+import CalendarPage from './Calendar';
 
-const CalendarPage: React.FC = () => {
+const CalendarPageWrapper: React.FC = () => {
   return (
-    <div>
-      <CalendarView />
-    </div>
+    <CalendarThemeProvider>
+      <CalendarPage />
+    </CalendarThemeProvider>
   );
 };
 
-export default CalendarPage;
+export default CalendarPageWrapper;

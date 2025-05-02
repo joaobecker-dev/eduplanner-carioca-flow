@@ -1,24 +1,23 @@
-
 import React, { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { annualPlanService } from '@/lib/services/annualPlanService';
+import { assessmentService } from '@/lib/services/assessmentService';
 import { subjectService } from '@/lib/services/subjectService';
-import { academicPeriodService } from '@/lib/services/academicPeriodService';
+import { teachingPlanService } from '@/lib/services/teachingPlanService';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
-import AnnualPlanForm from '@/components/forms/AnnualPlanForm';
+import AssessmentForm from '@/components/forms/AssessmentForm';
 import { toast } from '@/hooks/use-toast';
-import { AnnualPlanFormValues } from '@/components/forms/AnnualPlanForm';
+import { AssessmentFormValues } from '@/components/forms/AssessmentForm';
 
-const AnnualPlanEdit: React.FC = () => {
+const AssessmentEdit: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  // Fetch annual plan data
-  const { data: annualPlan, isLoading: isLoadingPlan, error: planError } = useQuery({
-    queryKey: ['annualPlan', id],
-    queryFn: () => annualPlanService.getById(id as string),
+  // Fetch assessment data
+  const { data: assessment, isLoading: isLoadingAssessment, error: assessmentError } = useQuery({
+    queryKey: ['assessment', id],
+    queryFn: () => assessmentService.getById(id as string),
     enabled: !!id,
   });
 
@@ -28,43 +27,43 @@ const AnnualPlanEdit: React.FC = () => {
     queryFn: subjectService.getAll,
   });
 
-  // Fetch academic periods
-  const { data: academicPeriods = [], isLoading: isLoadingPeriods } = useQuery({
-    queryKey: ['academicPeriods'],
-    queryFn: academicPeriodService.getAll,
+  // Fetch teaching plans
+  const { data: teachingPlans = [], isLoading: isLoadingTeachingPlans } = useQuery({
+    queryKey: ['teachingPlans'],
+    queryFn: teachingPlanService.getAll,
   });
 
   // Handle errors using useEffect
   useEffect(() => {
-    if (planError) {
+    if (assessmentError) {
       toast({
-        title: "Erro ao carregar plano anual",
-        description: (planError as Error).message || "Não foi possível carregar os dados do plano anual.",
+        title: "Erro ao carregar avaliação",
+        description: (assessmentError as Error).message || "Não foi possível carregar os dados da avaliação.",
         variant: "destructive",
       });
     }
-  }, [planError]);
+  }, [assessmentError]);
 
   // Update mutation
   const mutation = useMutation({
-    mutationFn: (values: AnnualPlanFormValues) => annualPlanService.update(id as string, values),
+    mutationFn: (values: AssessmentFormValues) => assessmentService.update(id as string, values),
     onSuccess: () => {
       toast({
-        title: "Plano anual atualizado",
-        description: "O plano anual foi atualizado com sucesso.",
+        title: "Avaliação atualizada",
+        description: "A avaliação foi atualizada com sucesso.",
       });
-      navigate(`/annual-plans/${id}`);
+      navigate(`/assessments/${id}`);
     },
     onError: (error) => {
       toast({
         title: "Erro ao atualizar",
-        description: (error as Error).message || "Ocorreu um erro ao atualizar o plano anual.",
+        description: (error as Error).message || "Ocorreu um erro ao atualizar a avaliação.",
         variant: "destructive",
       });
     }
   });
 
-  const isLoading = isLoadingPlan || isLoadingSubjects || isLoadingPeriods;
+  const isLoading = isLoadingAssessment || isLoadingSubjects || isLoadingTeachingPlans;
 
   // Show loading state
   if (isLoading) {
@@ -76,18 +75,18 @@ const AnnualPlanEdit: React.FC = () => {
           </Button>
         </div>
         <div className="flex justify-center items-center h-64">
-          <p>Carregando dados do plano anual...</p>
+          <p>Carregando dados da avaliação...</p>
         </div>
       </div>
     );
   }
 
   // Show error state
-  if (planError || !annualPlan) {
+  if (assessmentError || !assessment) {
     return (
       <div className="container mx-auto py-6">
         <div className="flex flex-col items-center justify-center h-64">
-          <p className="text-red-500 mb-4">Erro ao carregar o plano anual. O ID informado pode ser inválido.</p>
+          <p className="text-red-500 mb-4">Erro ao carregar a avaliação. O ID informado pode ser inválido.</p>
           <Button variant="outline" onClick={() => navigate(-1)}>
             <ArrowLeft className="mr-2 h-4 w-4" /> Voltar
           </Button>
@@ -96,11 +95,13 @@ const AnnualPlanEdit: React.FC = () => {
     );
   }
 
-  // Prepare data for the form
+  // Format data for the form
   const formInitialData = {
-    ...annualPlan,
-    // Map any snake_case properties to camelCase as needed
-    referenceMaterials: annualPlan.reference_materials || [],
+    ...assessment,
+    // Map snake_case to camelCase properties as needed
+    totalPoints: assessment.total_points || assessment.totalPoints,
+    dueDate: assessment.due_date || assessment.dueDate,
+    teachingPlanId: assessment.teaching_plan_id || assessment.teachingPlanId
   };
 
   return (
@@ -110,19 +111,19 @@ const AnnualPlanEdit: React.FC = () => {
           <Button variant="ghost" onClick={() => navigate(-1)} className="mb-2">
             <ArrowLeft className="mr-2 h-4 w-4" /> Voltar
           </Button>
-          <h1 className="text-2xl font-bold">Editar Plano Anual</h1>
+          <h1 className="text-2xl font-bold">Editar Avaliação</h1>
         </div>
       </div>
 
-      <AnnualPlanForm
+      <AssessmentForm
         initialData={formInitialData}
         onSubmit={mutation.mutate}
-        isSubmitting={mutation.isLoading}
+        isSubmitting={mutation.isPending}
         subjects={subjects}
-        academicPeriods={academicPeriods}
+        teachingPlans={teachingPlans}
       />
     </div>
   );
 };
 
-export default AnnualPlanEdit;
+export default AssessmentEdit;

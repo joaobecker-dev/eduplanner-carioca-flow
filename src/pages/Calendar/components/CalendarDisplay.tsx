@@ -7,6 +7,7 @@ import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import ptBRLocale from '@fullcalendar/core/locales/pt-br';
 import { Card, CardContent } from '@/components/ui/card';
+import { useCalendarTheme } from './CalendarThemeProvider';
 
 interface CalendarDisplayProps {
   calendarEvents: any[];
@@ -21,6 +22,27 @@ const CalendarDisplay: React.FC<CalendarDisplayProps> = ({
   handleDateSelect,
   isLoading
 }) => {
+  const { getEventColor } = useCalendarTheme();
+
+  // Function to customize event rendering
+  const eventContent = (eventInfo: any) => {
+    const eventType = eventInfo.event.extendedProps.type || 'other';
+    const customColor = eventInfo.event.backgroundColor || getEventColor(eventType);
+    
+    return (
+      <div className="w-full overflow-hidden" style={{ 
+        backgroundColor: `${customColor}20`,
+        color: customColor,
+        borderLeft: `3px solid ${customColor}`
+      }}>
+        <div className="px-1 py-1 truncate">
+          {eventInfo.timeText && <span className="font-medium mr-1">{eventInfo.timeText}</span>}
+          <span className="font-medium">{eventInfo.event.title}</span>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <Card>
       <CardContent className="pt-6">
@@ -51,6 +73,7 @@ const CalendarDisplay: React.FC<CalendarDisplayProps> = ({
                 week: 'Semana',
                 day: 'Dia'
               }}
+              eventContent={eventContent}
             />
           </div>
         )}
