@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { CalendarEvent, Subject } from '@/types';
 import { calendarEventService, subjectService } from '@/lib/services';
@@ -21,11 +21,12 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { CalendarIcon, Filter } from 'lucide-react';
+import { CalendarIcon } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
+import { formatDisplayDate } from '@/integrations/supabase/supabaseAdapter';
 
 const CalendarView: React.FC = () => {
   // State for filtering
@@ -58,40 +59,44 @@ const CalendarView: React.FC = () => {
     queryFn: subjectService.getAll,
   });
 
-  // Filter events based on selected filters
-  const filteredEvents = events.filter(event => {
-    // Filter by subject
-    if (selectedSubjectId && event.subjectId !== selectedSubjectId) {
-      return false;
-    }
+  // Filter events based on selected filters - use useMemo to prevent unnecessary rerenders
+  const filteredEvents = useMemo(() => {
+    return events.filter(event => {
+      // Filter by subject
+      if (selectedSubjectId && event.subjectId !== selectedSubjectId) {
+        return false;
+      }
 
-    // Filter by event type
-    if (!selectedEventTypes[event.type]) {
-      return false;
-    }
+      // Filter by event type
+      if (!selectedEventTypes[event.type]) {
+        return false;
+      }
 
-    // Filter by date range
-    if (dateRange.from && new Date(event.startDate) < dateRange.from) {
-      return false;
-    }
-    if (dateRange.to && new Date(event.startDate) > dateRange.to) {
-      return false;
-    }
+      // Filter by date range
+      if (dateRange.from && new Date(event.startDate) < dateRange.from) {
+        return false;
+      }
+      if (dateRange.to && new Date(event.startDate) > dateRange.to) {
+        return false;
+      }
 
-    return true;
-  });
+      return true;
+    });
+  }, [events, selectedSubjectId, selectedEventTypes, dateRange]);
 
-  // Convert events to FullCalendar format
-  const calendarEvents = filteredEvents.map(event => ({
-    id: event.id,
-    title: event.title,
-    start: event.startDate,
-    end: event.endDate || event.startDate,
-    allDay: event.allDay,
-    extendedProps: { ...event },
-    backgroundColor: getEventColor(event.type),
-    borderColor: getEventColor(event.type),
-  }));
+  // Convert events to FullCalendar format - use useMemo to optimize
+  const calendarEvents = useMemo(() => {
+    return filteredEvents.map(event => ({
+      id: event.id,
+      title: event.title,
+      start: event.startDate,
+      end: event.endDate || event.startDate,
+      allDay: event.allDay,
+      extendedProps: { ...event },
+      backgroundColor: getEventColor(event.type),
+      borderColor: getEventColor(event.type),
+    }));
+  }, [filteredEvents]);
 
   // Get color based on event type
   function getEventColor(type: string): string {
@@ -122,13 +127,23 @@ const CalendarView: React.FC = () => {
     }));
   };
 
-  // Generate event type label
+  // Generate event type label with better type safety
   const getEventTypeLabel = (type: string): string => {
-    switch(type) {
-      case 'exam': return 'Avaliação';
-      case 'class': return 'Aula/Plano';
-      default: return type;
-    }
+    const typeLabels: Record<string, string> = {
+      'exam': 'Avaliação',
+      'class': 'Aula/Plano',
+      'meeting': 'Reunião',
+      'deadline': 'Prazo',
+      'other': 'Outro'
+    };
+    
+    return typeLabels[type] || type;
+  };
+
+  // Find related subject with proper type checking
+  const getRelatedSubject = (subjectId?: string): Subject | undefined => {
+    if (!subjectId) return undefined;
+    return subjects.find(s => s.id === subjectId);
   };
 
   return (
@@ -282,20 +297,20 @@ const CalendarView: React.FC = () => {
                 <DialogTitle>{selectedEvent.title}</DialogTitle>
                 <div className="flex gap-2 mt-2">
                   <Badge variant="outline">{getEventTypeLabel(selectedEvent.type)}</Badge>
-                  {selectedEvent.subjectId && subjects.find(s => s.id === selectedEvent.subjectId) && (
-                    <Badge>{subjects.find(s => s.id === selectedEvent.subjectId)?.name}</Badge>
+                  {selectedEvent.subjectId && getRelatedSubject(selectedEvent.subjectId) && (
+                    <Badge>{getRelatedSubject(selectedEvent.subjectId)?.name}</Badge>
                   )}
                 </div>
               </DialogHeader>
               
               <div className="space-y-4 mt-4">
-                {/* Event date */}
+                {/* Event date with better error handling */}
                 <div>
                   <span className="font-medium">Data:</span>
                   <p>
-                    {format(new Date(selectedEvent.startDate), 'dd/MM/yyyy')}
+                    {formatDisplayDate(selectedEvent.startDate)}
                     {selectedEvent.endDate && selectedEvent.startDate !== selectedEvent.endDate && 
-                      ` até ${format(new Date(selectedEvent.endDate), 'dd/MM/yyyy')}`
+                      ` até ${formatDisplayDate(selectedEvent.endDate)}`
                     }
                   </p>
                 </div>

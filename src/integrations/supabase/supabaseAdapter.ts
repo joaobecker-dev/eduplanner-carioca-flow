@@ -93,3 +93,22 @@ export function normalizeToISO(input?: string | Date | null): string | undefined
 export function toISO(date?: Date | null): string | undefined {
   return date instanceof Date ? date.toISOString() : undefined;
 }
+
+/**
+ * Format a date for display using locale formatting
+ * @param date Date object or ISO string
+ * @param format Optional format string to override default
+ * @returns Formatted date string or empty string if date is invalid
+ */
+export function formatDisplayDate(date?: string | Date | null, format?: string): string {
+  if (!date) return '';
+  try {
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
+    // Check if date is valid
+    if (isNaN(dateObj.getTime())) return '';
+    return dateObj.toLocaleDateString('pt-BR');
+  } catch (error) {
+    console.error('Error formatting date:', error);
+    return '';
+  }
+}
