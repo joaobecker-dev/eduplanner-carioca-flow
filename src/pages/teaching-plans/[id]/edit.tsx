@@ -48,14 +48,7 @@ const TeachingPlanEdit: React.FC = () => {
   // Update mutation
   const mutation = useMutation({
     mutationFn: (values: TeachingPlanFormValues) => {
-      // Convert Date objects to ISO strings
-      const formattedValues = {
-        ...values,
-        startDate: values.startDate instanceof Date ? values.startDate.toISOString() : values.startDate,
-        endDate: values.endDate instanceof Date ? values.endDate.toISOString() : values.endDate,
-      };
-
-      return teachingPlanService.update(id as string, formattedValues);
+      return teachingPlanService.update(id as string, values);
     },
     onSuccess: () => {
       toast({

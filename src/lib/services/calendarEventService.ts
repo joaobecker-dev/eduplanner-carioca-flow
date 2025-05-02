@@ -4,6 +4,9 @@ import { createService, handleError } from './baseService';
 import { supabase } from "@/integrations/supabase/client";
 import { mapToCamelCase, mapToSnakeCase, normalizeToISO } from '@/integrations/supabase/supabaseAdapter';
 
+// Define allowed event types
+type EventType = 'class' | 'exam' | 'meeting' | 'deadline' | 'other';
+
 // Calendar Event Service
 export const calendarEventService = {
   ...createService<CalendarEvent>("calendar_events"),
@@ -108,7 +111,7 @@ export const calendarEventService = {
         start_date: normalizeToISO(lessonPlan.date),
         end_date: normalizeToISO(lessonPlan.date), // Same day event
         all_day: true,
-        type: 'class',
+        type: 'class' as EventType,
         lesson_plan_id: lessonPlan.id,
         subject_id: lessonPlan.subject_id || null
       };
@@ -144,7 +147,7 @@ export const calendarEventService = {
         start_date: normalizeToISO(teachingPlan.startDate || teachingPlan.start_date),
         end_date: normalizeToISO(teachingPlan.endDate || teachingPlan.end_date),
         all_day: true,
-        type: 'class',
+        type: 'class' as EventType,
         teaching_plan_id: teachingPlan.id,
         subject_id: teachingPlan.subject_id || teachingPlan.subjectId || null
       };
@@ -180,7 +183,7 @@ export const calendarEventService = {
         start_date: normalizeToISO(assessment.date),
         end_date: assessment.dueDate ? normalizeToISO(assessment.dueDate) : normalizeToISO(assessment.date),
         all_day: true,
-        type: 'exam',
+        type: 'exam' as EventType,
         assessment_id: assessment.id,
         subject_id: assessment.subject_id || assessment.subjectId || null
       };

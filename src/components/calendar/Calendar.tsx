@@ -1,6 +1,6 @@
 
 import React, { useState, useCallback, useEffect } from 'react';
-import { Calendar as FullCalendar, Views, dateFnsLocalizer } from '@fullcalendar/react';
+import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
@@ -10,33 +10,8 @@ import { CalendarEvent } from '@/types';
 import NewEventModal from '@/components/modals/NewEventModal';
 import { mapTypeToCategory } from '@/schemas/eventSchema';
 
-// Setup the localizer for fullcalendar
-const locales = {
-  'pt-BR': ptBR,
-};
-
-const localizer = dateFnsLocalizer({
-  format,
-  parse,
-  startOfWeek,
-  getDay,
-  locales,
-});
-
-// Custom labels for Portuguese
-const messages = {
-  today: 'Hoje',
-  previous: 'Anterior',
-  next: 'Próximo',
-  month: 'Mês',
-  week: 'Semana',
-  day: 'Dia',
-  agenda: 'Agenda',
-  date: 'Data',
-  time: 'Hora',
-  event: 'Evento',
-  noEventsInRange: 'Não há eventos neste período',
-};
+// Define event type literals
+type EventType = 'class' | 'exam' | 'meeting' | 'other';
 
 interface CalendarProps {
   events: CalendarEvent[];
@@ -157,7 +132,6 @@ const Calendar: React.FC<CalendarProps> = ({ events, isLoading }) => {
             select={handleSelectSlot}
             eventClick={({ event }) => handleSelectEvent(event as any)}
             eventColor="#3788d8"
-            locales={[ptBR]}
             locale="pt-BR"
             eventTimeFormat={{
               hour: '2-digit',

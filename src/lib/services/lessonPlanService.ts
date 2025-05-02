@@ -1,169 +1,131 @@
+
+import { LessonPlan, ID } from '@/types';
+import { createService, handleError } from './baseService';
 import { supabase } from "@/integrations/supabase/client";
-import { LessonPlan } from "@/types";
-import { mapToCamelCase, normalizeToISO } from "@/integrations/supabase/supabaseAdapter";
-import { LessonPlanFormValues } from "@/components/forms/LessonPlanForm";
-import { calendarEventService } from "./calendarEventService";
+import { mapToCamelCase, mapToSnakeCase } from '@/integrations/supabase/supabaseAdapter';
+import { calendarEventService } from './calendarEventService';
 
-const tableName = 'lesson_plans';
-
-/**
- * Get all lesson plans
- * @returns Promise<LessonPlan[]>
- */
-export async function getAll(): Promise<LessonPlan[]> {
-  const { data, error } = await supabase
-    .from(tableName)
-    .select('*');
+// Custom query functions specific to lesson plans
+const lessonPlanSpecificQueries = {
+  getByTeachingPlan: async (teachingPlanId: ID): Promise<LessonPlan[]> => {
+    try {
+      const { data, error } = await supabase
+        .from("lesson_plans")
+        .select('*')
+        .eq('teaching_plan_id', teachingPlanId);
+      
+      if (error) throw error;
+      return data ? data.map(item => mapToCamelCase<LessonPlan>(item)) : [];
+    } catch (error) {
+      handleError(error, 'buscar planos de aula por plano de ensino');
+      return [];
+    }
+  },
   
-  if (error) throw error;
-  return data.map(item => mapToCamelCase<LessonPlan>(item));
-}
-
-/**
- * Get a lesson plan by id
- * @param id 
- * @returns Promise<LessonPlan>
- */
-export async function getById(id: string): Promise<LessonPlan> {
-  const { data, error } = await supabase
-    .from(tableName)
-    .select('*')
-    .eq('id', id)
-    .single();
+  // Override the create method to add calendar event sync
+  create: async (lessonPlan: Omit<LessonPlan, 'id' | 'created_at'>): Promise<LessonPlan | null> => {
+    try {
+      // Handle arrays in lesson plan
+      const processedLessonPlan = {
+        ...lessonPlan,
+        objectives: Array.isArray(lessonPlan.objectives) ? lessonPlan.objectives : 
+                   (typeof lessonPlan.objectives === 'string' ? [lessonPlan.objectives] : []),
+        contents: Array.isArray(lessonPlan.contents) ? lessonPlan.contents : 
+                 (typeof lessonPlan.contents === 'string' ? [lessonPlan.contents] : []),
+        activities: Array.isArray(lessonPlan.activities) ? lessonPlan.activities : 
+                   (typeof lessonPlan.activities === 'string' ? [lessonPlan.activities] : []),
+        resources: Array.isArray(lessonPlan.resources) ? lessonPlan.resources : 
+                  (typeof lessonPlan.resources === 'string' ? [lessonPlan.resources] : []),
+      };
+      
+      const processedData = mapToSnakeCase(processedLessonPlan);
+      
+      const { data, error } = await supabase
+        .from("lesson_plans")
+        .insert(processedData)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      
+      const newLessonPlan = data ? mapToCamelCase<LessonPlan>(data) : null;
+      
+      // Sync with calendar
+      if (newLessonPlan) {
+        try {
+          await calendarEventService.syncFromLessonPlan(newLessonPlan);
+        } catch (syncError) {
+          console.error('Error syncing to calendar:', syncError);
+          // Don't let sync errors prevent lesson plan creation
+        }
+      }
+      
+      return newLessonPlan;
+    } catch (error) {
+      handleError(error, 'criar plano de aula');
+      return null;
+    }
+  },
   
-  if (error) throw error;
-  return mapToCamelCase<LessonPlan>(data);
-}
-
-/**
- * Create a new lesson plan
- * @param lessonPlanForm Form values from the lesson plan form
- * @returns Promise<LessonPlan>
- */
-export async function create(lessonPlanForm: Partial<LessonPlanFormValues>): Promise<LessonPlan> {
-  // Convert form values to proper DB structure
-  const lessonPlanData = {
-    title: lessonPlanForm.title,
-    teaching_plan_id: lessonPlanForm.teachingPlanId,
-    date: normalizeToISO(lessonPlanForm.date),
-    duration: lessonPlanForm.duration,
-    objectives: Array.isArray(lessonPlanForm.objectives) ? lessonPlanForm.objectives : 
-      (typeof lessonPlanForm.objectives === 'string' ? 
-        lessonPlanForm.objectives.split('\n').filter(item => item.trim() !== '') : []),
-    contents: Array.isArray(lessonPlanForm.contents) ? lessonPlanForm.contents : 
-      (typeof lessonPlanForm.contents === 'string' ? 
-        lessonPlanForm.contents.split('\n').filter(item => item.trim() !== '') : []),
-    activities: Array.isArray(lessonPlanForm.activities) ? lessonPlanForm.activities : 
-      (typeof lessonPlanForm.activities === 'string' ? 
-        lessonPlanForm.activities.split('\n').filter(item => item.trim() !== '') : []),
-    resources: Array.isArray(lessonPlanForm.resources) ? lessonPlanForm.resources : 
-      (typeof lessonPlanForm.resources === 'string' ? 
-        lessonPlanForm.resources.split('\n').filter(item => item.trim() !== '') : []),
-    homework: lessonPlanForm.homework,
-    evaluation: lessonPlanForm.evaluation,
-    notes: lessonPlanForm.notes
-  };
-  
-  const { data, error } = await supabase
-    .from(tableName)
-    .insert(lessonPlanData)
-    .select()
-    .single();
-  
-  if (error) throw error;
-  
-  const createdLessonPlan = mapToCamelCase<LessonPlan>(data);
-  
-  // Sync with calendar events
-  await calendarEventService.syncFromLessonPlan(createdLessonPlan);
-  
-  return createdLessonPlan;
-}
-
-/**
- * Update a lesson plan
- * @param id 
- * @param lessonPlanForm 
- * @returns Promise<LessonPlan>
- */
-export async function update(id: string, lessonPlanForm: Partial<LessonPlanFormValues>): Promise<LessonPlan> {
-  // Build update data object
-  const updateData: Record<string, any> = {};
-  
-  if (lessonPlanForm.title !== undefined) updateData.title = lessonPlanForm.title;
-  if (lessonPlanForm.teachingPlanId !== undefined) updateData.teaching_plan_id = lessonPlanForm.teachingPlanId;
-  
-  if (lessonPlanForm.date !== undefined) {
-    updateData.date = normalizeToISO(lessonPlanForm.date);
+  // Override the update method to add calendar event sync
+  update: async (id: ID, updates: Partial<LessonPlan>): Promise<LessonPlan | null> => {
+    try {
+      // Handle arrays in lesson plan updates
+      const processedUpdates = { ...updates };
+      
+      if (updates.objectives) {
+        processedUpdates.objectives = Array.isArray(updates.objectives) ? updates.objectives : 
+                                      (typeof updates.objectives === 'string' ? [updates.objectives] : []);
+      }
+      
+      if (updates.contents) {
+        processedUpdates.contents = Array.isArray(updates.contents) ? updates.contents : 
+                                    (typeof updates.contents === 'string' ? [updates.contents] : []);
+      }
+      
+      if (updates.activities) {
+        processedUpdates.activities = Array.isArray(updates.activities) ? updates.activities : 
+                                      (typeof updates.activities === 'string' ? [updates.activities] : []);
+      }
+      
+      if (updates.resources) {
+        processedUpdates.resources = Array.isArray(updates.resources) ? updates.resources : 
+                                     (typeof updates.resources === 'string' ? [updates.resources] : []);
+      }
+      
+      const processedData = mapToSnakeCase(processedUpdates);
+      
+      const { data, error } = await supabase
+        .from("lesson_plans")
+        .update(processedData)
+        .eq('id', id)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      
+      const updatedLessonPlan = data ? mapToCamelCase<LessonPlan>(data) : null;
+      
+      // Sync with calendar
+      if (updatedLessonPlan) {
+        try {
+          await calendarEventService.syncFromLessonPlan(updatedLessonPlan);
+        } catch (syncError) {
+          console.error('Error syncing to calendar:', syncError);
+          // Don't let sync errors prevent lesson plan update
+        }
+      }
+      
+      return updatedLessonPlan;
+    } catch (error) {
+      handleError(error, 'atualizar plano de aula');
+      return null;
+    }
   }
-  
-  if (lessonPlanForm.duration !== undefined) updateData.duration = lessonPlanForm.duration;
-  
-  // Handle array fields that might be strings from form input
-  if (lessonPlanForm.objectives !== undefined) {
-    updateData.objectives = Array.isArray(lessonPlanForm.objectives) ? lessonPlanForm.objectives : 
-      (typeof lessonPlanForm.objectives === 'string' ? 
-        lessonPlanForm.objectives.split('\n').filter(item => item.trim() !== '') : []);
-  }
-  
-  if (lessonPlanForm.contents !== undefined) {
-    updateData.contents = Array.isArray(lessonPlanForm.contents) ? lessonPlanForm.contents : 
-      (typeof lessonPlanForm.contents === 'string' ? 
-        lessonPlanForm.contents.split('\n').filter(item => item.trim() !== '') : []);
-  }
-  
-  if (lessonPlanForm.activities !== undefined) {
-    updateData.activities = Array.isArray(lessonPlanForm.activities) ? lessonPlanForm.activities : 
-      (typeof lessonPlanForm.activities === 'string' ? 
-        lessonPlanForm.activities.split('\n').filter(item => item.trim() !== '') : []);
-  }
-  
-  if (lessonPlanForm.resources !== undefined) {
-    updateData.resources = Array.isArray(lessonPlanForm.resources) ? lessonPlanForm.resources : 
-      (typeof lessonPlanForm.resources === 'string' ? 
-        lessonPlanForm.resources.split('\n').filter(item => item.trim() !== '') : []);
-  }
-  
-  // Optional string fields
-  if (lessonPlanForm.homework !== undefined) updateData.homework = lessonPlanForm.homework;
-  if (lessonPlanForm.evaluation !== undefined) updateData.evaluation = lessonPlanForm.evaluation;
-  if (lessonPlanForm.notes !== undefined) updateData.notes = lessonPlanForm.notes;
-  
-  const { data, error } = await supabase
-    .from(tableName)
-    .update(updateData)
-    .eq('id', id)
-    .select()
-    .single();
-  
-  if (error) throw error;
-  
-  const updatedLessonPlan = mapToCamelCase<LessonPlan>(data);
-  
-  // Sync with calendar events
-  await calendarEventService.syncFromLessonPlan(updatedLessonPlan);
-  
-  return updatedLessonPlan;
-}
+};
 
-/**
- * Delete a lesson plan
- * @param id 
- * @returns Promise<void>
- */
-export async function deleteLesson(id: string): Promise<void> {
-  const { error } = await supabase
-    .from(tableName)
-    .delete()
-    .eq('id', id);
-  
-  if (error) throw error;
-}
-
+// Combine base service with lesson plan-specific queries
 export const lessonPlanService = {
-  getAll,
-  getById,
-  create,
-  update,
-  delete: deleteLesson,
+  ...createService<LessonPlan>("lesson_plans"),
+  ...lessonPlanSpecificQueries
 };

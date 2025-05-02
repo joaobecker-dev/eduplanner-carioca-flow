@@ -67,7 +67,7 @@ const NewEventModal: React.FC<NewEventModalProps> = ({
   const isEditMode = mode === 'edit' && editEvent;
 
   // Prepare default values
-  const defaultValues: EventFormValues = isEditMode 
+  const defaultValues: Partial<EventFormValues> = isEditMode 
     ? {
         title: editEvent.title,
         description: editEvent.description || '',
