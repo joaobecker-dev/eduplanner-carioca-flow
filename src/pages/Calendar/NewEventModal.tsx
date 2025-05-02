@@ -27,8 +27,12 @@ const NewEventModal: React.FC<NewEventModalProps> = ({ isOpen, onClose, onSave, 
         color: values.color,
         subjectId: values.subjectId || undefined,
         // Preserve source information if editing an event
-        sourceType: eventToEdit?.sourceType || 'manual',
-        sourceId: eventToEdit?.sourceId || undefined,
+        sourceType: eventToEdit?.sourceType || values.sourceType || 'manual',
+        sourceId: eventToEdit?.sourceId || values.sourceId || undefined,
+        // Preserve reference IDs if editing
+        assessmentId: eventToEdit?.assessmentId,
+        lessonPlanId: eventToEdit?.lessonPlanId,
+        teachingPlanId: eventToEdit?.teachingPlanId
       };
 
       await onSave(eventData);

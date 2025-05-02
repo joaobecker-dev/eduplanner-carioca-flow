@@ -148,7 +148,7 @@ export interface StudentAssessment {
 }
 
 // Calendar Event Types
-export type EventType = "class" | "exam" | "meeting" | "other";
+export type EventType = "class" | "exam" | "meeting" | "other" | "deadline";
 export type EventSourceType = "assessment" | "lesson_plan" | "teaching_plan" | "manual";
 
 // Calendar Event

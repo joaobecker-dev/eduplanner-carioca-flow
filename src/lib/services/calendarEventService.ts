@@ -153,7 +153,7 @@ export const calendarEventService = {
         return;
       }
 
-      // Create the event object with all required fields
+      // Define the event object with explicitly typed fields
       const eventData = {
         title: `Avaliação: ${assessment.title}`,
         description: assessment.description || '',
@@ -168,10 +168,25 @@ export const calendarEventService = {
         sourceId: assessment.id
       };
 
+      // Prepare data for Supabase with snake_case keys
+      const preparedData = {
+        title: eventData.title,
+        description: eventData.description,
+        type: eventData.type,
+        start_date: eventData.startDate,
+        end_date: eventData.endDate,
+        all_day: eventData.allDay,
+        subject_id: eventData.subjectId,
+        assessment_id: eventData.assessmentId,
+        color: eventData.color,
+        source_type: eventData.sourceType,
+        source_id: eventData.sourceId
+      };
+
       // Use upsert with onConflict to prevent duplication
       const { error } = await supabase
         .from("calendar_events")
-        .upsert(mapToSnakeCase(eventData), {
+        .upsert(preparedData, {
           onConflict: 'source_id,source_type',
           ignoreDuplicates: false
         });
@@ -209,7 +224,7 @@ export const calendarEventService = {
         endDate = normalizeToISO(date) || startDate;
       }
 
-      // Create the event object with all required fields
+      // Define the event object with explicitly typed fields
       const eventData = {
         title: `Aula: ${lessonPlan.title}`,
         description: lessonPlan.notes || '',
@@ -224,10 +239,25 @@ export const calendarEventService = {
         sourceId: lessonPlan.id
       };
 
+      // Prepare data for Supabase with snake_case keys
+      const preparedData = {
+        title: eventData.title,
+        description: eventData.description,
+        type: eventData.type,
+        start_date: eventData.startDate,
+        end_date: eventData.endDate,
+        all_day: eventData.allDay,
+        teaching_plan_id: eventData.teachingPlanId,
+        lesson_plan_id: eventData.lessonPlanId,
+        color: eventData.color,
+        source_type: eventData.sourceType,
+        source_id: eventData.sourceId
+      };
+
       // Use upsert with onConflict to prevent duplication
       const { error } = await supabase
         .from("calendar_events")
-        .upsert(mapToSnakeCase(eventData), {
+        .upsert(preparedData, {
           onConflict: 'source_id,source_type',
           ignoreDuplicates: false
         });
@@ -245,7 +275,7 @@ export const calendarEventService = {
         return;
       }
 
-      // Create the event object with all required fields
+      // Define the event object with explicitly typed fields
       const eventData = {
         title: `Plano de Ensino: ${teachingPlan.title}`,
         description: teachingPlan.description || '',
@@ -260,10 +290,25 @@ export const calendarEventService = {
         sourceId: teachingPlan.id
       };
 
+      // Prepare data for Supabase with snake_case keys
+      const preparedData = {
+        title: eventData.title,
+        description: eventData.description,
+        type: eventData.type,
+        start_date: eventData.startDate,
+        end_date: eventData.endDate,
+        all_day: eventData.allDay,
+        subject_id: eventData.subjectId,
+        teaching_plan_id: eventData.teachingPlanId,
+        color: eventData.color,
+        source_type: eventData.sourceType,
+        source_id: eventData.sourceId
+      };
+
       // Use upsert with onConflict to prevent duplication
       const { error } = await supabase
         .from("calendar_events")
-        .upsert(mapToSnakeCase(eventData), {
+        .upsert(preparedData, {
           onConflict: 'source_id,source_type',
           ignoreDuplicates: false
         });

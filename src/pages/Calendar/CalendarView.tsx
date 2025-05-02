@@ -153,7 +153,7 @@ const CalendarView: React.FC = () => {
       }
       
       // Refresh calendar events by invalidating the query
-      queryClient.invalidateQueries(['calendarEvents']);
+      queryClient.invalidateQueries({ queryKey: ['calendarEvents'] });
       
       // Close the modal
       setShowNewEventModal(false);
@@ -186,7 +186,7 @@ const CalendarView: React.FC = () => {
       await calendarEventService.deleteEvent(selectedEvent.id);
       
       // Refresh calendar events by invalidating the query
-      queryClient.invalidateQueries(['calendarEvents']);
+      queryClient.invalidateQueries({ queryKey: ['calendarEvents'] });
       
       toast.success('Evento excluído com sucesso!');
       

@@ -1,12 +1,13 @@
 
 import * as z from "zod";
 
-export const eventCategories = ["class", "exam", "meeting", "other"] as const;
+export const eventCategories = ["class", "exam", "meeting", "other", "deadline"] as const;
 export const eventCategoryLabels: Record<string, string> = {
   class: "Aula",
   exam: "Avaliação",
   meeting: "Reunião", 
-  other: "Outro"
+  other: "Outro",
+  deadline: "Prazo"
 };
 
 export const eventSourceTypes = ["manual", "assessment", "lesson_plan", "teaching_plan"] as const;
