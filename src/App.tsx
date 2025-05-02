@@ -11,6 +11,8 @@ import Assessments from "./pages/Assessments";
 import Materials from "./pages/Materials";
 import Calendar from "./pages/Calendar";
 import NotFound from "./pages/NotFound";
+import AnnualPlanDetail from "./pages/annual-plans/[id]";
+import TeachingPlanDetail from "./pages/teaching-plans/[id]";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +29,13 @@ const App = () => (
             <Route path="/avaliacoes" element={<Assessments />} />
             <Route path="/materiais" element={<Materials />} />
             <Route path="/calendario" element={<Calendar />} />
+            
+            {/* Annual Plan routes */}
+            <Route path="/annual-plans/:id" element={<AnnualPlanDetail />} />
+            
+            {/* Teaching Plan routes */}
+            <Route path="/teaching-plans/:id" element={<TeachingPlanDetail />} />
+            
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
