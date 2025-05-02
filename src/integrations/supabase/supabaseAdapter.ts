@@ -1,3 +1,4 @@
+
 /**
  * Supabase adapter utilities for converting between camelCase and snake_case
  * These functions help maintain compatibility between frontend (camelCase) and 
@@ -82,4 +83,13 @@ export function normalizeToISO(input?: string | Date | null): string | undefined
   if (typeof input === "string") return input;
   if (input instanceof Date) return input.toISOString();
   return undefined;
+}
+
+/**
+ * Converts a Date object to ISO string safely
+ * @param date A Date object
+ * @returns ISO string or undefined
+ */
+export function toISO(date?: Date | null): string | undefined {
+  return date instanceof Date ? date.toISOString() : undefined;
 }
