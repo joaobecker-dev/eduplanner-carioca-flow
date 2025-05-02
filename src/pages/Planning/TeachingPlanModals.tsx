@@ -43,24 +43,28 @@ const TeachingPlanModals: React.FC<TeachingPlanModalsProps> = ({
   const handleTeachingPlanSubmit = async (data: TeachingPlanFormValues) => {
     setIsSubmitting(true);
     
-    // Convert Date objects to ISO strings for database storage
-    const formattedData = {
-      ...data,
-      startDate: data.startDate instanceof Date ? data.startDate.toISOString() : data.startDate,
-      endDate: data.endDate instanceof Date ? data.endDate.toISOString() : data.endDate,
-    };
+    // Ensure required fields are present for create operation
+    if (!selectedTeachingPlan?.id && (!data.title || !data.subjectId || !data.annualPlanId)) {
+      toast({
+        title: "Campos obrigatórios",
+        description: "Todos os campos obrigatórios devem ser preenchidos.",
+        variant: "destructive",
+      });
+      setIsSubmitting(false);
+      return;
+    }
 
     try {
       if (selectedTeachingPlan?.id) {
         // Update existing teaching plan
-        await services.teachingPlan.update(selectedTeachingPlan.id, formattedData);
+        await services.teachingPlan.update(selectedTeachingPlan.id, data);
         toast({
           title: "Plano de ensino atualizado",
           description: "O plano de ensino foi atualizado com sucesso.",
         });
       } else {
-        // Create new teaching plan
-        await services.teachingPlan.create(formattedData);
+        // Create new teaching plan with required fields guaranteed
+        await services.teachingPlan.create(data as Omit<TeachingPlan, "id">);
         toast({
           title: "Plano de ensino criado",
           description: "O plano de ensino foi criado com sucesso.",
@@ -113,7 +117,7 @@ const TeachingPlanModals: React.FC<TeachingPlanModalsProps> = ({
         isOpen={isTeachingPlanModalOpen}
         isLoading={isSubmitting}
         onClose={() => setIsTeachingPlanModalOpen(false)}
-        onSubmit={form => handleTeachingPlanSubmit(form)}
+        onSubmit={() => {}} // We're handling submission in the form
         submitLabel={selectedTeachingPlan?.id ? "Atualizar" : "Criar"}
         size="lg"
       >

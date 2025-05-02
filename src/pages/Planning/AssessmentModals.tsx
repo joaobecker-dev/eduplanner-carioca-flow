@@ -43,24 +43,17 @@ const AssessmentModals: React.FC<AssessmentModalsProps> = ({
   const handleAssessmentSubmit = async (data: AssessmentFormValues) => {
     setIsSubmitting(true);
     
-    // Convert Date objects to ISO strings
-    const formattedData = {
-      ...data,
-      date: data.date instanceof Date ? data.date.toISOString() : data.date,
-      dueDate: data.dueDate instanceof Date ? data.dueDate.toISOString() : data.dueDate,
-    };
-
     try {
       if (selectedAssessment?.id) {
         // Update existing assessment
-        await services.assessment.update(selectedAssessment.id, formattedData);
+        await services.assessment.update(selectedAssessment.id, data);
         toast({
           title: "Avaliação atualizada",
           description: "A avaliação foi atualizada com sucesso.",
         });
       } else {
         // Create new assessment
-        await services.assessment.create(formattedData as any);
+        await services.assessment.create(data as Omit<Assessment, "id">);
         toast({
           title: "Avaliação criada",
           description: "A avaliação foi criada com sucesso.",
@@ -113,7 +106,7 @@ const AssessmentModals: React.FC<AssessmentModalsProps> = ({
         isOpen={isAssessmentModalOpen}
         isLoading={isSubmitting}
         onClose={() => setIsAssessmentModalOpen(false)}
-        onSubmit={form => handleAssessmentSubmit(form)}
+        onSubmit={() => {}} // We're handling submission in the form
         submitLabel={selectedAssessment?.id ? "Atualizar" : "Criar"}
         size="md"
       >

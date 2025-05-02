@@ -75,11 +75,11 @@ export async function create(assessment: Omit<Assessment, "id">): Promise<Assess
   const assessmentData = mapToSnakeCase<any>(assessment);
   
   // Ensure date formats are ISO strings
-  if (assessment.date instanceof Date) {
+  if (assessment.date && typeof assessment.date === 'object' && 'toISOString' in assessment.date) {
     assessmentData.date = assessment.date.toISOString();
   }
   
-  if (assessment.dueDate instanceof Date) {
+  if (assessment.dueDate && typeof assessment.dueDate === 'object' && 'toISOString' in assessment.dueDate) {
     assessmentData.due_date = assessment.dueDate.toISOString();
   }
   
@@ -110,11 +110,11 @@ export async function update(id: ID, assessment: Partial<Assessment>): Promise<A
   const assessmentData = mapToSnakeCase<any>(assessment);
   
   // Ensure date formats are ISO strings
-  if (assessment.date instanceof Date) {
+  if (assessment.date && typeof assessment.date === 'object' && 'toISOString' in assessment.date) {
     assessmentData.date = assessment.date.toISOString();
   }
   
-  if (assessment.dueDate instanceof Date) {
+  if (assessment.dueDate && typeof assessment.dueDate === 'object' && 'toISOString' in assessment.dueDate) {
     assessmentData.due_date = assessment.dueDate.toISOString();
   }
   

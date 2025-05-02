@@ -31,7 +31,7 @@ const PlanningModals: React.FC<PlanningModalsProps> = ({
       <TeachingPlanModals
         subjects={subjects}
         annualPlans={annualPlans}
-        refreshData={refreshData}
+        refreshPlans={refreshData} // fixed property name to match TeachingPlanModalsProps
       />
       
       <LessonPlanModals
