@@ -76,14 +76,18 @@ export async function create(assessment: Omit<Assessment, "id">): Promise<Assess
   
   // Ensure date formats are ISO strings
   if (assessment.date) {
-    if (typeof assessment.date === 'object' && assessment.date !== null && 'toISOString' in assessment.date) {
-      assessmentData.date = assessment.date.toISOString();
+    if (typeof assessment.date === 'object' && assessment.date !== null) {
+      if ('toISOString' in assessment.date) {
+        assessmentData.date = assessment.date.toISOString();
+      }
     }
   }
   
   if (assessment.dueDate) {
-    if (typeof assessment.dueDate === 'object' && assessment.dueDate !== null && 'toISOString' in assessment.dueDate) {
-      assessmentData.due_date = assessment.dueDate.toISOString();
+    if (typeof assessment.dueDate === 'object' && assessment.dueDate !== null) {
+      if ('toISOString' in assessment.dueDate) {
+        assessmentData.due_date = assessment.dueDate.toISOString();
+      }
     }
   }
   
@@ -115,14 +119,18 @@ export async function update(id: ID, assessment: Partial<Assessment>): Promise<A
   
   // Ensure date formats are ISO strings
   if (assessment.date) {
-    if (typeof assessment.date === 'object' && assessment.date !== null && 'toISOString' in assessment.date) {
-      assessmentData.date = assessment.date.toISOString();
+    if (typeof assessment.date === 'object' && assessment.date !== null) {
+      if ('toISOString' in assessment.date) {
+        assessmentData.date = assessment.date.toISOString();
+      }
     }
   }
   
   if (assessment.dueDate) {
-    if (typeof assessment.dueDate === 'object' && assessment.dueDate !== null && 'toISOString' in assessment.dueDate) {
-      assessmentData.due_date = assessment.dueDate.toISOString();
+    if (typeof assessment.dueDate === 'object' && assessment.dueDate !== null) {
+      if ('toISOString' in assessment.dueDate) {
+        assessmentData.due_date = assessment.dueDate.toISOString();
+      }
     }
   }
   

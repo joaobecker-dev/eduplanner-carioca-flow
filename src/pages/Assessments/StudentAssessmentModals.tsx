@@ -62,7 +62,27 @@ const StudentAssessmentModals: React.FC<StudentAssessmentModalsProps> = ({
         });
       } else {
         // Create new student assessment
-        await services.studentAssessment.create(studentAssessmentData);
+        // Ensure required fields are present for create
+        if (!studentAssessmentData.studentId || !studentAssessmentData.assessmentId) {
+          toast({
+            title: "Erro ao salvar",
+            description: "Aluno e avaliação são campos obrigatórios.",
+            variant: "destructive",
+          });
+          setIsSubmitting(false);
+          return;
+        }
+        
+        const requiredFields: Omit<StudentAssessment, "id"> = {
+          studentId: studentAssessmentData.studentId,
+          assessmentId: studentAssessmentData.assessmentId,
+          score: studentAssessmentData.score || 0,
+          feedback: studentAssessmentData.feedback,
+          submittedDate: studentAssessmentData.submittedDate,
+          gradedDate: studentAssessmentData.gradedDate
+        };
+        
+        await services.studentAssessment.create(requiredFields);
         toast({
           title: "Nota registrada",
           description: "A nota do aluno foi registrada com sucesso.",
@@ -120,7 +140,7 @@ const StudentAssessmentModals: React.FC<StudentAssessmentModalsProps> = ({
         isOpen={isStudentAssessmentModalOpen}
         isLoading={isSubmitting}
         onClose={() => setIsStudentAssessmentModalOpen(false)}
-        onSubmit={handleStudentAssessmentSubmit}
+        onSubmit={() => {}} // This is intentionally empty as we handle submission in the form
         submitLabel={selectedStudentAssessment?.id ? "Atualizar" : "Salvar"}
       >
         <StudentAssessmentForm

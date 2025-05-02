@@ -80,14 +80,18 @@ export async function create(studentAssessment: Omit<StudentAssessment, "id">): 
     
     // Ensure date formats are ISO strings
     if (studentAssessment.submittedDate) {
-      if (typeof studentAssessment.submittedDate === 'object' && studentAssessment.submittedDate !== null && 'toISOString' in studentAssessment.submittedDate) {
-        assessmentData.submitted_date = studentAssessment.submittedDate.toISOString();
+      if (typeof studentAssessment.submittedDate === 'object' && studentAssessment.submittedDate !== null) {
+        if ('toISOString' in studentAssessment.submittedDate) {
+          assessmentData.submitted_date = studentAssessment.submittedDate.toISOString();
+        }
       }
     }
     
     if (studentAssessment.gradedDate) {
-      if (typeof studentAssessment.gradedDate === 'object' && studentAssessment.gradedDate !== null && 'toISOString' in studentAssessment.gradedDate) {
-        assessmentData.graded_date = studentAssessment.gradedDate.toISOString();
+      if (typeof studentAssessment.gradedDate === 'object' && studentAssessment.gradedDate !== null) {
+        if ('toISOString' in studentAssessment.gradedDate) {
+          assessmentData.graded_date = studentAssessment.gradedDate.toISOString();
+        }
       }
     }
     
@@ -124,14 +128,18 @@ export async function update(id: ID, studentAssessment: Partial<StudentAssessmen
     
     // Ensure date formats are ISO strings
     if (studentAssessment.submittedDate) {
-      if (typeof studentAssessment.submittedDate === 'object' && studentAssessment.submittedDate !== null && 'toISOString' in studentAssessment.submittedDate) {
-        assessmentData.submitted_date = studentAssessment.submittedDate.toISOString();
+      if (typeof studentAssessment.submittedDate === 'object' && studentAssessment.submittedDate !== null) {
+        if ('toISOString' in studentAssessment.submittedDate) {
+          assessmentData.submitted_date = studentAssessment.submittedDate.toISOString();
+        }
       }
     }
     
     if (studentAssessment.gradedDate) {
-      if (typeof studentAssessment.gradedDate === 'object' && studentAssessment.gradedDate !== null && 'toISOString' in studentAssessment.gradedDate) {
-        assessmentData.graded_date = studentAssessment.gradedDate.toISOString();
+      if (typeof studentAssessment.gradedDate === 'object' && studentAssessment.gradedDate !== null) {
+        if ('toISOString' in studentAssessment.gradedDate) {
+          assessmentData.graded_date = studentAssessment.gradedDate.toISOString();
+        }
       }
     }
     

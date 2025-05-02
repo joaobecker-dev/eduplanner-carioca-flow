@@ -72,23 +72,20 @@ export const calendarEventService = {
     }
   },
   
-  // Sync a calendar event from a student assessment (placeholder for future implementation)
+  // Sync a calendar event from a student assessment
   syncFromStudentAssessment: async (studentAssessment: StudentAssessment): Promise<void> => {
     try {
-      // This is a placeholder function, not actively used in current implementation
-      // In a future version, this could create personal calendar events for students
-      // when their assessments are graded or when they have submissions due
-      
+      // This is a placeholder function, to be implemented in the future if needed
       console.log('Student assessment synced with calendar:', studentAssessment.id);
       
-      // Example implementation if needed in the future:
+      // Example implementation could be added here when needed
       /*
       // Get the assessment details to create the event
       const { data: assessmentData } = await supabase
         .from("assessments")
         .select('*')
         .eq('id', studentAssessment.assessmentId)
-        .single();
+        .maybeSingle();
         
       if (!assessmentData) return;
       
@@ -100,7 +97,7 @@ export const calendarEventService = {
         type: "deadline" as const,
         start_date: studentAssessment.gradedDate || assessment.date,
         all_day: true,
-        student_id: studentAssessment.studentId, // Would need to add this field to calendar_events
+        student_id: studentAssessment.studentId,
         assessment_id: assessment.id,
         subject_id: assessment.subjectId,
       };
@@ -108,7 +105,7 @@ export const calendarEventService = {
       await supabase
         .from("calendar_events")
         .upsert(eventData, {
-          onConflict: 'student_assessment_id', // Would need to add this field and constraint
+          onConflict: 'student_assessment_id',
           ignoreDuplicates: false
         });
       */
