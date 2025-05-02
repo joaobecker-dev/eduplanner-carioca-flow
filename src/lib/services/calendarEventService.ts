@@ -153,40 +153,25 @@ export const calendarEventService = {
         return;
       }
 
-      // Define the event object with explicitly typed fields
+      // Define the event data with explicitly typed fields
       const eventData = {
         title: `Avaliação: ${assessment.title}`,
         description: assessment.description || '',
         type: "exam" as const,
-        startDate: normalizeToISO(assessment.date) || '',
-        endDate: normalizeToISO(assessment.dueDate || assessment.date) || '',
-        allDay: true,
-        subjectId: assessment.subjectId,
-        assessmentId: assessment.id,
+        start_date: normalizeToISO(assessment.date) || '',
+        end_date: normalizeToISO(assessment.dueDate || assessment.date) || '',
+        all_day: true,
+        subject_id: assessment.subjectId,
+        assessment_id: assessment.id,
         color: '#e67c73', // Reddish color for exams
-        sourceType: 'assessment' as const,
-        sourceId: assessment.id
-      };
-
-      // Prepare data for Supabase with snake_case keys
-      const preparedData = {
-        title: eventData.title,
-        description: eventData.description,
-        type: eventData.type,
-        start_date: eventData.startDate,
-        end_date: eventData.endDate,
-        all_day: eventData.allDay,
-        subject_id: eventData.subjectId,
-        assessment_id: eventData.assessmentId,
-        color: eventData.color,
-        source_type: eventData.sourceType,
-        source_id: eventData.sourceId
+        source_type: 'assessment' as const,
+        source_id: assessment.id
       };
 
       // Use upsert with onConflict to prevent duplication
       const { error } = await supabase
         .from("calendar_events")
-        .upsert(preparedData, {
+        .upsert(eventData, {
           onConflict: 'source_id,source_type',
           ignoreDuplicates: false
         });
@@ -224,40 +209,25 @@ export const calendarEventService = {
         endDate = normalizeToISO(date) || startDate;
       }
 
-      // Define the event object with explicitly typed fields
+      // Define the event data with explicitly typed fields
       const eventData = {
         title: `Aula: ${lessonPlan.title}`,
         description: lessonPlan.notes || '',
         type: "class" as const,
-        startDate: startDate,
-        endDate: endDate,
-        allDay: false, // Lesson plans typically have a duration
-        teachingPlanId: lessonPlan.teachingPlanId,
-        lessonPlanId: lessonPlan.id,
+        start_date: startDate,
+        end_date: endDate,
+        all_day: false, // Lesson plans typically have a duration
+        teaching_plan_id: lessonPlan.teachingPlanId,
+        lesson_plan_id: lessonPlan.id,
         color: '#9b87f5', // Purple color for classes
-        sourceType: 'lesson_plan' as const,
-        sourceId: lessonPlan.id
-      };
-
-      // Prepare data for Supabase with snake_case keys
-      const preparedData = {
-        title: eventData.title,
-        description: eventData.description,
-        type: eventData.type,
-        start_date: eventData.startDate,
-        end_date: eventData.endDate,
-        all_day: eventData.allDay,
-        teaching_plan_id: eventData.teachingPlanId,
-        lesson_plan_id: eventData.lessonPlanId,
-        color: eventData.color,
-        source_type: eventData.sourceType,
-        source_id: eventData.sourceId
+        source_type: 'lesson_plan' as const,
+        source_id: lessonPlan.id
       };
 
       // Use upsert with onConflict to prevent duplication
       const { error } = await supabase
         .from("calendar_events")
-        .upsert(preparedData, {
+        .upsert(eventData, {
           onConflict: 'source_id,source_type',
           ignoreDuplicates: false
         });
@@ -275,40 +245,25 @@ export const calendarEventService = {
         return;
       }
 
-      // Define the event object with explicitly typed fields
+      // Define the event data with explicitly typed fields
       const eventData = {
         title: `Plano de Ensino: ${teachingPlan.title}`,
         description: teachingPlan.description || '',
         type: "class" as const,
-        startDate: normalizeToISO(teachingPlan.startDate) || '',
-        endDate: normalizeToISO(teachingPlan.endDate) || '',
-        allDay: true,
-        subjectId: teachingPlan.subjectId,
-        teachingPlanId: teachingPlan.id,
+        start_date: normalizeToISO(teachingPlan.startDate) || '',
+        end_date: normalizeToISO(teachingPlan.endDate) || '',
+        all_day: true,
+        subject_id: teachingPlan.subjectId,
+        teaching_plan_id: teachingPlan.id,
         color: '#7E69AB', // Darker purple for teaching plans
-        sourceType: 'teaching_plan' as const,
-        sourceId: teachingPlan.id
-      };
-
-      // Prepare data for Supabase with snake_case keys
-      const preparedData = {
-        title: eventData.title,
-        description: eventData.description,
-        type: eventData.type,
-        start_date: eventData.startDate,
-        end_date: eventData.endDate,
-        all_day: eventData.allDay,
-        subject_id: eventData.subjectId,
-        teaching_plan_id: eventData.teachingPlanId,
-        color: eventData.color,
-        source_type: eventData.sourceType,
-        source_id: eventData.sourceId
+        source_type: 'teaching_plan' as const,
+        source_id: teachingPlan.id
       };
 
       // Use upsert with onConflict to prevent duplication
       const { error } = await supabase
         .from("calendar_events")
-        .upsert(preparedData, {
+        .upsert(eventData, {
           onConflict: 'source_id,source_type',
           ignoreDuplicates: false
         });
@@ -319,3 +274,4 @@ export const calendarEventService = {
     }
   }
 };
+

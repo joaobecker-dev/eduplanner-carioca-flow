@@ -32,7 +32,9 @@ const NewEventModal: React.FC<NewEventModalProps> = ({ isOpen, onClose, onSave, 
         // Preserve reference IDs if editing
         assessmentId: eventToEdit?.assessmentId,
         lessonPlanId: eventToEdit?.lessonPlanId,
-        teachingPlanId: eventToEdit?.teachingPlanId
+        teachingPlanId: eventToEdit?.teachingPlanId,
+        // Preserve location if editing
+        location: eventToEdit?.location
       };
 
       await onSave(eventData);
