@@ -147,6 +147,10 @@ export interface StudentAssessment {
   created_at?: DateISO; // For Supabase DB compatibility
 }
 
+// Calendar Event Types
+export type EventType = "class" | "exam" | "meeting" | "other";
+export type EventSourceType = "assessment" | "lesson_plan" | "teaching_plan" | "manual";
+
 // Calendar Event
 export interface CalendarEvent {
   id: ID;
@@ -158,17 +162,21 @@ export interface CalendarEvent {
   end_date?: DateISO; // For Supabase DB compatibility
   allDay: boolean;
   all_day?: boolean; // For Supabase DB compatibility
-  type: "class" | "exam" | "meeting" | "deadline" | "other";
+  type: EventType;
   subjectId?: ID;
   subject_id?: ID; // For Supabase DB compatibility
   lessonPlanId?: ID;
   lesson_plan_id?: ID; // For Supabase DB compatibility
   assessmentId?: ID;
   assessment_id?: ID; // For Supabase DB compatibility
-  teachingPlanId?: ID; // Adding the missing field
+  teachingPlanId?: ID;
   teaching_plan_id?: ID; // For Supabase DB compatibility
   location?: string;
   color?: string;
+  sourceType?: EventSourceType;
+  source_type?: EventSourceType; // For Supabase DB compatibility
+  sourceId?: ID;
+  source_id?: ID; // For Supabase DB compatibility
   created_at?: DateISO; // For Supabase DB compatibility
 }
 

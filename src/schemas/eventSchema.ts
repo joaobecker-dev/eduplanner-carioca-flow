@@ -9,6 +9,8 @@ export const eventCategoryLabels: Record<string, string> = {
   other: "Outro"
 };
 
+export const eventSourceTypes = ["manual", "assessment", "lesson_plan", "teaching_plan"] as const;
+
 export const eventSchema = z.object({
   title: z.string().min(1, "O título é obrigatório"),
   description: z.string().optional(),
@@ -17,7 +19,9 @@ export const eventSchema = z.object({
   endDate: z.coerce.date().nullable().optional(),
   allDay: z.boolean().default(false),
   color: z.string().optional(),
-  subjectId: z.string().uuid().optional().nullable()
+  subjectId: z.string().uuid().optional().nullable(),
+  sourceType: z.enum(eventSourceTypes).optional().default("manual"),
+  sourceId: z.string().uuid().optional().nullable()
 });
 
 export type EventFormValues = z.infer<typeof eventSchema>;
@@ -25,5 +29,6 @@ export type EventFormValues = z.infer<typeof eventSchema>;
 export const eventFormDefaults: Partial<EventFormValues> = {
   type: "class",
   allDay: true,
-  color: "#3b82f6" // blue
+  color: "#3b82f6", // blue
+  sourceType: "manual"
 };

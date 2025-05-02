@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { CalendarEvent } from '@/types';
 import { calendarEventService, subjectService } from '@/lib/services';
 import { DateSelectArg, EventClickArg } from '@fullcalendar/core';
@@ -11,8 +11,12 @@ import CalendarFilters from './components/CalendarFilters';
 import CalendarDisplay from './components/CalendarDisplay';
 import EventDetailsModal from './components/EventDetailsModal';
 import NewEventModal from './NewEventModal';
+import DeleteConfirmationDialog from '@/components/ui-components/DeleteConfirmationDialog';
 
 const CalendarView: React.FC = () => {
+  // Access query client for cache invalidation
+  const queryClient = useQueryClient();
+  
   // State for filtering
   const [selectedSubjectId, setSelectedSubjectId] = useState<string | null>(null);
   const [selectedEventTypes, setSelectedEventTypes] = useState<Record<string, boolean>>({
@@ -34,6 +38,10 @@ const CalendarView: React.FC = () => {
   // State for new/edit event modal
   const [showNewEventModal, setShowNewEventModal] = useState(false);
   const [eventToEdit, setEventToEdit] = useState<CalendarEvent | null>(null);
+  
+  // State for delete confirmation
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   
   // Query client for data fetching and cache updates
   const { data: events = [], isLoading: eventsLoading, refetch: refetchEvents } = useQuery({
@@ -144,8 +152,8 @@ const CalendarView: React.FC = () => {
         toast.success('Evento criado com sucesso!');
       }
       
-      // Refresh calendar events
-      refetchEvents();
+      // Refresh calendar events by invalidating the query
+      queryClient.invalidateQueries(['calendarEvents']);
       
       // Close the modal
       setShowNewEventModal(false);
@@ -155,18 +163,41 @@ const CalendarView: React.FC = () => {
     }
   };
 
-  // Handle deleting an event
-  const handleDeleteEvent = async () => {
+  // Handle opening delete confirmation dialog
+  const handleDeleteConfirmOpen = () => {
+    setShowEventModal(false);
+    setShowDeleteConfirmation(true);
+  };
+
+  // Handle delete cancellation
+  const handleDeleteCancel = () => {
+    setShowDeleteConfirmation(false);
+    setIsDeleting(false);
+  };
+
+  // Handle event deletion
+  const handleDeleteConfirm = async () => {
     if (!selectedEvent) return;
     
     try {
-      await calendarEventService.delete(selectedEvent.id);
+      setIsDeleting(true);
+      
+      // Delete the event
+      await calendarEventService.deleteEvent(selectedEvent.id);
+      
+      // Refresh calendar events by invalidating the query
+      queryClient.invalidateQueries(['calendarEvents']);
+      
       toast.success('Evento excluído com sucesso!');
-      refetchEvents();
-      setShowEventModal(false);
+      
+      // Close modals
+      setShowDeleteConfirmation(false);
+      setSelectedEvent(null);
+      setIsDeleting(false);
     } catch (error) {
       console.error('Error deleting event:', error);
       toast.error('Erro ao excluir evento. Tente novamente.');
+      setIsDeleting(false);
     }
   };
 
@@ -202,7 +233,7 @@ const CalendarView: React.FC = () => {
         setIsOpen={setShowEventModal}
         selectedEvent={selectedEvent}
         handleEditEvent={handleEditEvent}
-        handleDeleteEvent={handleDeleteEvent}
+        handleDeleteEvent={handleDeleteConfirmOpen}
         getEventTypeLabel={getEventTypeLabel}
         getRelatedSubject={(subjectId) => getRelatedSubject(subjects, subjectId)}
       />
@@ -213,6 +244,18 @@ const CalendarView: React.FC = () => {
         onClose={() => setShowNewEventModal(false)}
         onSave={handleSaveEvent}
         eventToEdit={eventToEdit}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <DeleteConfirmationDialog
+        isOpen={showDeleteConfirmation}
+        isLoading={isDeleting}
+        title="Excluir Evento"
+        description="Tem certeza que deseja excluir este evento? Esta ação não pode ser desfeita."
+        onClose={handleDeleteCancel}
+        onConfirm={handleDeleteConfirm}
+        cancelLabel="Cancelar"
+        confirmLabel="Excluir"
       />
     </div>
   );

@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Trash2, Edit } from 'lucide-react';
 
 interface EventDetailsModalProps {
   isOpen: boolean;
@@ -65,6 +66,17 @@ const EventDetailsModal: React.FC<EventDetailsModalProps> = ({
             </div>
           )}
 
+          {/* Source information */}
+          {selectedEvent.sourceType && selectedEvent.sourceType !== 'manual' && (
+            <div>
+              <span className="font-medium">Origem:</span>
+              <p>{selectedEvent.sourceType === 'assessment' ? 'Avaliação' : 
+                  selectedEvent.sourceType === 'lesson_plan' ? 'Plano de Aula' : 
+                  selectedEvent.sourceType === 'teaching_plan' ? 'Plano de Ensino' : 
+                  'Manual'}</p>
+            </div>
+          )}
+
           {/* References */}
           <div className="space-y-2">
             {selectedEvent.assessmentId && (
@@ -102,11 +114,13 @@ const EventDetailsModal: React.FC<EventDetailsModalProps> = ({
               variant="destructive" 
               onClick={handleDeleteEvent}
             >
+              <Trash2 className="mr-2 h-4 w-4" />
               Excluir
             </Button>
             <Button 
               onClick={handleEditEvent}
             >
+              <Edit className="mr-2 h-4 w-4" />
               Editar
             </Button>
           </div>

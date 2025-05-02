@@ -41,7 +41,7 @@ export const calendarEventService = {
 
   create: async (eventData: Omit<CalendarEvent, 'id' | 'created_at'>): Promise<CalendarEvent> => {
     try {
-      // Create a properly typed object instead of using mapToSnakeCase
+      // Create a properly typed object for insertion
       const preparedData = {
         title: eventData.title,
         description: eventData.description,
@@ -54,7 +54,9 @@ export const calendarEventService = {
         assessment_id: eventData.assessmentId,
         teaching_plan_id: eventData.teachingPlanId,
         location: eventData.location,
-        color: eventData.color
+        color: eventData.color,
+        source_type: eventData.sourceType || 'manual', // Default to manual if not specified
+        source_id: eventData.sourceId
       };
       
       // Ensure required fields are present
@@ -93,6 +95,8 @@ export const calendarEventService = {
       if (eventData.teachingPlanId !== undefined) updateData.teaching_plan_id = eventData.teachingPlanId;
       if (eventData.location !== undefined) updateData.location = eventData.location;
       if (eventData.color !== undefined) updateData.color = eventData.color;
+      if (eventData.sourceType !== undefined) updateData.source_type = eventData.sourceType;
+      if (eventData.sourceId !== undefined) updateData.source_id = eventData.sourceId;
 
       const { data, error } = await supabase
         .from("calendar_events")
@@ -109,26 +113,66 @@ export const calendarEventService = {
     }
   },
 
-  syncFromAssessment: async (assessment: Assessment): Promise<void> => {
+  // Implement the delete method
+  deleteEvent: async (id: ID): Promise<boolean> => {
     try {
-      if (!assessment) return;
-
-      // Explicitly create the object with all required fields
-      const eventData = {
-        title: assessment.title,
-        description: assessment.description || '',
-        type: "exam" as const,
-        start_date: normalizeToISO(assessment.date) || '',
-        end_date: normalizeToISO(assessment.dueDate || assessment.date),
-        all_day: true,
-        subject_id: assessment.subjectId,
-        assessment_id: assessment.id,
-      };
-
       const { error } = await supabase
         .from("calendar_events")
-        .upsert(eventData, {
-          onConflict: 'assessment_id',
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      return true;
+    } catch (error) {
+      handleError(error, 'excluir evento do calendário');
+      throw error;
+    }
+  },
+
+  // Delete events by source
+  deleteBySource: async (sourceType: string, sourceId: ID): Promise<boolean> => {
+    try {
+      const { error } = await supabase
+        .from("calendar_events")
+        .delete()
+        .eq('source_type', sourceType)
+        .eq('source_id', sourceId);
+
+      if (error) throw error;
+      return true;
+    } catch (error) {
+      handleError(error, `excluir eventos do calendário por fonte (${sourceType})`);
+      return false;
+    }
+  },
+
+  syncFromAssessment: async (assessment: Assessment): Promise<void> => {
+    try {
+      if (!assessment || !assessment.id) {
+        console.log('Assessment data is missing, skipping calendar sync');
+        return;
+      }
+
+      // Create the event object with all required fields
+      const eventData = {
+        title: `Avaliação: ${assessment.title}`,
+        description: assessment.description || '',
+        type: "exam" as const,
+        startDate: normalizeToISO(assessment.date) || '',
+        endDate: normalizeToISO(assessment.dueDate || assessment.date) || '',
+        allDay: true,
+        subjectId: assessment.subjectId,
+        assessmentId: assessment.id,
+        color: '#e67c73', // Reddish color for exams
+        sourceType: 'assessment' as const,
+        sourceId: assessment.id
+      };
+
+      // Use upsert with onConflict to prevent duplication
+      const { error } = await supabase
+        .from("calendar_events")
+        .upsert(mapToSnakeCase(eventData), {
+          onConflict: 'source_id,source_type',
           ignoreDuplicates: false
         });
 
@@ -142,6 +186,7 @@ export const calendarEventService = {
     try {
       if (!studentAssessment) return;
       console.log('Student assessment synced with calendar:', studentAssessment.id);
+      // Currently not creating calendar events for student assessments
     } catch (error) {
       handleError(error, 'sincronizar evento do calendário com avaliação de aluno');
     }
@@ -149,27 +194,41 @@ export const calendarEventService = {
 
   syncFromLessonPlan: async (lessonPlan: LessonPlan): Promise<void> => {
     try {
-      if (!lessonPlan || !lessonPlan.date) {
-        console.log('Lesson plan date is missing, skipping calendar sync');
+      if (!lessonPlan || !lessonPlan.date || !lessonPlan.id) {
+        console.log('Lesson plan data is missing, skipping calendar sync');
         return;
       }
 
-      // Explicitly create the object with all required fields
+      const startDate = normalizeToISO(lessonPlan.date) || '';
+      
+      // Calculate end date based on duration (in minutes)
+      let endDate = startDate;
+      if (lessonPlan.duration) {
+        const date = new Date(lessonPlan.date);
+        date.setMinutes(date.getMinutes() + lessonPlan.duration);
+        endDate = normalizeToISO(date) || startDate;
+      }
+
+      // Create the event object with all required fields
       const eventData = {
-        title: `Plano de Aula: ${lessonPlan.title}`,
+        title: `Aula: ${lessonPlan.title}`,
         description: lessonPlan.notes || '',
         type: "class" as const,
-        start_date: normalizeToISO(lessonPlan.date) || '',
-        end_date: normalizeToISO(lessonPlan.date),
-        all_day: true,
-        teaching_plan_id: lessonPlan.teachingPlanId,
-        lesson_plan_id: lessonPlan.id,
+        startDate: startDate,
+        endDate: endDate,
+        allDay: false, // Lesson plans typically have a duration
+        teachingPlanId: lessonPlan.teachingPlanId,
+        lessonPlanId: lessonPlan.id,
+        color: '#9b87f5', // Purple color for classes
+        sourceType: 'lesson_plan' as const,
+        sourceId: lessonPlan.id
       };
 
+      // Use upsert with onConflict to prevent duplication
       const { error } = await supabase
         .from("calendar_events")
-        .upsert(eventData, {
-          onConflict: 'lesson_plan_id',
+        .upsert(mapToSnakeCase(eventData), {
+          onConflict: 'source_id,source_type',
           ignoreDuplicates: false
         });
 
@@ -181,27 +240,31 @@ export const calendarEventService = {
 
   syncFromTeachingPlan: async (teachingPlan: TeachingPlan): Promise<void> => {
     try {
-      if (!teachingPlan || !teachingPlan.startDate) {
-        console.log('Teaching plan start date is missing, skipping calendar sync');
+      if (!teachingPlan || !teachingPlan.startDate || !teachingPlan.id) {
+        console.log('Teaching plan data is missing, skipping calendar sync');
         return;
       }
 
-      // Explicitly create the object with all required fields
+      // Create the event object with all required fields
       const eventData = {
         title: `Plano de Ensino: ${teachingPlan.title}`,
         description: teachingPlan.description || '',
         type: "class" as const,
-        start_date: normalizeToISO(teachingPlan.startDate) || '',
-        end_date: normalizeToISO(teachingPlan.endDate || teachingPlan.startDate),
-        all_day: true,
-        subject_id: teachingPlan.subjectId,
-        teaching_plan_id: teachingPlan.id,
+        startDate: normalizeToISO(teachingPlan.startDate) || '',
+        endDate: normalizeToISO(teachingPlan.endDate) || '',
+        allDay: true,
+        subjectId: teachingPlan.subjectId,
+        teachingPlanId: teachingPlan.id,
+        color: '#7E69AB', // Darker purple for teaching plans
+        sourceType: 'teaching_plan' as const,
+        sourceId: teachingPlan.id
       };
 
+      // Use upsert with onConflict to prevent duplication
       const { error } = await supabase
         .from("calendar_events")
-        .upsert(eventData, {
-          onConflict: 'teaching_plan_id',
+        .upsert(mapToSnakeCase(eventData), {
+          onConflict: 'source_id,source_type',
           ignoreDuplicates: false
         });
 

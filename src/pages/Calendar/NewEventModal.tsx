@@ -25,7 +25,10 @@ const NewEventModal: React.FC<NewEventModalProps> = ({ isOpen, onClose, onSave, 
         endDate: normalizeToISO(values.endDate) || normalizeToISO(values.startDate) || '',
         allDay: values.allDay,
         color: values.color,
-        subjectId: values.subjectId || null,
+        subjectId: values.subjectId || undefined,
+        // Preserve source information if editing an event
+        sourceType: eventToEdit?.sourceType || 'manual',
+        sourceId: eventToEdit?.sourceId || undefined,
       };
 
       await onSave(eventData);
