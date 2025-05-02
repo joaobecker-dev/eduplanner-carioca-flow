@@ -47,7 +47,16 @@ const TeachingPlanEdit: React.FC = () => {
 
   // Update mutation
   const mutation = useMutation({
-    mutationFn: (values: TeachingPlanFormValues) => teachingPlanService.update(id as string, values),
+    mutationFn: (values: TeachingPlanFormValues) => {
+      // Convert date objects to ISO strings
+      const formattedValues = {
+        ...values,
+        startDate: values.startDate instanceof Date ? values.startDate.toISOString() : values.startDate,
+        endDate: values.endDate instanceof Date ? values.endDate.toISOString() : values.endDate
+      };
+      
+      return teachingPlanService.update(id as string, formattedValues);
+    },
     onSuccess: () => {
       toast({
         title: "Plano de ensino atualizado",
@@ -110,7 +119,7 @@ const TeachingPlanEdit: React.FC = () => {
       <TeachingPlanForm
         initialData={teachingPlan}
         onSubmit={mutation.mutate}
-        isSubmitting={mutation.isLoading}
+        isSubmitting={mutation.status === "pending"}
         subjects={subjects}
         annualPlans={annualPlans}
       />

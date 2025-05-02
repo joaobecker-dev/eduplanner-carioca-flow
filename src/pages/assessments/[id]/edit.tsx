@@ -47,7 +47,16 @@ const AssessmentEdit: React.FC = () => {
 
   // Update mutation
   const mutation = useMutation({
-    mutationFn: (values: AssessmentFormValues) => assessmentService.update(id as string, values),
+    mutationFn: (values: AssessmentFormValues) => {
+      // Convert date objects to ISO strings
+      const formattedValues = {
+        ...values,
+        date: values.date instanceof Date ? values.date.toISOString() : values.date,
+        dueDate: values.dueDate instanceof Date ? values.dueDate.toISOString() : values.dueDate
+      };
+      
+      return assessmentService.update(id as string, formattedValues);
+    },
     onSuccess: () => {
       toast({
         title: "Avaliação atualizada",
@@ -119,7 +128,7 @@ const AssessmentEdit: React.FC = () => {
       <AssessmentForm
         initialData={formInitialData}
         onSubmit={mutation.mutate}
-        isSubmitting={mutation.isLoading}
+        isSubmitting={mutation.status === "pending"}
         subjects={subjects}
         teachingPlans={teachingPlans}
       />

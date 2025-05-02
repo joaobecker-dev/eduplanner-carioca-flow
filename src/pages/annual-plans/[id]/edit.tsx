@@ -117,7 +117,7 @@ const AnnualPlanEdit: React.FC = () => {
       <AnnualPlanForm
         initialData={formInitialData}
         onSubmit={mutation.mutate}
-        isSubmitting={mutation.isLoading}
+        isSubmitting={mutation.status === "pending"}
         subjects={subjects}
         academicPeriods={academicPeriods}
       />
