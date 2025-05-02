@@ -1,8 +1,6 @@
-
 import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import {
@@ -28,23 +26,9 @@ import { ptBR } from 'date-fns/locale';
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { assessmentSchema, AssessmentSchemaValues } from '@/schemas/assessmentSchema';
 
-const formSchema = z.object({
-  title: z.string().min(3, { message: 'Título deve ter pelo menos 3 caracteres' }),
-  description: z.string().optional().default(''),
-  subjectId: z.string().min(1, { message: 'Selecione uma disciplina' }),
-  teachingPlanId: z.string().optional().default(''),
-  type: z.enum(['diagnostic', 'formative', 'summative'], {
-    required_error: 'Tipo de avaliação é obrigatório'
-  }),
-  totalPoints: z.coerce.number({ required_error: 'Total de pontos é obrigatório' })
-    .min(1, { message: 'Total de pontos deve ser pelo menos 1' }),
-  date: z.date({ required_error: 'Data da avaliação é obrigatória' }),
-  dueDate: z.date().optional(),
-});
-
-// Export the inferred type for use in other components
-export type AssessmentFormValues = z.infer<typeof formSchema>;
+export type AssessmentFormValues = AssessmentSchemaValues;
 
 interface AssessmentFormProps {
   onSubmit: (data: AssessmentFormValues) => void;
@@ -62,7 +46,7 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
   isSubmitting = false,
 }) => {
   const form = useForm<AssessmentFormValues>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(assessmentSchema),
     defaultValues: {
       title: initialData?.title || '',
       description: initialData?.description || '',

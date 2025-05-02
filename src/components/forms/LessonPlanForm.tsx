@@ -27,23 +27,9 @@ import { ptBR } from 'date-fns/locale';
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { lessonPlanSchema, LessonPlanSchemaValues } from '@/schemas/lessonPlanSchema';
 
-const formSchema = z.object({
-  title: z.string().min(3, { message: 'Título deve ter pelo menos 3 caracteres' }),
-  teachingPlanId: z.string().min(1, { message: 'Selecione um plano de ensino' }),
-  date: z.date({ required_error: 'Data da aula é obrigatória' }),
-  duration: z.number({ required_error: 'Duração é obrigatória' })
-    .min(1, { message: 'Duração deve ser pelo menos 1 minuto' }),
-  objectives: z.string().optional().default(''),
-  contents: z.string().optional().default(''),
-  activities: z.string().optional().default(''),
-  resources: z.string().optional().default(''),
-  homework: z.string().optional(),
-  evaluation: z.string().optional(),
-  notes: z.string().optional(),
-});
-
-export type LessonPlanFormValues = z.infer<typeof formSchema>;
+export type LessonPlanFormValues = LessonPlanSchemaValues;
 
 interface LessonPlanFormProps {
   onSubmit: (data: LessonPlanFormValues) => void;
@@ -59,7 +45,7 @@ const LessonPlanForm: React.FC<LessonPlanFormProps> = ({
   isSubmitting = false,
 }) => {
   const form = useForm<LessonPlanFormValues>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(lessonPlanSchema),
     defaultValues: {
       title: initialData?.title || '',
       teachingPlanId: initialData?.teachingPlanId || '',
