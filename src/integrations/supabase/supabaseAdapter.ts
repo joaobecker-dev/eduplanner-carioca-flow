@@ -7,11 +7,12 @@ export const normalizeToISO = (value: Date | string | undefined | null): string 
 export function convertDatesToISO<T extends Record<string, any>>(obj: T): Record<string, any> {
   const result = { ...obj };
   
-  // Use type-safe approach to handle generic Record
+  // Use type-safe approach without using instanceof directly on generic type T
   Object.keys(result).forEach(key => {
     const value = result[key as keyof typeof result];
-    if (value instanceof Date) {
-      (result as Record<string, any>)[key] = value.toISOString();
+    // Check if value is a Date object safely
+    if (value && Object.prototype.toString.call(value) === '[object Date]') {
+      (result as Record<string, any>)[key] = (value as Date).toISOString();
     }
   });
   
