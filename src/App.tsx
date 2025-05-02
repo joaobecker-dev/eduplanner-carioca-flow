@@ -13,6 +13,8 @@ import Calendar from "./pages/Calendar";
 import NotFound from "./pages/NotFound";
 import AnnualPlanDetail from "./pages/annual-plans/[id]";
 import TeachingPlanDetail from "./pages/teaching-plans/[id]";
+import LessonPlanDetail from "./pages/lesson-plans/[id]";
+import AssessmentDetail from "./pages/assessments/[id]";
 
 const queryClient = new QueryClient();
 
@@ -35,6 +37,12 @@ const App = () => (
             
             {/* Teaching Plan routes */}
             <Route path="/teaching-plans/:id" element={<TeachingPlanDetail />} />
+            
+            {/* Lesson Plan routes */}
+            <Route path="/lesson-plans/:id" element={<LessonPlanDetail />} />
+            
+            {/* Assessment routes */}
+            <Route path="/assessments/:id" element={<AssessmentDetail />} />
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

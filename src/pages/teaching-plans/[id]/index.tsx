@@ -21,14 +21,18 @@ const TeachingPlanDetail: React.FC = () => {
     queryKey: ["teachingPlan", id],
     queryFn: () => teachingPlanService.getById(id as string),
     enabled: !!id,
-    onError: (err: any) => {
+  });
+
+  // Handle error using useEffect instead of inline onError
+  React.useEffect(() => {
+    if (error) {
       toast({
         title: "Erro ao carregar plano de ensino",
-        description: err.message || "Não foi possível carregar os dados do plano de ensino.",
+        description: (error as Error).message || "Não foi possível carregar os dados do plano de ensino.",
         variant: "destructive",
       });
-    },
-  });
+    }
+  }, [error]);
 
   const { data: subject } = useQuery({
     queryKey: ["subject", teachingPlan?.subjectId],
@@ -134,7 +138,7 @@ const TeachingPlanDetail: React.FC = () => {
 
         <DetailSection title="Referências BNCC">
           <DetailList 
-            items={teachingPlan.bnccReferences || []} 
+            items={teachingPlan.bncc_references || []} 
             emptyMessage="Nenhuma referência BNCC informada" 
           />
         </DetailSection>

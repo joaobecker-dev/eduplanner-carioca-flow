@@ -20,14 +20,18 @@ const AnnualPlanDetail: React.FC = () => {
     queryKey: ["annualPlan", id],
     queryFn: () => annualPlanService.getById(id as string),
     enabled: !!id,
-    onError: (err: any) => {
+  });
+
+  // Handle error using useEffect instead of inline onError
+  React.useEffect(() => {
+    if (error) {
       toast({
         title: "Erro ao carregar plano anual",
-        description: err.message || "Não foi possível carregar os dados do plano anual.",
+        description: (error as Error).message || "Não foi possível carregar os dados do plano anual.",
         variant: "destructive",
       });
-    },
-  });
+    }
+  }, [error]);
 
   const { data: subject } = useQuery({
     queryKey: ["subject", annualPlan?.subjectId],
@@ -115,7 +119,7 @@ const AnnualPlanDetail: React.FC = () => {
 
         <DetailSection title="Materiais de Referência">
           <DetailList 
-            items={annualPlan.referenceMaterials || []} 
+            items={annualPlan.reference_materials || []} 
             emptyMessage="Nenhum material de referência informado" 
           />
         </DetailSection>
