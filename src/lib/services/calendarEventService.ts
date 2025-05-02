@@ -1,8 +1,7 @@
-
-import { CalendarEvent, ID, Assessment, StudentAssessment, LessonPlan, TeachingPlan } from '@/types';
+import { CalendarEvent, ID } from '@/types';
 import { createService, handleError } from './baseService';
 import { supabase } from "@/integrations/supabase/client";
-import { mapToCamelCase, mapToSnakeCase, normalizeToISO, toISO } from '@/integrations/supabase/supabaseAdapter';
+import { mapToCamelCase, mapToSnakeCase, normalizeToISO } from '@/integrations/supabase/supabaseAdapter';
 
 // Calendar Event Service
 export const calendarEventService = {
@@ -24,119 +23,72 @@ export const calendarEventService = {
     }
   },
 
-  getBySubject: async (subjectId: ID): Promise<CalendarEvent[]> => {
+  getByMonth: async (year: number, month: number): Promise<CalendarEvent[]> => {
     try {
+      // Create date range for the entire month
+      const startDate = new Date(year, month - 1, 1).toISOString();
+      const endDate = new Date(year, month, 0).toISOString(); // Last day of month
+
       const { data, error } = await supabase
         .from("calendar_events")
         .select('*')
-        .eq('subject_id', subjectId);
+        .or(`start_date.gte.${startDate},end_date.gte.${startDate}`)
+        .or(`start_date.lte.${endDate},end_date.lte.${endDate}`);
 
       if (error) throw error;
       return data ? data.map(item => mapToCamelCase<CalendarEvent>(item)) : [];
     } catch (error) {
-      handleError(error, 'buscar eventos por disciplina');
+      handleError(error, 'buscar eventos por mês');
       return [];
     }
   },
 
-  syncFromAssessment: async (assessment: Assessment): Promise<void> => {
+  createEvent: async (eventData: Omit<CalendarEvent, 'id' | 'created_at'>): Promise<CalendarEvent | null> => {
     try {
-      const eventData = {
-        title: assessment.title,
-        description: assessment.description || null,
-        type: "exam" as const,
-        start_date: normalizeToISO(assessment.date),
-        end_date: normalizeToISO(assessment.dueDate || assessment.date),
-        all_day: true,
-        subject_id: assessment.subjectId,
-        assessment_id: assessment.id,
-        color: null,
-      };
+      // Convert date objects to ISO strings if needed
+      const processedData = mapToSnakeCase({
+        ...eventData,
+        start_date: normalizeToISO(eventData.startDate || eventData.start_date),
+        end_date: normalizeToISO(eventData.endDate || eventData.end_date),
+      });
 
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from("calendar_events")
-        .upsert(eventData, {
-          onConflict: 'assessment_id',
-          ignoreDuplicates: false
-        });
-
+        .insert(processedData)
+        .select()
+        .single();
+      
       if (error) throw error;
+      return data ? mapToCamelCase<CalendarEvent>(data) : null;
     } catch (error) {
-      handleError(error, 'sincronizar evento do calendário com avaliação');
+      handleError(error, 'criar evento no calendário');
+      return null;
     }
   },
 
-  syncFromStudentAssessment: async (studentAssessment: StudentAssessment): Promise<void> => {
+  updateEvent: async (id: ID, eventData: Partial<CalendarEvent>): Promise<CalendarEvent | null> => {
     try {
-      console.log('Student assessment synced with calendar:', studentAssessment.id);
-    } catch (error) {
-      handleError(error, 'sincronizar evento do calendário com avaliação de aluno');
-    }
-  },
+      // Convert date objects to ISO strings if needed
+      const processedData = mapToSnakeCase({
+        ...eventData,
+        start_date: eventData.startDate ? normalizeToISO(eventData.startDate) : 
+                   (eventData.start_date ? normalizeToISO(eventData.start_date) : undefined),
+        end_date: eventData.endDate ? normalizeToISO(eventData.endDate) : 
+                  (eventData.end_date ? normalizeToISO(eventData.end_date) : undefined),
+      });
 
-  syncFromLessonPlan: async (lessonPlan: LessonPlan): Promise<void> => {
-    try {
-      if (!lessonPlan.date) {
-        console.log('Lesson plan date is missing, skipping calendar sync');
-        return;
-      }
-
-      const eventData = {
-        title: `Plano de Aula: ${lessonPlan.title}`,
-        description: lessonPlan.notes || null,
-        type: "class" as const,
-        start_date: normalizeToISO(lessonPlan.date),
-        end_date: normalizeToISO(lessonPlan.date),
-        all_day: true,
-        subject_id: null,
-        teaching_plan_id: lessonPlan.teachingPlanId,
-        lesson_plan_id: lessonPlan.id,
-        color: null,
-      };
-
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from("calendar_events")
-        .upsert(eventData, {
-          onConflict: 'lesson_plan_id',
-          ignoreDuplicates: false
-        });
-
+        .update(processedData)
+        .eq('id', id)
+        .select()
+        .single();
+      
       if (error) throw error;
+      return data ? mapToCamelCase<CalendarEvent>(data) : null;
     } catch (error) {
-      handleError(error, 'sincronizar evento do calendário com plano de aula');
-    }
-  },
-
-  syncFromTeachingPlan: async (teachingPlan: TeachingPlan): Promise<void> => {
-    try {
-      if (!teachingPlan.startDate) {
-        console.log('Teaching plan start date is missing, skipping calendar sync');
-        return;
-      }
-
-      const eventData = {
-        title: `Plano de Ensino: ${teachingPlan.title}`,
-        description: teachingPlan.description || null,
-        type: "class" as const,
-        start_date: normalizeToISO(teachingPlan.startDate),
-        end_date: normalizeToISO(teachingPlan.endDate || teachingPlan.startDate),
-        all_day: true,
-        subject_id: teachingPlan.subjectId,
-        teaching_plan_id: teachingPlan.id,
-        lesson_plan_id: null,
-        color: null,
-      };
-
-      const { error } = await supabase
-        .from("calendar_events")
-        .upsert(eventData, {
-          onConflict: 'teaching_plan_id',
-          ignoreDuplicates: false
-        });
-
-      if (error) throw error;
-    } catch (error) {
-      handleError(error, 'sincronizar evento do calendário com plano de ensino');
+      handleError(error, 'atualizar evento no calendário');
+      return null;
     }
   }
 };
