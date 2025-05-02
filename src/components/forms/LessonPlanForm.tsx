@@ -1,33 +1,15 @@
 import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { LessonPlan, TeachingPlan } from '@/types';
-import { CalendarIcon } from 'lucide-react';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
-import { Calendar } from '@/components/ui/calendar';
-import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { Form } from '@/components/ui/form';
+import { LessonPlan, TeachingPlan } from '@/types';
 import { lessonPlanSchema, LessonPlanSchemaValues } from '@/schemas/lessonPlanSchema';
+import InputField from './fields/InputField';
+import TextAreaField from './fields/TextAreaField';
+import SelectField from './fields/SelectField';
+import DatePickerField from './fields/DatePickerField';
+import FormSection from './layout/FormSection';
 
 export type LessonPlanFormValues = LessonPlanSchemaValues;
 
@@ -85,260 +67,135 @@ const LessonPlanForm: React.FC<LessonPlanFormProps> = ({
     onSubmit(values);
   };
 
+  const teachingPlanOptions = teachingPlans.map(plan => ({
+    label: plan.title,
+    value: plan.id
+  }));
+
   return (
     <Form {...form}>
       <form className="space-y-4" onSubmit={form.handleSubmit(handleSubmit)}>
-        <FormField
-          control={form.control}
-          name="title"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Título*</FormLabel>
-              <FormControl>
-                <Input {...field} disabled={isSubmitting} placeholder="Aula: Operações com frações" />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="teachingPlanId"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Plano de Ensino*</FormLabel>
-              <Select
-                disabled={isSubmitting}
-                onValueChange={field.onChange}
-                defaultValue={field.value}
-                value={field.value}
-              >
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione um plano de ensino" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {teachingPlans.map(plan => (
-                    <SelectItem key={plan.id} value={plan.id}>
-                      {plan.title}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="date"
-            render={({ field }) => (
-              <FormItem className="flex flex-col">
-                <FormLabel>Data da Aula*</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        variant={"outline"}
-                        className={cn(
-                          "w-full pl-3 text-left font-normal",
-                          !field.value && "text-muted-foreground"
-                        )}
-                        disabled={isSubmitting}
-                      >
-                        {field.value ? (
-                          format(field.value, "PPP", { locale: ptBR })
-                        ) : (
-                          <span>Selecione uma data</span>
-                        )}
-                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={field.value}
-                      onSelect={field.onChange}
-                      disabled={(date) => date < new Date("2000-01-01")}
-                      initialFocus
-                      locale={ptBR}
-                    />
-                  </PopoverContent>
-                </Popover>
-                <FormMessage />
-              </FormItem>
-            )}
+        <FormSection>
+          <InputField
+            name="title"
+            label="Título*"
+            placeholder="Aula: Operações com frações"
+            disabled={isSubmitting}
           />
 
-          <FormField
-            control={form.control}
-            name="duration"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Duração (minutos)*</FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    {...field}
-                    onChange={(e) => field.onChange(parseInt(e.target.value))}
-                    disabled={isSubmitting}
-                    min={1}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
+          <SelectField
+            name="teachingPlanId"
+            label="Plano de Ensino*"
+            placeholder="Selecione um plano de ensino"
+            options={teachingPlanOptions}
+            disabled={isSubmitting}
           />
-        </div>
+        </FormSection>
 
-        <FormField
-          control={form.control}
-          name="objectives"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Objetivos (um por linha)</FormLabel>
-              <FormControl>
-                <Textarea
-                  {...field}
-                  disabled={isSubmitting}
-                  placeholder="Compreender adição de frações com denominadores iguais
+        <FormSection>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <DatePickerField
+              name="date"
+              label="Data da Aula*"
+              placeholder="Selecione uma data"
+              disabled={isSubmitting}
+              disabledBefore={new Date("2000-01-01")}
+            />
+
+            <InputField
+              name="duration"
+              label="Duração (minutos)*"
+              type="number"
+              disabled={isSubmitting}
+            />
+          </div>
+        </FormSection>
+
+        <FormSection>
+          <TextAreaField
+            name="objectives"
+            label="Objetivos (um por linha)"
+            placeholder="Compreender adição de frações com denominadores iguais
 Resolver problemas envolvendo adição e subtração de frações
 Aplicar os conceitos em situações do cotidiano"
-                  className="min-h-[100px]"
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+            disabled={isSubmitting}
+            rows={3}
+            className="min-h-[100px]"
+          />
 
-        <FormField
-          control={form.control}
-          name="contents"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Conteúdos (um por linha)</FormLabel>
-              <FormControl>
-                <Textarea
-                  {...field}
-                  disabled={isSubmitting}
-                  placeholder="Frações: adição e subtração
+          <TextAreaField
+            name="contents"
+            label="Conteúdos (um por linha)"
+            placeholder="Frações: adição e subtração
 Denominadores iguais
 Resolução de problemas"
-                  className="min-h-[100px]"
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+            disabled={isSubmitting}
+            rows={3}
+            className="min-h-[100px]"
+          />
+        </FormSection>
 
-        <FormField
-          control={form.control}
-          name="activities"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Atividades (uma por linha)</FormLabel>
-              <FormControl>
-                <Textarea
-                  {...field}
-                  disabled={isSubmitting}
-                  placeholder="Apresentação do conteúdo (15min)
+        <FormSection>
+          <TextAreaField
+            name="activities"
+            label="Atividades (uma por linha)"
+            placeholder="Apresentação do conteúdo (15min)
 Exercícios em grupo (20min)
 Correção coletiva (15min)"
-                  className="min-h-[100px]"
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+            disabled={isSubmitting}
+            rows={3}
+            className="min-h-[100px]"
+          />
 
-        <FormField
-          control={form.control}
-          name="resources"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Recursos (um por linha)</FormLabel>
-              <FormControl>
-                <Textarea
-                  {...field}
-                  disabled={isSubmitting}
-                  placeholder="Livro didático
+          <TextAreaField
+            name="resources"
+            label="Recursos (um por linha)"
+            placeholder="Livro didático
 Material manipulável de frações
 Lousa e canetão
 Folhas de atividades"
-                  className="min-h-[100px]"
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+            disabled={isSubmitting}
+            rows={3}
+            className="min-h-[100px]"
+          />
+        </FormSection>
 
-        <FormField
-          control={form.control}
-          name="homework"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Tarefa de Casa</FormLabel>
-              <FormControl>
-                <Textarea
-                  {...field}
-                  disabled={isSubmitting}
-                  placeholder="Livro didático, páginas 45 e 46, exercícios 1 a 5."
-                  className="min-h-[80px]"
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <FormSection>
+          <TextAreaField
+            name="homework"
+            label="Tarefa de Casa"
+            placeholder="Livro didático, páginas 45 e 46, exercícios 1 a 5."
+            disabled={isSubmitting}
+            rows={2}
+            className="min-h-[80px]"
+          />
 
-        <FormField
-          control={form.control}
-          name="evaluation"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Avaliação</FormLabel>
-              <FormControl>
-                <Textarea
-                  {...field}
-                  disabled={isSubmitting}
-                  placeholder="Participação nas atividades em grupo
+          <TextAreaField
+            name="evaluation"
+            label="Avaliação"
+            placeholder="Participação nas atividades em grupo
 Resolução dos exercícios
 Participação nas discussões"
-                  className="min-h-[80px]"
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+            disabled={isSubmitting}
+            rows={2}
+            className="min-h-[80px]"
+          />
 
-        <FormField
-          control={form.control}
-          name="notes"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Observações</FormLabel>
-              <FormControl>
-                <Textarea
-                  {...field}
-                  disabled={isSubmitting}
-                  placeholder="Notas adicionais sobre a aula ou adaptações necessárias"
-                  className="min-h-[80px]"
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+          <TextAreaField
+            name="notes"
+            label="Observações"
+            placeholder="Notas adicionais sobre a aula ou adaptações necessárias"
+            disabled={isSubmitting}
+            rows={2}
+            className="min-h-[80px]"
+          />
+        </FormSection>
+        
+        <div className="flex justify-end mt-6">
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? "Salvando..." : initialData?.id ? "Atualizar" : "Criar"}
+          </Button>
+        </div>
       </form>
     </Form>
   );
