@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -14,6 +15,7 @@ import TextAreaField from './fields/TextAreaField';
 import InputField from './fields/InputField';
 import SelectField from './fields/SelectField';
 import DatePickerField from './fields/DatePickerField';
+import FormSection from './layout/FormSection';
 
 export type TeachingPlanFormValues = TeachingPlanSchemaValues;
 
@@ -139,54 +141,60 @@ const TeachingPlanForm: React.FC<TeachingPlanFormProps> = ({
       <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Basic Information Section */}
-          <div className="space-y-4">
-            <InputField
-              name="title"
-              label="Título do Plano de Ensino"
-              placeholder="Ex: Plano de Ensino de Matemática - 2º Bimestre"
-            />
-            
-            <TextAreaField
-              name="description"
-              label="Descrição (opcional)"
-              placeholder="Breve descrição sobre este plano de ensino"
-            />
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <SelectField
-                name="subjectId"
-                label="Disciplina"
-                placeholder="Selecione a disciplina"
-                options={subjectOptions}
+          <div className="space-y-6">
+            <FormSection title="Informações Básicas">
+              <InputField
+                name="title"
+                label="Título do Plano de Ensino"
+                placeholder="Ex: Plano de Ensino de Matemática - 2º Bimestre"
               />
               
-              <SelectField
-                name="annualPlanId"
-                label="Plano Anual"
-                placeholder="Selecione o plano anual"
-                options={annualPlanOptions}
-                disabled={!form.watch("subjectId") || filteredAnnualPlans.length === 0}
+              <TextAreaField
+                name="description"
+                label="Descrição (opcional)"
+                placeholder="Breve descrição sobre este plano de ensino"
               />
-            </div>
+            </FormSection>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <DatePickerField
-                name="startDate"
-                label="Data de Início"
-                placeholder="Selecione uma data"
-              />
-              
-              <DatePickerField
-                name="endDate"
-                label="Data de Término"
-                placeholder="Selecione uma data"
-                disabledBefore={form.watch("startDate")}
-              />
-            </div>
+            <FormSection title="Disciplina e Plano Anual">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <SelectField
+                  name="subjectId"
+                  label="Disciplina"
+                  placeholder="Selecione a disciplina"
+                  options={subjectOptions}
+                />
+                
+                <SelectField
+                  name="annualPlanId"
+                  label="Plano Anual"
+                  placeholder="Selecione o plano anual"
+                  options={annualPlanOptions}
+                  disabled={!form.watch("subjectId") || filteredAnnualPlans.length === 0}
+                />
+              </div>
+            </FormSection>
+            
+            <FormSection title="Período">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <DatePickerField
+                  name="startDate"
+                  label="Data de Início"
+                  placeholder="Selecione uma data"
+                />
+                
+                <DatePickerField
+                  name="endDate"
+                  label="Data de Término"
+                  placeholder="Selecione uma data"
+                  disabledBefore={form.watch("startDate")}
+                />
+              </div>
+            </FormSection>
           </div>
           
           {/* Objectives and Contents Section */}
-          <div className="space-y-4">
+          <FormSection title="Objetivos e Conteúdos">
             {/* Using ArrayInputField component for objectives */}
             <ArrayInputField 
               name="objectives"
@@ -200,39 +208,41 @@ const TeachingPlanForm: React.FC<TeachingPlanFormProps> = ({
               label="Conteúdos"
               placeholder="Digite um conteúdo"
             />
-          </div>
+          </FormSection>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <TextAreaField
-            name="methodology"
-            label="Metodologia"
-            placeholder="Descreva a metodologia que será utilizada"
-            rows={4}
-          />
+          <FormSection title="Metodologia e Avaliação">
+            <TextAreaField
+              name="methodology"
+              label="Metodologia"
+              placeholder="Descreva a metodologia que será utilizada"
+              rows={4}
+            />
+            
+            <TextAreaField
+              name="evaluation"
+              label="Avaliação"
+              placeholder="Descreva os métodos de avaliação que serão utilizados"
+              rows={4}
+            />
+          </FormSection>
           
-          <TextAreaField
-            name="evaluation"
-            label="Avaliação"
-            placeholder="Descreva os métodos de avaliação que serão utilizados"
-            rows={4}
-          />
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Using ArrayInputField component for resources */}
-          <ArrayInputField 
-            name="resources"
-            label="Recursos"
-            placeholder="Digite um recurso"
-          />
-          
-          {/* Using ArrayInputField component for BNCC references */}
-          <ArrayInputField 
-            name="bnccReferences"
-            label="Referências BNCC (opcional)"
-            placeholder="Ex: EF02MA01"
-          />
+          <FormSection title="Recursos e Referências BNCC">
+            {/* Using ArrayInputField component for resources */}
+            <ArrayInputField 
+              name="resources"
+              label="Recursos"
+              placeholder="Digite um recurso"
+            />
+            
+            {/* Using ArrayInputField component for BNCC references */}
+            <ArrayInputField 
+              name="bnccReferences"
+              label="Referências BNCC (opcional)"
+              placeholder="Ex: EF02MA01"
+            />
+          </FormSection>
         </div>
       
         <div className="flex justify-end space-x-2">

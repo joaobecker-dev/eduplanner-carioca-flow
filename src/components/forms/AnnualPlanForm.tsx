@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -12,6 +13,7 @@ import ArrayInputField from './fields/ArrayInputField';
 import TextAreaField from './fields/TextAreaField';
 import InputField from './fields/InputField';
 import SelectField from './fields/SelectField';
+import FormSection from './layout/FormSection';
 
 // Import zod schema from a central location
 import { z } from 'zod';
@@ -155,7 +157,7 @@ const AnnualPlanForm: React.FC<AnnualPlanFormProps> = ({
       <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Basic Information Section */}
-          <div className="space-y-4">
+          <FormSection title="Informações Básicas">
             <InputField
               name="title"
               label="Título do Plano Anual"
@@ -184,46 +186,50 @@ const AnnualPlanForm: React.FC<AnnualPlanFormProps> = ({
                 disabled={!form.watch("academicPeriodId") || filteredSubjects.length === 0}
               />
             </div>
-          </div>
+          </FormSection>
           
           {/* Objectives Section */}
-          <ArrayInputField
-            name="objectives"
-            label="Objetivos"
-            placeholder="Digite um objetivo"
-          />
+          <FormSection title="Objetivos">
+            <ArrayInputField
+              name="objectives"
+              label="Objetivos"
+              placeholder="Digite um objetivo"
+            />
+          </FormSection>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <TextAreaField
-            name="generalContent"
-            label="Conteúdo Geral"
-            placeholder="Descreva o conteúdo geral que será abordado durante o ano"
-            rows={4}
-          />
+          <FormSection title="Conteúdo e Metodologia">
+            <TextAreaField
+              name="generalContent"
+              label="Conteúdo Geral"
+              placeholder="Descreva o conteúdo geral que será abordado durante o ano"
+              rows={4}
+            />
+            
+            <TextAreaField
+              name="methodology"
+              label="Metodologia"
+              placeholder="Descreva a metodologia que será utilizada"
+              rows={4}
+            />
+          </FormSection>
           
-          <TextAreaField
-            name="methodology"
-            label="Metodologia"
-            placeholder="Descreva a metodologia que será utilizada"
-            rows={4}
-          />
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <TextAreaField
-            name="evaluation"
-            label="Avaliação"
-            placeholder="Descreva os métodos de avaliação que serão utilizados"
-            rows={4}
-          />
-          
-          {/* Reference Materials Section */}
-          <ArrayInputField
-            name="referenceMaterials"
-            label="Materiais de Referência (opcional)"
-            placeholder="Ex: Livro X, Apostila Y"
-          />
+          <FormSection title="Avaliação e Referências">
+            <TextAreaField
+              name="evaluation"
+              label="Avaliação"
+              placeholder="Descreva os métodos de avaliação que serão utilizados"
+              rows={4}
+            />
+            
+            {/* Reference Materials Section */}
+            <ArrayInputField
+              name="referenceMaterials"
+              label="Materiais de Referência (opcional)"
+              placeholder="Ex: Livro X, Apostila Y"
+            />
+          </FormSection>
         </div>
       
         <div className="flex justify-end space-x-2">
