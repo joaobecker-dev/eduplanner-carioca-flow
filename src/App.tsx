@@ -16,6 +16,12 @@ import TeachingPlanDetail from "./pages/teaching-plans/[id]";
 import LessonPlanDetail from "./pages/lesson-plans/[id]";
 import AssessmentDetail from "./pages/assessments/[id]";
 
+// Import new edit pages
+import AnnualPlanEdit from "./pages/annual-plans/[id]/edit";
+import TeachingPlanEdit from "./pages/teaching-plans/[id]/edit";
+import LessonPlanEdit from "./pages/lesson-plans/[id]/edit";
+import AssessmentEdit from "./pages/assessments/[id]/edit";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -34,15 +40,19 @@ const App = () => (
             
             {/* Annual Plan routes */}
             <Route path="/annual-plans/:id" element={<AnnualPlanDetail />} />
+            <Route path="/annual-plans/:id/edit" element={<AnnualPlanEdit />} />
             
             {/* Teaching Plan routes */}
             <Route path="/teaching-plans/:id" element={<TeachingPlanDetail />} />
+            <Route path="/teaching-plans/:id/edit" element={<TeachingPlanEdit />} />
             
             {/* Lesson Plan routes */}
             <Route path="/lesson-plans/:id" element={<LessonPlanDetail />} />
+            <Route path="/lesson-plans/:id/edit" element={<LessonPlanEdit />} />
             
             {/* Assessment routes */}
             <Route path="/assessments/:id" element={<AssessmentDetail />} />
+            <Route path="/assessments/:id/edit" element={<AssessmentEdit />} />
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
