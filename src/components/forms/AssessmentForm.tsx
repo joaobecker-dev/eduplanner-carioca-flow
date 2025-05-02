@@ -31,20 +31,23 @@ import { Button } from '@/components/ui/button';
 
 const formSchema = z.object({
   title: z.string().min(3, { message: 'Título deve ter pelo menos 3 caracteres' }),
-  description: z.string().optional(),
+  description: z.string().optional().default(''),
   subjectId: z.string().min(1, { message: 'Selecione uma disciplina' }),
-  teachingPlanId: z.string().optional(),
-  type: z.enum(['test', 'quiz', 'project', 'presentation', 'homework', 'other'], {
+  teachingPlanId: z.string().optional().default(''),
+  type: z.enum(['diagnostic', 'formative', 'summative'], {
     required_error: 'Tipo de avaliação é obrigatório'
   }),
-  totalPoints: z.number({ required_error: 'Total de pontos é obrigatório' })
+  totalPoints: z.coerce.number({ required_error: 'Total de pontos é obrigatório' })
     .min(1, { message: 'Total de pontos deve ser pelo menos 1' }),
   date: z.date({ required_error: 'Data da avaliação é obrigatória' }),
   dueDate: z.date().optional(),
 });
 
+// Export the inferred type for use in other components
+export type AssessmentFormValues = z.infer<typeof formSchema>;
+
 interface AssessmentFormProps {
-  onSubmit: (data: any) => void;
+  onSubmit: (data: AssessmentFormValues) => void;
   initialData?: Partial<Assessment>;
   subjects: Subject[];
   teachingPlans: TeachingPlan[];
@@ -58,14 +61,14 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
   teachingPlans,
   isSubmitting = false,
 }) => {
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<AssessmentFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       title: initialData?.title || '',
       description: initialData?.description || '',
       subjectId: initialData?.subjectId || '',
-      teachingPlanId: initialData?.teachingPlanId || undefined,
-      type: initialData?.type as any || 'test',
+      teachingPlanId: initialData?.teachingPlanId || '',
+      type: (initialData?.type as any) || 'diagnostic',
       totalPoints: initialData?.totalPoints !== undefined ? Number(initialData.totalPoints) : 10,
       date: initialData?.date ? new Date(initialData.date) : new Date(),
       dueDate: initialData?.dueDate ? new Date(initialData.dueDate) : undefined,
@@ -78,8 +81,8 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
         title: initialData.title || '',
         description: initialData.description || '',
         subjectId: initialData.subjectId || '',
-        teachingPlanId: initialData.teachingPlanId || undefined,
-        type: initialData.type as any || 'test',
+        teachingPlanId: initialData.teachingPlanId || '',
+        type: (initialData.type as any) || 'diagnostic',
         totalPoints: initialData.totalPoints !== undefined ? Number(initialData.totalPoints) : 10,
         date: initialData.date ? new Date(initialData.date) : new Date(),
         dueDate: initialData.dueDate ? new Date(initialData.dueDate) : undefined,
@@ -87,7 +90,7 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
     }
   }, [initialData, form]);
 
-  const handleSubmit = (values: z.infer<typeof formSchema>) => {
+  const handleSubmit = (values: AssessmentFormValues) => {
     onSubmit(values);
   };
 
@@ -98,12 +101,9 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
   );
 
   const assessmentTypeLabels: Record<string, string> = {
-    'test': 'Prova',
-    'quiz': 'Teste',
-    'project': 'Projeto',
-    'presentation': 'Apresentação',
-    'homework': 'Tarefa',
-    'other': 'Outro'
+    'diagnostic': 'Diagnóstica',
+    'formative': 'Formativa',
+    'summative': 'Somativa'
   };
 
   return (
@@ -134,7 +134,7 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
                   disabled={isSubmitting}
                   onValueChange={(value) => {
                     field.onChange(value);
-                    form.setValue('teachingPlanId', undefined);
+                    form.setValue('teachingPlanId', '');
                   }}
                   defaultValue={field.value}
                   value={field.value}
@@ -198,7 +198,7 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
                 disabled={isSubmitting || !selectedSubjectId}
                 onValueChange={field.onChange}
                 defaultValue={field.value}
-                value={field.value || ''}
+                value={field.value}
               >
                 <FormControl>
                   <SelectTrigger>

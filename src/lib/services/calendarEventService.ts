@@ -1,8 +1,8 @@
 
-import { CalendarEvent, ID } from '@/types';
+import { CalendarEvent, ID, Assessment } from '@/types';
 import { createService, handleError } from './baseService';
 import { supabase } from "@/integrations/supabase/client";
-import { mapToCamelCase } from '@/types';
+import { mapToCamelCase, mapToSnakeCase } from '@/integrations/supabase/supabaseAdapter';
 
 // Calendar Event Service
 export const calendarEventService = {
@@ -38,6 +38,37 @@ export const calendarEventService = {
     } catch (error) {
       handleError(error, 'buscar eventos por disciplina');
       return [];
+    }
+  },
+  
+  // Sync a calendar event from an assessment
+  syncFromAssessment: async (assessment: Assessment): Promise<void> => {
+    try {
+      // Event data preparation
+      const eventData = {
+        title: assessment.title,
+        description: assessment.description || null,
+        type: "exam" as const,
+        start_date: assessment.date, // Already an ISO string
+        end_date: assessment.dueDate || assessment.date, // Use dueDate if available, otherwise use date
+        all_day: true, // Assessments are typically all-day events
+        subject_id: assessment.subjectId,
+        assessment_id: assessment.id,
+        color: null, // Can be set based on assessment type if needed
+      };
+      
+      // Upsert the event - create or update based on assessment_id
+      const { error } = await supabase
+        .from("calendar_events")
+        .upsert(eventData, {
+          onConflict: 'assessment_id',
+          ignoreDuplicates: false
+        });
+      
+      if (error) throw error;
+      
+    } catch (error) {
+      handleError(error, 'sincronizar evento do calendário com avaliação');
     }
   }
 };

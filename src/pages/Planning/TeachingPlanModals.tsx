@@ -1,87 +1,73 @@
 
 import React, { useState } from 'react';
 import { toast } from '@/hooks/use-toast';
-import { TeachingPlan } from '@/types';
+import { services } from '@/lib/services';
+import { AnnualPlan, Subject, TeachingPlan } from '@/types';
 import CrudModal from '@/components/ui-components/CrudModal';
 import DeleteConfirmationDialog from '@/components/ui-components/DeleteConfirmationDialog';
 import TeachingPlanForm, { TeachingPlanFormValues } from '@/components/forms/TeachingPlanForm';
-import { teachingPlanService } from '@/lib/services';
 
 interface TeachingPlanModalsProps {
-  subjects: any[];
-  annualPlans: any[];
-  refreshData: () => void;
+  subjects: Subject[];
+  annualPlans: AnnualPlan[];
+  refreshPlans: () => void;
 }
 
 const TeachingPlanModals: React.FC<TeachingPlanModalsProps> = ({
   subjects,
   annualPlans,
-  refreshData
+  refreshPlans,
 }) => {
+  // Modal states
   const [isTeachingPlanModalOpen, setIsTeachingPlanModalOpen] = useState(false);
   const [isTeachingPlanDeleteOpen, setIsTeachingPlanDeleteOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedTeachingPlan, setSelectedTeachingPlan] = useState<Partial<TeachingPlan> | null>(null);
 
+  // Teaching Plan handlers
   const handleCreateTeachingPlan = () => {
     setSelectedTeachingPlan(null);
     setIsTeachingPlanModalOpen(true);
   };
 
-  const handleEditTeachingPlan = (plan: TeachingPlan) => {
-    // Convert ISO date strings to Date objects for the form
-    const planWithDateObjects = {
-      ...plan,
-      // We store these as separate properties for the form, without altering the original date strings
-      startDateObj: new Date(plan.startDate),
-      endDateObj: new Date(plan.endDate)
-    };
-    setSelectedTeachingPlan(planWithDateObjects as Partial<TeachingPlan>);
+  const handleEditTeachingPlan = (teachingPlan: TeachingPlan) => {
+    setSelectedTeachingPlan(teachingPlan);
     setIsTeachingPlanModalOpen(true);
   };
 
-  const handleDeleteTeachingPlan = (plan: TeachingPlan) => {
-    setSelectedTeachingPlan(plan);
+  const handleDeleteTeachingPlan = (teachingPlan: TeachingPlan) => {
+    setSelectedTeachingPlan(teachingPlan);
     setIsTeachingPlanDeleteOpen(true);
   };
 
   const handleTeachingPlanSubmit = async (data: TeachingPlanFormValues) => {
     setIsSubmitting(true);
-    try {
-      // Prepare the data for database insertion - convert Date to ISO string
-      const teachingPlanData = {
-        title: data.title,
-        description: data.description,
-        annualPlanId: data.annualPlanId,
-        subjectId: data.subjectId,
-        // Convert Date objects to ISO strings
-        startDate: data.startDate instanceof Date ? data.startDate.toISOString() : data.startDate,
-        endDate: data.endDate instanceof Date ? data.endDate.toISOString() : data.endDate,
-        objectives: data.objectives || [],
-        bnccReferences: data.bnccReferences || [],
-        contents: data.contents || [],
-        methodology: data.methodology,
-        resources: data.resources || [],
-        evaluation: data.evaluation
-      };
+    
+    // Convert Date objects to ISO strings for database storage
+    const formattedData = {
+      ...data,
+      startDate: data.startDate instanceof Date ? data.startDate.toISOString() : data.startDate,
+      endDate: data.endDate instanceof Date ? data.endDate.toISOString() : data.endDate,
+    };
 
+    try {
       if (selectedTeachingPlan?.id) {
-        // Update existing plan
-        await teachingPlanService.update(selectedTeachingPlan.id, teachingPlanData);
+        // Update existing teaching plan
+        await services.teachingPlan.update(selectedTeachingPlan.id, formattedData);
         toast({
           title: "Plano de ensino atualizado",
           description: "O plano de ensino foi atualizado com sucesso.",
         });
       } else {
-        // Create new plan
-        await teachingPlanService.create(teachingPlanData);
+        // Create new teaching plan
+        await services.teachingPlan.create(formattedData);
         toast({
           title: "Plano de ensino criado",
           description: "O plano de ensino foi criado com sucesso.",
         });
       }
       setIsTeachingPlanModalOpen(false);
-      refreshData();
+      refreshPlans();
     } catch (error) {
       console.error('Error saving teaching plan:', error);
       toast({
@@ -95,17 +81,17 @@ const TeachingPlanModals: React.FC<TeachingPlanModalsProps> = ({
   };
 
   const handleTeachingPlanDelete = async () => {
+    if (!selectedTeachingPlan?.id) return;
+
     setIsSubmitting(true);
     try {
-      if (selectedTeachingPlan?.id) {
-        await teachingPlanService.delete(selectedTeachingPlan.id);
-        toast({
-          title: "Plano de ensino excluído",
-          description: "O plano de ensino foi excluído com sucesso.",
-        });
-        setIsTeachingPlanDeleteOpen(false);
-        refreshData();
-      }
+      await services.teachingPlan.delete(selectedTeachingPlan.id);
+      toast({
+        title: "Plano de ensino excluído",
+        description: "O plano de ensino foi excluído com sucesso.",
+      });
+      setIsTeachingPlanDeleteOpen(false);
+      refreshPlans();
     } catch (error) {
       console.error('Error deleting teaching plan:', error);
       toast({
@@ -118,23 +104,17 @@ const TeachingPlanModals: React.FC<TeachingPlanModalsProps> = ({
     }
   };
 
-  // Wrapper function to handle form submission from CrudModal
-  const handleSubmitForm = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    // The actual submission happens in the TeachingPlanForm's onSubmit prop
-  };
-
   return (
     <>
       {/* Teaching Plan Modal */}
       <CrudModal
-        title={selectedTeachingPlan ? "Editar Plano de Ensino" : "Novo Plano de Ensino"}
+        title={selectedTeachingPlan?.id ? "Editar Plano de Ensino" : "Novo Plano de Ensino"}
         description="Preencha os campos para criar ou editar um plano de ensino."
         isOpen={isTeachingPlanModalOpen}
         isLoading={isSubmitting}
         onClose={() => setIsTeachingPlanModalOpen(false)}
-        onSubmit={handleSubmitForm}
-        submitLabel={selectedTeachingPlan ? "Atualizar" : "Criar"}
+        onSubmit={form => handleTeachingPlanSubmit(form)}
+        submitLabel={selectedTeachingPlan?.id ? "Atualizar" : "Criar"}
         size="lg"
       >
         <TeachingPlanForm
@@ -161,5 +141,5 @@ const TeachingPlanModals: React.FC<TeachingPlanModalsProps> = ({
 
 export { 
   TeachingPlanModals,
-  type TeachingPlanModalsProps 
+  type TeachingPlanModalsProps
 };
