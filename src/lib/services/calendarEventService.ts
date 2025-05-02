@@ -39,8 +39,49 @@ export const calendarEventService = {
     }
   },
 
+  create: async (eventData: Omit<CalendarEvent, 'id' | 'created_at'>): Promise<CalendarEvent> => {
+    try {
+      // Convert camelCase to snake_case and handle date conversion
+      const preparedData = mapToSnakeCase<Record<string, any>>(eventData);
+
+      const { data, error } = await supabase
+        .from("calendar_events")
+        .insert(preparedData)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return mapToCamelCase<CalendarEvent>(data);
+    } catch (error) {
+      handleError(error, 'criar evento do calendário');
+      throw error;
+    }
+  },
+
+  update: async (id: ID, eventData: Partial<CalendarEvent>): Promise<CalendarEvent> => {
+    try {
+      // Convert camelCase to snake_case and handle date conversion
+      const preparedData = mapToSnakeCase<Record<string, any>>(eventData);
+
+      const { data, error } = await supabase
+        .from("calendar_events")
+        .update(preparedData)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return mapToCamelCase<CalendarEvent>(data);
+    } catch (error) {
+      handleError(error, 'atualizar evento do calendário');
+      throw error;
+    }
+  },
+
   syncFromAssessment: async (assessment: Assessment): Promise<void> => {
     try {
+      if (!assessment) return;
+
       const eventData = {
         title: assessment.title,
         description: assessment.description || null,
@@ -68,6 +109,7 @@ export const calendarEventService = {
 
   syncFromStudentAssessment: async (studentAssessment: StudentAssessment): Promise<void> => {
     try {
+      if (!studentAssessment) return;
       console.log('Student assessment synced with calendar:', studentAssessment.id);
     } catch (error) {
       handleError(error, 'sincronizar evento do calendário com avaliação de aluno');
@@ -76,7 +118,7 @@ export const calendarEventService = {
 
   syncFromLessonPlan: async (lessonPlan: LessonPlan): Promise<void> => {
     try {
-      if (!lessonPlan.date) {
+      if (!lessonPlan || !lessonPlan.date) {
         console.log('Lesson plan date is missing, skipping calendar sync');
         return;
       }
@@ -109,7 +151,7 @@ export const calendarEventService = {
 
   syncFromTeachingPlan: async (teachingPlan: TeachingPlan): Promise<void> => {
     try {
-      if (!teachingPlan.startDate) {
+      if (!teachingPlan || !teachingPlan.startDate) {
         console.log('Teaching plan start date is missing, skipping calendar sync');
         return;
       }

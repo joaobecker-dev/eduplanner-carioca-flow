@@ -71,11 +71,15 @@ export async function getByTeachingPlan(teachingPlanId: ID): Promise<Assessment[
  * @returns Promise<Assessment>
  */
 export async function create(assessment: Omit<Assessment, "id">): Promise<Assessment> {
-  const assessmentData = mapToSnakeCase<any>(assessment);
+  const assessmentData = mapToSnakeCase<Record<string, any>>(assessment);
   
   // Use normalizeToISO which handles both string and Date objects
-  assessmentData.date = normalizeToISO(assessment.date);
-  assessmentData.due_date = normalizeToISO(assessment.dueDate);
+  if (assessment.date) {
+    assessmentData.date = normalizeToISO(assessment.date);
+  }
+  if (assessment.dueDate) {
+    assessmentData.due_date = normalizeToISO(assessment.dueDate);
+  }
 
   const { data, error } = await supabase
     .from(tableName)
@@ -98,11 +102,15 @@ export async function create(assessment: Omit<Assessment, "id">): Promise<Assess
  * @returns Promise<Assessment>
  */
 export async function update(id: ID, assessment: Partial<Assessment>): Promise<Assessment> {
-  const assessmentData = mapToSnakeCase<any>(assessment);
+  const assessmentData = mapToSnakeCase<Record<string, any>>(assessment);
   
   // Use normalizeToISO which handles both string and Date objects
-  assessmentData.date = normalizeToISO(assessment.date);
-  assessmentData.due_date = normalizeToISO(assessment.dueDate);
+  if (assessment.date) {
+    assessmentData.date = normalizeToISO(assessment.date);
+  }
+  if (assessment.dueDate) {
+    assessmentData.due_date = normalizeToISO(assessment.dueDate);
+  }
 
   const { data, error } = await supabase
     .from(tableName)

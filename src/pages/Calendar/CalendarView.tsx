@@ -7,6 +7,7 @@ import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
+import { DateSelectArg, EventClickArg } from '@fullcalendar/core';
 import ptBRLocale from '@fullcalendar/core/locales/pt-br';
 import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -27,6 +28,8 @@ import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { formatDisplayDate } from '@/integrations/supabase/supabaseAdapter';
+import NewEventModal from './NewEventModal';
+import { toast } from 'sonner';
 
 const CalendarView: React.FC = () => {
   // State for filtering
@@ -46,9 +49,13 @@ const CalendarView: React.FC = () => {
   // State for event details modal
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
   const [showEventModal, setShowEventModal] = useState(false);
-
-  // Fetch calendar events
-  const { data: events = [], isLoading: eventsLoading } = useQuery({
+  
+  // State for new/edit event modal
+  const [showNewEventModal, setShowNewEventModal] = useState(false);
+  const [eventToEdit, setEventToEdit] = useState<CalendarEvent | null>(null);
+  
+  // Query client for data fetching and cache updates
+  const { data: events = [], isLoading: eventsLoading, refetch: refetchEvents } = useQuery({
     queryKey: ['calendarEvents'],
     queryFn: calendarEventService.getAll,
   });
@@ -93,8 +100,8 @@ const CalendarView: React.FC = () => {
       end: event.endDate || event.startDate,
       allDay: event.allDay,
       extendedProps: { ...event },
-      backgroundColor: getEventColor(event.type),
-      borderColor: getEventColor(event.type),
+      backgroundColor: event.color || getEventColor(event.type),
+      borderColor: event.color || getEventColor(event.type),
     }));
   }, [filteredEvents]);
 
@@ -105,17 +112,40 @@ const CalendarView: React.FC = () => {
         return 'rgba(220, 38, 38, 0.8)'; // Red for exams
       case 'class':
         return 'rgba(59, 130, 246, 0.8)'; // Blue for classes/teaching plans
+      case 'meeting':
+        return 'rgba(139, 92, 246, 0.8)'; // Purple for meetings
       default:
         return 'rgba(156, 163, 175, 0.8)'; // Gray for other events
     }
   }
 
   // Handle event click
-  const handleEventClick = (info: any) => {
+  const handleEventClick = (info: EventClickArg) => {
     const event = events.find(e => e.id === info.event.id);
     if (event) {
       setSelectedEvent(event);
       setShowEventModal(true);
+    }
+  };
+
+  // Handle date select for creating new events
+  const handleDateSelect = (arg: DateSelectArg) => {
+    // Create a new event with default values
+    setEventToEdit(null);
+    setShowNewEventModal(true);
+    
+    // Set form default values based on selected date range
+    const form = document.querySelector('form');
+    if (form) {
+      const startDateInput = form.querySelector('[name="startDate"]');
+      const endDateInput = form.querySelector('[name="endDate"]');
+      
+      if (startDateInput) {
+        (startDateInput as HTMLInputElement).value = arg.start.toISOString();
+      }
+      if (endDateInput && arg.end) {
+        (endDateInput as HTMLInputElement).value = arg.end.toISOString();
+      }
     }
   };
 
@@ -138,6 +168,52 @@ const CalendarView: React.FC = () => {
     };
     
     return typeLabels[type] || type;
+  };
+
+  // Handle edit button click in event details modal
+  const handleEditEvent = () => {
+    setEventToEdit(selectedEvent);
+    setShowEventModal(false);
+    setShowNewEventModal(true);
+  };
+
+  // Handle saving a new or edited event
+  const handleSaveEvent = async (eventData: Omit<CalendarEvent, 'id' | 'created_at'>) => {
+    try {
+      if (eventToEdit) {
+        // Update existing event
+        await calendarEventService.update(eventToEdit.id, eventData);
+        toast.success('Evento atualizado com sucesso!');
+      } else {
+        // Create new event
+        await calendarEventService.create(eventData);
+        toast.success('Evento criado com sucesso!');
+      }
+      
+      // Refresh calendar events
+      refetchEvents();
+      
+      // Close the modal
+      setShowNewEventModal(false);
+    } catch (error) {
+      console.error('Error saving event:', error);
+      toast.error('Erro ao salvar evento. Tente novamente.');
+    }
+  };
+
+  // Handle deleting an event
+  const handleDeleteEvent = async () => {
+    if (!selectedEvent) return;
+    
+    try {
+      await calendarEventService.delete(selectedEvent.id);
+      toast.success('Evento excluído com sucesso!');
+      refetchEvents();
+      setShowEventModal(false);
+    } catch (error) {
+      console.error('Error deleting event:', error);
+      toast.error('Erro ao excluir evento. Tente novamente.');
+    }
   };
 
   // Find related subject with proper type checking
@@ -273,6 +349,8 @@ const CalendarView: React.FC = () => {
                 }}
                 events={calendarEvents}
                 eventClick={handleEventClick}
+                selectable={true}
+                select={handleDateSelect}
                 locale={ptBRLocale}
                 height="100%"
                 allDayText="Dia todo"
@@ -347,11 +425,40 @@ const CalendarView: React.FC = () => {
                     </p>
                   )}
                 </div>
+                
+                {/* Action buttons */}
+                <div className="flex justify-end space-x-2 pt-4">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setShowEventModal(false)}
+                  >
+                    Fechar
+                  </Button>
+                  <Button 
+                    variant="destructive" 
+                    onClick={handleDeleteEvent}
+                  >
+                    Excluir
+                  </Button>
+                  <Button 
+                    onClick={handleEditEvent}
+                  >
+                    Editar
+                  </Button>
+                </div>
               </div>
             </>
           )}
         </DialogContent>
       </Dialog>
+
+      {/* New/Edit Event Modal */}
+      <NewEventModal 
+        isOpen={showNewEventModal}
+        onClose={() => setShowNewEventModal(false)}
+        onSave={handleSaveEvent}
+        eventToEdit={eventToEdit}
+      />
     </div>
   );
 };

@@ -80,9 +80,8 @@ export function mapToCamelCase<T>(item: RecordObject): T {
  */
 export function normalizeToISO(input?: string | Date | null): string | undefined {
   if (!input) return undefined;
-  if (typeof input === "string") return input;
   if (input instanceof Date) return input.toISOString();
-  return undefined;
+  return input;
 }
 
 /**
