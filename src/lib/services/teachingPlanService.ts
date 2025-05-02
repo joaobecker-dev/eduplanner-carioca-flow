@@ -1,7 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { TeachingPlan } from "@/types";
-import { mapToCamelCase } from "@/integrations/supabase/supabaseAdapter";
+import { mapToCamelCase, toISO } from "@/integrations/supabase/supabaseAdapter";
 import { TeachingPlanFormValues } from "@/components/forms/TeachingPlanForm";
 import { calendarEventService } from "./calendarEventService";
 
@@ -48,15 +48,9 @@ export async function create(teachingPlanForm: Partial<TeachingPlanFormValues>):
     description: teachingPlanForm.description || null,
     annual_plan_id: teachingPlanForm.annualPlanId,
     subject_id: teachingPlanForm.subjectId,
-    // Convert dates to ISO strings if they're Date objects
-    start_date: teachingPlanForm.startDate instanceof Date ? 
-      teachingPlanForm.startDate.toISOString() : 
-      (typeof teachingPlanForm.startDate === 'string' ? 
-        teachingPlanForm.startDate : new Date().toISOString()),
-    end_date: teachingPlanForm.endDate instanceof Date ? 
-      teachingPlanForm.endDate.toISOString() : 
-      (typeof teachingPlanForm.endDate === 'string' ? 
-        teachingPlanForm.endDate : new Date().toISOString()),
+    // Convert dates to ISO strings
+    start_date: toISO(teachingPlanForm.startDate),
+    end_date: toISO(teachingPlanForm.endDate),
     objectives: Array.isArray(teachingPlanForm.objectives) ? teachingPlanForm.objectives : [],
     bncc_references: Array.isArray(teachingPlanForm.bnccReferences) ? teachingPlanForm.bnccReferences : [],
     contents: Array.isArray(teachingPlanForm.contents) ? teachingPlanForm.contents : [],
@@ -97,17 +91,11 @@ export async function update(id: string, teachingPlanForm: Partial<TeachingPlanF
   if (teachingPlanForm.subjectId !== undefined) updateData.subject_id = teachingPlanForm.subjectId;
   
   if (teachingPlanForm.startDate !== undefined) {
-    updateData.start_date = teachingPlanForm.startDate instanceof Date ? 
-      teachingPlanForm.startDate.toISOString() : 
-      (typeof teachingPlanForm.startDate === 'string' ? 
-        teachingPlanForm.startDate : null);
+    updateData.start_date = toISO(teachingPlanForm.startDate);
   }
   
   if (teachingPlanForm.endDate !== undefined) {
-    updateData.end_date = teachingPlanForm.endDate instanceof Date ? 
-      teachingPlanForm.endDate.toISOString() : 
-      (typeof teachingPlanForm.endDate === 'string' ? 
-        teachingPlanForm.endDate : null);
+    updateData.end_date = toISO(teachingPlanForm.endDate);
   }
   
   if (teachingPlanForm.objectives !== undefined) 

@@ -1,3 +1,4 @@
+
 import { CalendarEvent, ID, Assessment, StudentAssessment, LessonPlan, TeachingPlan } from '@/types';
 import { createService, handleError } from './baseService';
 import { supabase } from "@/integrations/supabase/client";
@@ -126,7 +127,7 @@ export const calendarEventService = {
       const eventData = {
         title: `Plano de Aula: ${lessonPlan.title}`,
         description: lessonPlan.notes || null,
-        type: "class" as const,
+        type: "class" as const, // Using "class" instead of "lesson"
         start_date: lessonPlan.date, // Already an ISO string
         end_date: lessonPlan.date, // Lesson plans typically last one day
         all_day: true, // Lesson plans are typically all-day events
@@ -164,7 +165,7 @@ export const calendarEventService = {
       const eventData = {
         title: `Plano de Ensino: ${teachingPlan.title}`,
         description: teachingPlan.description || null,
-        type: "teaching" as const,
+        type: "class" as const, // Using "class" instead of "teaching"
         start_date: teachingPlan.startDate, // Already an ISO string
         end_date: teachingPlan.endDate || teachingPlan.startDate, // Use endDate if available
         all_day: true, // Teaching plans are typically all-day events
