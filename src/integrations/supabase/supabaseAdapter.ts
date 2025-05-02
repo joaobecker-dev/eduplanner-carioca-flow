@@ -25,7 +25,11 @@ export function mapToSnakeCase<T>(item: RecordObject): T {
     
     // Handle nested objects and arrays
     let value = item[key];
-    if (value !== null && typeof value === 'object') {
+    
+    // Handle Date objects
+    if (value instanceof Date) {
+      value = value.toISOString();
+    } else if (value !== null && typeof value === 'object') {
       if (Array.isArray(value)) {
         value = value.map(item => 
           typeof item === 'object' && item !== null ? mapToSnakeCase(item) : item

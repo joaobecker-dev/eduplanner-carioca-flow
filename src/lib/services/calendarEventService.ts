@@ -42,7 +42,12 @@ export const calendarEventService = {
   create: async (eventData: Omit<CalendarEvent, 'id' | 'created_at'>): Promise<CalendarEvent> => {
     try {
       // Convert camelCase to snake_case and handle date conversion
-      const preparedData = mapToSnakeCase<Record<string, any>>(eventData);
+      const preparedData = mapToSnakeCase<any>(eventData);
+      
+      // Ensure required fields are present
+      if (!preparedData.title || !preparedData.type || !preparedData.start_date) {
+        throw new Error("Missing required fields for calendar event");
+      }
 
       const { data, error } = await supabase
         .from("calendar_events")
@@ -61,7 +66,7 @@ export const calendarEventService = {
   update: async (id: ID, eventData: Partial<CalendarEvent>): Promise<CalendarEvent> => {
     try {
       // Convert camelCase to snake_case and handle date conversion
-      const preparedData = mapToSnakeCase<Record<string, any>>(eventData);
+      const preparedData = mapToSnakeCase<any>(eventData);
 
       const { data, error } = await supabase
         .from("calendar_events")
@@ -82,16 +87,16 @@ export const calendarEventService = {
     try {
       if (!assessment) return;
 
+      // Explicitly create the object with all required fields
       const eventData = {
         title: assessment.title,
-        description: assessment.description || null,
+        description: assessment.description || '',
         type: "exam" as const,
-        start_date: normalizeToISO(assessment.date),
+        start_date: normalizeToISO(assessment.date) || '',
         end_date: normalizeToISO(assessment.dueDate || assessment.date),
         all_day: true,
         subject_id: assessment.subjectId,
         assessment_id: assessment.id,
-        color: null,
       };
 
       const { error } = await supabase
@@ -123,17 +128,16 @@ export const calendarEventService = {
         return;
       }
 
+      // Explicitly create the object with all required fields
       const eventData = {
         title: `Plano de Aula: ${lessonPlan.title}`,
-        description: lessonPlan.notes || null,
+        description: lessonPlan.notes || '',
         type: "class" as const,
-        start_date: normalizeToISO(lessonPlan.date),
+        start_date: normalizeToISO(lessonPlan.date) || '',
         end_date: normalizeToISO(lessonPlan.date),
         all_day: true,
-        subject_id: null,
         teaching_plan_id: lessonPlan.teachingPlanId,
         lesson_plan_id: lessonPlan.id,
-        color: null,
       };
 
       const { error } = await supabase
@@ -156,17 +160,16 @@ export const calendarEventService = {
         return;
       }
 
+      // Explicitly create the object with all required fields
       const eventData = {
         title: `Plano de Ensino: ${teachingPlan.title}`,
-        description: teachingPlan.description || null,
+        description: teachingPlan.description || '',
         type: "class" as const,
-        start_date: normalizeToISO(teachingPlan.startDate),
+        start_date: normalizeToISO(teachingPlan.startDate) || '',
         end_date: normalizeToISO(teachingPlan.endDate || teachingPlan.startDate),
         all_day: true,
         subject_id: teachingPlan.subjectId,
         teaching_plan_id: teachingPlan.id,
-        lesson_plan_id: null,
-        color: null,
       };
 
       const { error } = await supabase
