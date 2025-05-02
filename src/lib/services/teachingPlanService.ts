@@ -1,166 +1,109 @@
-
-import { TeachingPlan, ID } from '@/types';
-import { createService, handleError } from './baseService';
 import { supabase } from "@/integrations/supabase/client";
-import { mapToCamelCase, mapToSnakeCase } from '@/integrations/supabase/supabaseAdapter';
-import { calendarEventService } from './calendarEventService';
+import { TeachingPlan } from "@/types";
+import { mapToCamelCase, normalizeToISO } from "@/integrations/supabase/supabaseAdapter";
+import { TeachingPlanFormValues } from "@/components/forms/TeachingPlanForm";
+import { calendarEventService } from "./calendarEventService";
 
-// Custom query functions specific to teaching plans
-const teachingPlanSpecificQueries = {
-  getByAnnualPlan: async (annualPlanId: ID): Promise<TeachingPlan[]> => {
-    try {
-      const { data, error } = await supabase
-        .from("teaching_plans")
-        .select('*')
-        .eq('annual_plan_id', annualPlanId);
-      
-      if (error) throw error;
-      return data ? data.map(item => mapToCamelCase<TeachingPlan>(item)) : [];
-    } catch (error) {
-      handleError(error, 'buscar planos de ensino por plano anual');
-      return [];
-    }
-  },
-  
-  getBySubject: async (subjectId: ID): Promise<TeachingPlan[]> => {
-    try {
-      const { data, error } = await supabase
-        .from("teaching_plans")
-        .select('*')
-        .eq('subject_id', subjectId);
-      
-      if (error) throw error;
-      return data ? data.map(item => mapToCamelCase<TeachingPlan>(item)) : [];
-    } catch (error) {
-      handleError(error, 'buscar planos de ensino por disciplina');
-      return [];
-    }
-  },
-  
-  // Override the create method to add calendar event sync
-  create: async (teachingPlanData: Omit<TeachingPlan, 'id' | 'created_at'>): Promise<TeachingPlan | null> => {
-    try {
-      // Ensure we have all required fields and proper types
-      const processedData = mapToSnakeCase({
-        title: teachingPlanData.title,
-        description: teachingPlanData.description || null,
-        annual_plan_id: teachingPlanData.annualPlanId || teachingPlanData.annual_plan_id,
-        subject_id: teachingPlanData.subjectId || teachingPlanData.subject_id,
-        start_date: teachingPlanData.startDate instanceof Date ? 
-                   teachingPlanData.startDate.toISOString() : teachingPlanData.startDate || teachingPlanData.start_date,
-        end_date: teachingPlanData.endDate instanceof Date ? 
-                 teachingPlanData.endDate.toISOString() : teachingPlanData.endDate || teachingPlanData.end_date,
-        objectives: Array.isArray(teachingPlanData.objectives) ? teachingPlanData.objectives : [],
-        bncc_references: Array.isArray(teachingPlanData.bnccReferences || teachingPlanData.bncc_references) ? 
-                         (teachingPlanData.bnccReferences || teachingPlanData.bncc_references) : [],
-        contents: Array.isArray(teachingPlanData.contents) ? teachingPlanData.contents : [],
-        methodology: teachingPlanData.methodology,
-        resources: Array.isArray(teachingPlanData.resources) ? teachingPlanData.resources : [],
-        evaluation: teachingPlanData.evaluation
-      });
-      
-      const { data, error } = await supabase
-        .from("teaching_plans")
-        .insert(processedData)
-        .select()
-        .single();
-      
-      if (error) throw error;
-      
-      const newTeachingPlan = data ? mapToCamelCase<TeachingPlan>(data) : null;
-      
-      // Sync with calendar
-      if (newTeachingPlan) {
-        try {
-          await calendarEventService.syncFromTeachingPlan(newTeachingPlan);
-        } catch (syncError) {
-          console.error('Error syncing to calendar:', syncError);
-          // Don't let sync errors prevent teaching plan creation
-        }
-      }
-      
-      return newTeachingPlan;
-    } catch (error) {
-      handleError(error, 'criar plano de ensino');
-      return null;
-    }
-  },
-  
-  // Override the update method to add calendar event sync
-  update: async (id: ID, updates: Partial<TeachingPlan>): Promise<TeachingPlan | null> => {
-    try {
-      const updateData: Record<string, any> = {};
-      
-      // Only include fields that are present in the updates
-      if (updates.title !== undefined) updateData.title = updates.title;
-      if (updates.description !== undefined) updateData.description = updates.description;
-      if (updates.annualPlanId !== undefined || updates.annual_plan_id !== undefined)
-        updateData.annual_plan_id = updates.annualPlanId || updates.annual_plan_id;
-      if (updates.subjectId !== undefined || updates.subject_id !== undefined)
-        updateData.subject_id = updates.subjectId || updates.subject_id;
-      
-      // Handle dates - convert Date objects to ISO strings
-      if (updates.startDate !== undefined || updates.start_date !== undefined) {
-        const startDate = updates.startDate || updates.start_date;
-        updateData.start_date = startDate instanceof Date ? startDate.toISOString() : startDate;
-      }
-      
-      if (updates.endDate !== undefined || updates.end_date !== undefined) {
-        const endDate = updates.endDate || updates.end_date;
-        updateData.end_date = endDate instanceof Date ? endDate.toISOString() : endDate;
-      }
-      
-      // Handle arrays properly
-      if (updates.objectives !== undefined) 
-        updateData.objectives = Array.isArray(updates.objectives) ? updates.objectives : [];
-      
-      if (updates.bnccReferences !== undefined || updates.bncc_references !== undefined)
-        updateData.bncc_references = Array.isArray(updates.bnccReferences || updates.bncc_references) ? 
-                                     (updates.bnccReferences || updates.bncc_references) : [];
-      
-      if (updates.contents !== undefined)
-        updateData.contents = Array.isArray(updates.contents) ? updates.contents : [];
-      
-      if (updates.methodology !== undefined) updateData.methodology = updates.methodology;
-      
-      if (updates.resources !== undefined)
-        updateData.resources = Array.isArray(updates.resources) ? updates.resources : [];
-      
-      if (updates.evaluation !== undefined) updateData.evaluation = updates.evaluation;
-      
-      const processedData = mapToSnakeCase(updateData);
-      
-      const { data, error } = await supabase
-        .from("teaching_plans")
-        .update(processedData)
-        .eq('id', id)
-        .select()
-        .single();
-      
-      if (error) throw error;
-      
-      const updatedTeachingPlan = data ? mapToCamelCase<TeachingPlan>(data) : null;
-      
-      // Sync with calendar
-      if (updatedTeachingPlan) {
-        try {
-          await calendarEventService.syncFromTeachingPlan(updatedTeachingPlan);
-        } catch (syncError) {
-          console.error('Error syncing to calendar:', syncError);
-          // Don't let sync errors prevent teaching plan update
-        }
-      }
-      
-      return updatedTeachingPlan;
-    } catch (error) {
-      handleError(error, 'atualizar plano de ensino');
-      return null;
-    }
-  }
-};
+const tableName = 'teaching_plans';
 
-// Combine base service with teaching plan-specific queries
+export async function getAll(): Promise<TeachingPlan[]> {
+  const { data, error } = await supabase
+    .from(tableName)
+    .select('*');
+
+  if (error) throw error;
+  return data.map(item => mapToCamelCase<TeachingPlan>(item));
+}
+
+export async function getById(id: string): Promise<TeachingPlan> {
+  const { data, error } = await supabase
+    .from(tableName)
+    .select('*')
+    .eq('id', id)
+    .single();
+
+  if (error) throw error;
+  return mapToCamelCase<TeachingPlan>(data);
+}
+
+export async function create(teachingPlanForm: Partial<TeachingPlanFormValues>): Promise<TeachingPlan> {
+  const teachingPlanData = {
+    title: teachingPlanForm.title,
+    description: teachingPlanForm.description || null,
+    annual_plan_id: teachingPlanForm.annualPlanId,
+    subject_id: teachingPlanForm.subjectId,
+    start_date: normalizeToISO(teachingPlanForm.startDate),
+    end_date: normalizeToISO(teachingPlanForm.endDate),
+    objectives: Array.isArray(teachingPlanForm.objectives) ? teachingPlanForm.objectives : [],
+    bncc_references: Array.isArray(teachingPlanForm.bnccReferences) ? teachingPlanForm.bnccReferences : [],
+    contents: Array.isArray(teachingPlanForm.contents) ? teachingPlanForm.contents : [],
+    methodology: teachingPlanForm.methodology || '',
+    resources: Array.isArray(teachingPlanForm.resources) ? teachingPlanForm.resources : [],
+    evaluation: teachingPlanForm.evaluation || ''
+  };
+
+  const { data, error } = await supabase
+    .from(tableName)
+    .insert(teachingPlanData)
+    .select()
+    .single();
+
+  if (error) throw error;
+
+  const createdTeachingPlan = mapToCamelCase<TeachingPlan>(data);
+  await calendarEventService.syncFromTeachingPlan(createdTeachingPlan);
+
+  return createdTeachingPlan;
+}
+
+export async function update(id: string, teachingPlanForm: Partial<TeachingPlanFormValues>): Promise<TeachingPlan> {
+  const updateData: Record<string, any> = {};
+
+  if (teachingPlanForm.title !== undefined) updateData.title = teachingPlanForm.title;
+  if (teachingPlanForm.description !== undefined) updateData.description = teachingPlanForm.description;
+  if (teachingPlanForm.annualPlanId !== undefined) updateData.annual_plan_id = teachingPlanForm.annualPlanId;
+  if (teachingPlanForm.subjectId !== undefined) updateData.subject_id = teachingPlanForm.subjectId;
+  if (teachingPlanForm.startDate !== undefined) updateData.start_date = normalizeToISO(teachingPlanForm.startDate);
+  if (teachingPlanForm.endDate !== undefined) updateData.end_date = normalizeToISO(teachingPlanForm.endDate);
+  if (teachingPlanForm.objectives !== undefined)
+    updateData.objectives = Array.isArray(teachingPlanForm.objectives) ? teachingPlanForm.objectives : [];
+  if (teachingPlanForm.bnccReferences !== undefined)
+    updateData.bncc_references = Array.isArray(teachingPlanForm.bnccReferences) ? teachingPlanForm.bnccReferences : [];
+  if (teachingPlanForm.contents !== undefined)
+    updateData.contents = Array.isArray(teachingPlanForm.contents) ? teachingPlanForm.contents : [];
+  if (teachingPlanForm.methodology !== undefined) updateData.methodology = teachingPlanForm.methodology;
+  if (teachingPlanForm.resources !== undefined)
+    updateData.resources = Array.isArray(teachingPlanForm.resources) ? teachingPlanForm.resources : [];
+  if (teachingPlanForm.evaluation !== undefined) updateData.evaluation = teachingPlanForm.evaluation;
+
+  const { data, error } = await supabase
+    .from(tableName)
+    .update(updateData)
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) throw error;
+
+  const updatedTeachingPlan = mapToCamelCase<TeachingPlan>(data);
+  await calendarEventService.syncFromTeachingPlan(updatedTeachingPlan);
+
+  return updatedTeachingPlan;
+}
+
+export async function deleteTeachingPlan(id: string): Promise<void> {
+  const { error } = await supabase
+    .from(tableName)
+    .delete()
+    .eq('id', id);
+
+  if (error) throw error;
+}
+
 export const teachingPlanService = {
-  ...createService<TeachingPlan>("teaching_plans"),
-  ...teachingPlanSpecificQueries
+  getAll,
+  getById,
+  create,
+  update,
+  delete: deleteTeachingPlan,
 };

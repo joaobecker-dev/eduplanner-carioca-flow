@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -95,27 +96,19 @@ const TeachingPlanForm: React.FC<TeachingPlanFormProps> = ({
     try {
       // Use external submit handler if provided
       if (externalSubmitHandler) {
-        // Make sure we're passing the proper data format with dates properly handled
         externalSubmitHandler(data);
         return;
       }
       
       // Otherwise use the service directly
-      // Convert dates to ISO strings for database
-      const processedData = {
-        ...data,
-        startDate: data.startDate instanceof Date ? data.startDate.toISOString() : data.startDate,
-        endDate: data.endDate instanceof Date ? data.endDate.toISOString() : data.endDate
-      };
-      
       if (initialData?.id) {
-        await teachingPlanService.update(initialData.id, processedData);
+        await teachingPlanService.update(initialData.id, data);
         toast({
           title: "Plano de Ensino atualizado",
           description: "O plano de ensino foi atualizado com sucesso!",
         });
       } else {
-        await teachingPlanService.create(processedData);
+        await teachingPlanService.create(data);
         toast({
           title: "Plano de Ensino criado",
           description: "O novo plano de ensino foi criado com sucesso!",

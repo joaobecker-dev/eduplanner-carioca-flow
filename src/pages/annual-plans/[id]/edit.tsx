@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery, useMutation } from '@tanstack/react-query';
@@ -116,7 +117,7 @@ const AnnualPlanEdit: React.FC = () => {
       <AnnualPlanForm
         initialData={formInitialData}
         onSubmit={mutation.mutate}
-        isSubmitting={mutation.status === "pending"}
+        isSubmitting={mutation.isLoading}
         subjects={subjects}
         academicPeriods={academicPeriods}
       />

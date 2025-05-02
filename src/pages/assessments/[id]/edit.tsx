@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery, useMutation } from '@tanstack/react-query';
@@ -46,16 +47,7 @@ const AssessmentEdit: React.FC = () => {
 
   // Update mutation
   const mutation = useMutation({
-    mutationFn: (values: AssessmentFormValues) => {
-      // Convert Date objects to ISO strings
-      const formattedValues = {
-        ...values,
-        date: values.date instanceof Date ? values.date.toISOString() : values.date,
-        dueDate: values.dueDate instanceof Date ? values.dueDate.toISOString() : values.dueDate,
-      };
-
-      return assessmentService.update(id as string, formattedValues);
-    },
+    mutationFn: (values: AssessmentFormValues) => assessmentService.update(id as string, values),
     onSuccess: () => {
       toast({
         title: "Avaliação atualizada",
@@ -127,7 +119,7 @@ const AssessmentEdit: React.FC = () => {
       <AssessmentForm
         initialData={formInitialData}
         onSubmit={mutation.mutate}
-        isSubmitting={mutation.status === "pending"}
+        isSubmitting={mutation.isLoading}
         subjects={subjects}
         teachingPlans={teachingPlans}
       />
