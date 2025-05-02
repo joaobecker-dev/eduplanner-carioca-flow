@@ -1,3 +1,4 @@
+
 // Type definitions for EduPlanner
 
 // Base types
@@ -164,6 +165,8 @@ export interface CalendarEvent {
   lesson_plan_id?: ID; // For Supabase DB compatibility
   assessmentId?: ID;
   assessment_id?: ID; // For Supabase DB compatibility
+  teachingPlanId?: ID; // Adding the missing field
+  teaching_plan_id?: ID; // For Supabase DB compatibility
   location?: string;
   color?: string;
   created_at?: DateISO; // For Supabase DB compatibility

@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Assessment, ID } from '@/types';
 import { mapToCamelCase, mapToSnakeCase, normalizeToISO } from "@/integrations/supabase/supabaseAdapter";
@@ -71,6 +72,8 @@ export async function getByTeachingPlan(teachingPlanId: ID): Promise<Assessment[
  */
 export async function create(assessment: Omit<Assessment, "id">): Promise<Assessment> {
   const assessmentData = mapToSnakeCase<any>(assessment);
+  
+  // Use normalizeToISO which handles both string and Date objects
   assessmentData.date = normalizeToISO(assessment.date);
   assessmentData.due_date = normalizeToISO(assessment.dueDate);
 
@@ -96,6 +99,8 @@ export async function create(assessment: Omit<Assessment, "id">): Promise<Assess
  */
 export async function update(id: ID, assessment: Partial<Assessment>): Promise<Assessment> {
   const assessmentData = mapToSnakeCase<any>(assessment);
+  
+  // Use normalizeToISO which handles both string and Date objects
   assessmentData.date = normalizeToISO(assessment.date);
   assessmentData.due_date = normalizeToISO(assessment.dueDate);
 
