@@ -1,12 +1,9 @@
 import React from 'react';
-import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Plus, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
 import {
   Form,
   FormControl,
@@ -25,6 +22,10 @@ import {
 import { AnnualPlan, Subject, AcademicPeriod } from '@/types';
 import { annualPlanService } from '@/lib/services/annualPlanService';
 import { toast } from '@/hooks/use-toast';
+import ArrayInputField from './fields/ArrayInputField';
+
+// Import zod schema from a central location
+import { z } from 'zod';
 
 const annualPlanSchema = z.object({
   title: z.string().min(3, "O título deve ter pelo menos 3 caracteres"),
@@ -73,10 +74,6 @@ const AnnualPlanForm: React.FC<AnnualPlanFormProps> = ({
     }
   });
 
-  // Dynamic array fields management
-  const [newObjective, setNewObjective] = React.useState<string>("");
-  const [newReferenceMaterial, setNewReferenceMaterial] = React.useState<string>("");
-
   // Update form values when initialData changes
   React.useEffect(() => {
     if (initialData) {
@@ -110,32 +107,6 @@ const AnnualPlanForm: React.FC<AnnualPlanFormProps> = ({
       setFilteredSubjects([]);
     }
   }, [form.watch("academicPeriodId"), subjects, form]);
-
-  const addObjective = () => {
-    if (newObjective.trim()) {
-      const currentObjectives = form.getValues("objectives") || [];
-      form.setValue("objectives", [...currentObjectives, newObjective.trim()]);
-      setNewObjective("");
-    }
-  };
-  
-  const removeObjective = (index: number) => {
-    const currentObjectives = form.getValues("objectives") || [];
-    form.setValue("objectives", currentObjectives.filter((_, i) => i !== index));
-  };
-  
-  const addReferenceMaterial = () => {
-    if (newReferenceMaterial.trim()) {
-      const currentReferences = form.getValues("referenceMaterials") || [];
-      form.setValue("referenceMaterials", [...currentReferences, newReferenceMaterial.trim()]);
-      setNewReferenceMaterial("");
-    }
-  };
-  
-  const removeReferenceMaterial = (index: number) => {
-    const currentReferences = form.getValues("referenceMaterials") || [];
-    form.setValue("referenceMaterials", currentReferences.filter((_, i) => i !== index));
-  };
 
   const handleFormSubmit = async (data: AnnualPlanFormValues) => {
     try {
@@ -273,46 +244,11 @@ const AnnualPlanForm: React.FC<AnnualPlanFormProps> = ({
             </div>
           </div>
           
-          {/* Objectives Section */}
-          <FormField
-            control={form.control}
+          {/* Objectives Section - Using the new ArrayInputField component */}
+          <ArrayInputField
             name="objectives"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Objetivos</FormLabel>
-                <div className="flex space-x-2">
-                  <Input
-                    placeholder="Digite um objetivo"
-                    value={newObjective}
-                    onChange={(e) => setNewObjective(e.target.value)}
-                  />
-                  <Button 
-                    type="button" 
-                    onClick={addObjective}
-                    variant="secondary"
-                  >
-                    <Plus size={16} />
-                  </Button>
-                </div>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {field.value?.map((objective, index) => (
-                    <Badge 
-                      key={index} 
-                      variant="secondary"
-                      className="px-2 py-1 text-sm flex items-center gap-1"
-                    >
-                      {objective}
-                      <X 
-                        size={14} 
-                        className="cursor-pointer text-gray-500 hover:text-red-500"
-                        onClick={() => removeObjective(index)} 
-                      />
-                    </Badge>
-                  ))}
-                </div>
-                <FormMessage />
-              </FormItem>
-            )}
+            label="Objetivos"
+            placeholder="Digite um objetivo"
           />
         </div>
         
@@ -373,45 +309,11 @@ const AnnualPlanForm: React.FC<AnnualPlanFormProps> = ({
             )}
           />
           
-          <FormField
-            control={form.control}
+          {/* Reference Materials Section - Using the new ArrayInputField component */}
+          <ArrayInputField
             name="referenceMaterials"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Materiais de Referência (opcional)</FormLabel>
-                <div className="flex space-x-2">
-                  <Input
-                    placeholder="Ex: Livro X, Apostila Y"
-                    value={newReferenceMaterial}
-                    onChange={(e) => setNewReferenceMaterial(e.target.value)}
-                  />
-                  <Button 
-                    type="button" 
-                    onClick={addReferenceMaterial}
-                    variant="secondary"
-                  >
-                    <Plus size={16} />
-                  </Button>
-                </div>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {field.value?.map((reference, index) => (
-                    <Badge 
-                      key={index} 
-                      variant="secondary"
-                      className="px-2 py-1 text-sm flex items-center gap-1"
-                    >
-                      {reference}
-                      <X 
-                        size={14} 
-                        className="cursor-pointer text-gray-500 hover:text-red-500"
-                        onClick={() => removeReferenceMaterial(index)} 
-                      />
-                    </Badge>
-                  ))}
-                </div>
-                <FormMessage />
-              </FormItem>
-            )}
+            label="Materiais de Referência (opcional)"
+            placeholder="Ex: Livro X, Apostila Y"
           />
         </div>
       

@@ -34,6 +34,7 @@ import { TeachingPlan, Subject, AnnualPlan } from '@/types';
 import { teachingPlanService } from '@/lib/services/teachingPlanService';
 import { toast } from '@/hooks/use-toast';
 import { teachingPlanSchema, TeachingPlanSchemaValues } from '@/schemas/teachingPlanSchema';
+import ArrayInputField from './fields/ArrayInputField';
 
 export type TeachingPlanFormValues = TeachingPlanSchemaValues;
 
@@ -93,12 +94,6 @@ const TeachingPlanForm: React.FC<TeachingPlanFormProps> = ({
     }
   }, [initialData, form]);
 
-  // Dynamic array fields management
-  const [newObjective, setNewObjective] = React.useState<string>("");
-  const [newContent, setNewContent] = React.useState<string>("");
-  const [newResource, setNewResource] = React.useState<string>("");
-  const [newBnccReference, setNewBnccReference] = React.useState<string>("");
-
   // Update filtered annual plans when subject changes
   React.useEffect(() => {
     const subjectId = form.watch("subjectId");
@@ -115,62 +110,6 @@ const TeachingPlanForm: React.FC<TeachingPlanFormProps> = ({
       setFilteredAnnualPlans([]);
     }
   }, [form.watch("subjectId"), annualPlans, form]);
-
-  // Add objectives
-  const addObjective = () => {
-    if (newObjective.trim()) {
-      const currentObjectives = form.getValues("objectives") || [];
-      form.setValue("objectives", [...currentObjectives, newObjective.trim()]);
-      setNewObjective("");
-    }
-  };
-  
-  const removeObjective = (index: number) => {
-    const currentObjectives = form.getValues("objectives") || [];
-    form.setValue("objectives", currentObjectives.filter((_, i) => i !== index));
-  };
-  
-  // Add contents
-  const addContent = () => {
-    if (newContent.trim()) {
-      const currentContents = form.getValues("contents") || [];
-      form.setValue("contents", [...currentContents, newContent.trim()]);
-      setNewContent("");
-    }
-  };
-  
-  const removeContent = (index: number) => {
-    const currentContents = form.getValues("contents") || [];
-    form.setValue("contents", currentContents.filter((_, i) => i !== index));
-  };
-  
-  // Add resources
-  const addResource = () => {
-    if (newResource.trim()) {
-      const currentResources = form.getValues("resources") || [];
-      form.setValue("resources", [...currentResources, newResource.trim()]);
-      setNewResource("");
-    }
-  };
-  
-  const removeResource = (index: number) => {
-    const currentResources = form.getValues("resources") || [];
-    form.setValue("resources", currentResources.filter((_, i) => i !== index));
-  };
-  
-  // Add BNCC references
-  const addBnccReference = () => {
-    if (newBnccReference.trim()) {
-      const currentReferences = form.getValues("bnccReferences") || [];
-      form.setValue("bnccReferences", [...currentReferences, newBnccReference.trim()]);
-      setNewBnccReference("");
-    }
-  };
-  
-  const removeBnccReference = (index: number) => {
-    const currentReferences = form.getValues("bnccReferences") || [];
-    form.setValue("bnccReferences", currentReferences.filter((_, i) => i !== index));
-  };
 
   const handleFormSubmit = async (data: TeachingPlanFormValues) => {
     try {
@@ -382,86 +321,18 @@ const TeachingPlanForm: React.FC<TeachingPlanFormProps> = ({
           
           {/* Objectives and Contents Section */}
           <div className="space-y-4">
-            <FormField
-              control={form.control}
+            {/* Using the new ArrayInputField component for objectives */}
+            <ArrayInputField 
               name="objectives"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Objetivos</FormLabel>
-                  <div className="flex space-x-2">
-                    <Input
-                      placeholder="Digite um objetivo"
-                      value={newObjective}
-                      onChange={(e) => setNewObjective(e.target.value)}
-                    />
-                    <Button 
-                      type="button" 
-                      onClick={addObjective}
-                      variant="secondary"
-                    >
-                      <Plus size={16} />
-                    </Button>
-                  </div>
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {field.value?.map((objective, index) => (
-                      <Badge 
-                        key={index} 
-                        variant="secondary"
-                        className="px-2 py-1 text-sm flex items-center gap-1"
-                      >
-                        {objective}
-                        <X 
-                          size={14} 
-                          className="cursor-pointer text-gray-500 hover:text-red-500"
-                          onClick={() => removeObjective(index)} 
-                        />
-                      </Badge>
-                    ))}
-                  </div>
-                  <FormMessage />
-                </FormItem>
-              )}
+              label="Objetivos"
+              placeholder="Digite um objetivo"
             />
             
-            <FormField
-              control={form.control}
+            {/* Using the new ArrayInputField component for contents */}
+            <ArrayInputField 
               name="contents"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Conteúdos</FormLabel>
-                  <div className="flex space-x-2">
-                    <Input
-                      placeholder="Digite um conteúdo"
-                      value={newContent}
-                      onChange={(e) => setNewContent(e.target.value)}
-                    />
-                    <Button 
-                      type="button" 
-                      onClick={addContent}
-                      variant="secondary"
-                    >
-                      <Plus size={16} />
-                    </Button>
-                  </div>
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {field.value?.map((content, index) => (
-                      <Badge 
-                        key={index} 
-                        variant="secondary"
-                        className="px-2 py-1 text-sm flex items-center gap-1"
-                      >
-                        {content}
-                        <X 
-                          size={14} 
-                          className="cursor-pointer text-gray-500 hover:text-red-500"
-                          onClick={() => removeContent(index)} 
-                        />
-                      </Badge>
-                    ))}
-                  </div>
-                  <FormMessage />
-                </FormItem>
-              )}
+              label="Conteúdos"
+              placeholder="Digite um conteúdo"
             />
           </div>
         </div>
@@ -505,86 +376,18 @@ const TeachingPlanForm: React.FC<TeachingPlanFormProps> = ({
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <FormField
-            control={form.control}
+          {/* Using the new ArrayInputField component for resources */}
+          <ArrayInputField 
             name="resources"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Recursos</FormLabel>
-                <div className="flex space-x-2">
-                  <Input
-                    placeholder="Digite um recurso"
-                    value={newResource}
-                    onChange={(e) => setNewResource(e.target.value)}
-                  />
-                  <Button 
-                    type="button" 
-                    onClick={addResource}
-                    variant="secondary"
-                  >
-                    <Plus size={16} />
-                  </Button>
-                </div>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {field.value?.map((resource, index) => (
-                    <Badge 
-                      key={index} 
-                      variant="secondary"
-                      className="px-2 py-1 text-sm flex items-center gap-1"
-                    >
-                      {resource}
-                      <X 
-                        size={14} 
-                        className="cursor-pointer text-gray-500 hover:text-red-500"
-                        onClick={() => removeResource(index)} 
-                      />
-                    </Badge>
-                  ))}
-                </div>
-                <FormMessage />
-              </FormItem>
-            )}
+            label="Recursos"
+            placeholder="Digite um recurso"
           />
           
-          <FormField
-            control={form.control}
+          {/* Using the new ArrayInputField component for BNCC references */}
+          <ArrayInputField 
             name="bnccReferences"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Referências BNCC (opcional)</FormLabel>
-                <div className="flex space-x-2">
-                  <Input
-                    placeholder="Ex: EF02MA01"
-                    value={newBnccReference}
-                    onChange={(e) => setNewBnccReference(e.target.value)}
-                  />
-                  <Button 
-                    type="button" 
-                    onClick={addBnccReference}
-                    variant="secondary"
-                  >
-                    <Plus size={16} />
-                  </Button>
-                </div>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {field.value?.map((reference, index) => (
-                    <Badge 
-                      key={index} 
-                      variant="secondary"
-                      className="px-2 py-1 text-sm flex items-center gap-1"
-                    >
-                      {reference}
-                      <X 
-                        size={14} 
-                        className="cursor-pointer text-gray-500 hover:text-red-500"
-                        onClick={() => removeBnccReference(index)} 
-                      />
-                    </Badge>
-                  ))}
-                </div>
-                <FormMessage />
-              </FormItem>
-            )}
+            label="Referências BNCC (opcional)"
+            placeholder="Ex: EF02MA01"
           />
         </div>
       
