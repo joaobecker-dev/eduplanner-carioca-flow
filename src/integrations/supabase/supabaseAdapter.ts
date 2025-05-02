@@ -72,3 +72,12 @@ export function mapToCamelCase<T>(item: RecordObject): T {
     return acc;
   }, {} as RecordObject) as T;
 }
+
+/**
+ * Safely converts a Date object to ISO string format
+ * @param date Date object or null/undefined
+ * @returns ISO string or undefined
+ */
+export function toISO(date?: Date | null): string | undefined {
+  return date instanceof Date ? date.toISOString() : undefined;
+}

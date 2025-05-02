@@ -1,7 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { Assessment, ID } from '@/types';
-import { mapToCamelCase, mapToSnakeCase } from "@/integrations/supabase/supabaseAdapter";
+import { mapToCamelCase, mapToSnakeCase, toISO } from "@/integrations/supabase/supabaseAdapter";
 import { calendarEventService } from "./calendarEventService";
 
 const tableName = 'assessments';
@@ -75,21 +75,8 @@ export async function create(assessment: Omit<Assessment, "id">): Promise<Assess
   const assessmentData = mapToSnakeCase<any>(assessment);
   
   // Ensure date formats are ISO strings
-  if (assessment.date) {
-    if (typeof assessment.date === 'object' && assessment.date !== null) {
-      if ('toISOString' in assessment.date) {
-        assessmentData.date = assessment.date.toISOString();
-      }
-    }
-  }
-  
-  if (assessment.dueDate) {
-    if (typeof assessment.dueDate === 'object' && assessment.dueDate !== null) {
-      if ('toISOString' in assessment.dueDate) {
-        assessmentData.due_date = assessment.dueDate.toISOString();
-      }
-    }
-  }
+  assessmentData.date = toISO(assessment.date);
+  assessmentData.due_date = toISO(assessment.dueDate);
   
   const { data, error } = await supabase
     .from(tableName)
@@ -118,21 +105,8 @@ export async function update(id: ID, assessment: Partial<Assessment>): Promise<A
   const assessmentData = mapToSnakeCase<any>(assessment);
   
   // Ensure date formats are ISO strings
-  if (assessment.date) {
-    if (typeof assessment.date === 'object' && assessment.date !== null) {
-      if ('toISOString' in assessment.date) {
-        assessmentData.date = assessment.date.toISOString();
-      }
-    }
-  }
-  
-  if (assessment.dueDate) {
-    if (typeof assessment.dueDate === 'object' && assessment.dueDate !== null) {
-      if ('toISOString' in assessment.dueDate) {
-        assessmentData.due_date = assessment.dueDate.toISOString();
-      }
-    }
-  }
+  assessmentData.date = toISO(assessment.date);
+  assessmentData.due_date = toISO(assessment.dueDate);
   
   const { data, error } = await supabase
     .from(tableName)

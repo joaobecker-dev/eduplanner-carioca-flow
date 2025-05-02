@@ -1,7 +1,7 @@
 
 import { StudentAssessment, ID } from '@/types';
 import { supabase } from "@/integrations/supabase/client";
-import { mapToCamelCase, mapToSnakeCase } from '@/integrations/supabase/supabaseAdapter';
+import { mapToCamelCase, mapToSnakeCase, toISO } from '@/integrations/supabase/supabaseAdapter';
 import { handleError } from './baseService';
 import { calendarEventService } from './calendarEventService';
 
@@ -79,21 +79,8 @@ export async function create(studentAssessment: Omit<StudentAssessment, "id">): 
     const assessmentData = mapToSnakeCase<any>(studentAssessment);
     
     // Ensure date formats are ISO strings
-    if (studentAssessment.submittedDate) {
-      if (typeof studentAssessment.submittedDate === 'object' && studentAssessment.submittedDate !== null) {
-        if ('toISOString' in studentAssessment.submittedDate) {
-          assessmentData.submitted_date = studentAssessment.submittedDate.toISOString();
-        }
-      }
-    }
-    
-    if (studentAssessment.gradedDate) {
-      if (typeof studentAssessment.gradedDate === 'object' && studentAssessment.gradedDate !== null) {
-        if ('toISOString' in studentAssessment.gradedDate) {
-          assessmentData.graded_date = studentAssessment.gradedDate.toISOString();
-        }
-      }
-    }
+    assessmentData.submitted_date = toISO(studentAssessment.submittedDate);
+    assessmentData.graded_date = toISO(studentAssessment.gradedDate);
     
     const { data, error } = await supabase
       .from(tableName)
@@ -127,21 +114,8 @@ export async function update(id: ID, studentAssessment: Partial<StudentAssessmen
     const assessmentData = mapToSnakeCase<any>(studentAssessment);
     
     // Ensure date formats are ISO strings
-    if (studentAssessment.submittedDate) {
-      if (typeof studentAssessment.submittedDate === 'object' && studentAssessment.submittedDate !== null) {
-        if ('toISOString' in studentAssessment.submittedDate) {
-          assessmentData.submitted_date = studentAssessment.submittedDate.toISOString();
-        }
-      }
-    }
-    
-    if (studentAssessment.gradedDate) {
-      if (typeof studentAssessment.gradedDate === 'object' && studentAssessment.gradedDate !== null) {
-        if ('toISOString' in studentAssessment.gradedDate) {
-          assessmentData.graded_date = studentAssessment.gradedDate.toISOString();
-        }
-      }
-    }
+    assessmentData.submitted_date = toISO(studentAssessment.submittedDate);
+    assessmentData.graded_date = toISO(studentAssessment.gradedDate);
     
     const { data, error } = await supabase
       .from(tableName)
