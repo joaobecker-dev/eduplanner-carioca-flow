@@ -108,8 +108,8 @@ const TeachingPlanEdit: React.FC = () => {
   // Convert string dates to Date objects for the form
   const formInitialData = {
     ...teachingPlan,
-    startDate: new Date(teachingPlan.startDate),
-    endDate: new Date(teachingPlan.endDate)
+    startDate: new Date(teachingPlan.startDate || teachingPlan.start_date),
+    endDate: new Date(teachingPlan.endDate || teachingPlan.end_date)
   };
 
   return (

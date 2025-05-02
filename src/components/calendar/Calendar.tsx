@@ -1,13 +1,16 @@
 
 import React, { useState, useCallback, useEffect } from 'react';
-import { Calendar as BigCalendar, Views, dateFnsLocalizer } from 'react-big-calendar';
-import { format, parse, startOfWeek, getDay, addMonths } from 'date-fns';
+import { Calendar as FullCalendar, Views, dateFnsLocalizer } from '@fullcalendar/react';
+import dayGridPlugin from '@fullcalendar/daygrid';
+import timeGridPlugin from '@fullcalendar/timegrid';
+import interactionPlugin from '@fullcalendar/interaction';
+import { format, parse, startOfWeek, getDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { CalendarEvent } from '@/types';
 import NewEventModal from '@/components/modals/NewEventModal';
 import { mapTypeToCategory } from '@/schemas/eventSchema';
 
-// Setup the localizer for react-big-calendar
+// Setup the localizer for fullcalendar
 const locales = {
   'pt-BR': ptBR,
 };
@@ -141,21 +144,33 @@ const Calendar: React.FC<CalendarProps> = ({ events, isLoading }) => {
         </div>
       ) : (
         <div className="flex-1">
-          <BigCalendar
-            localizer={localizer}
+          <FullCalendar
+            plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+            initialView="dayGridMonth"
+            headerToolbar={{
+              left: 'prev,next today',
+              center: 'title',
+              right: 'dayGridMonth,timeGridWeek,timeGridDay'
+            }}
             events={calendarEvents}
-            startAccessor="start"
-            endAccessor="end"
-            style={{ height: '80vh' }}
-            selectable
-            onSelectSlot={handleSelectSlot}
-            onSelectEvent={handleSelectEvent}
-            eventPropGetter={eventStyleGetter}
-            messages={messages}
-            culture="pt-BR"
-            views={[Views.MONTH, Views.WEEK, Views.DAY, Views.AGENDA]}
-            defaultView={Views.MONTH}
-            popup
+            selectable={true}
+            select={handleSelectSlot}
+            eventClick={({ event }) => handleSelectEvent(event as any)}
+            eventColor="#3788d8"
+            locales={[ptBR]}
+            locale="pt-BR"
+            eventTimeFormat={{
+              hour: '2-digit',
+              minute: '2-digit',
+              meridiem: false,
+              hour12: false
+            }}
+            buttonText={{
+              today: 'Hoje',
+              month: 'Mês',
+              week: 'Semana',
+              day: 'Dia'
+            }}
           />
         </div>
       )}

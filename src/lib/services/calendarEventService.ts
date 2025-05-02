@@ -1,3 +1,4 @@
+
 import { CalendarEvent, ID } from '@/types';
 import { createService, handleError } from './baseService';
 import { supabase } from "@/integrations/supabase/client";
@@ -89,6 +90,115 @@ export const calendarEventService = {
     } catch (error) {
       handleError(error, 'atualizar evento no calendário');
       return null;
+    }
+  },
+  
+  // Sync functions for various entities
+  syncFromLessonPlan: async (lessonPlan: any): Promise<void> => {
+    try {
+      // First, check if an event for this lesson plan already exists
+      const { data: existingEvents } = await supabase
+        .from("calendar_events")
+        .select('*')
+        .eq('lesson_plan_id', lessonPlan.id);
+        
+      const eventData = {
+        title: `Aula: ${lessonPlan.title}`,
+        description: `Plano de aula: ${lessonPlan.title}`,
+        start_date: normalizeToISO(lessonPlan.date),
+        end_date: normalizeToISO(lessonPlan.date), // Same day event
+        all_day: true,
+        type: 'class',
+        lesson_plan_id: lessonPlan.id,
+        subject_id: lessonPlan.subject_id || null
+      };
+      
+      if (existingEvents && existingEvents.length > 0) {
+        // Update existing event
+        await supabase
+          .from("calendar_events")
+          .update(eventData)
+          .eq('lesson_plan_id', lessonPlan.id);
+      } else {
+        // Create new event
+        await supabase
+          .from("calendar_events")
+          .insert(eventData);
+      }
+    } catch (error) {
+      console.error('Error syncing lesson plan to calendar:', error);
+    }
+  },
+  
+  syncFromTeachingPlan: async (teachingPlan: any): Promise<void> => {
+    try {
+      // First, check if an event for this teaching plan already exists
+      const { data: existingEvents } = await supabase
+        .from("calendar_events")
+        .select('*')
+        .eq('teaching_plan_id', teachingPlan.id);
+        
+      const eventData = {
+        title: `Plano: ${teachingPlan.title}`,
+        description: `Plano de ensino: ${teachingPlan.title}`,
+        start_date: normalizeToISO(teachingPlan.startDate || teachingPlan.start_date),
+        end_date: normalizeToISO(teachingPlan.endDate || teachingPlan.end_date),
+        all_day: true,
+        type: 'class',
+        teaching_plan_id: teachingPlan.id,
+        subject_id: teachingPlan.subject_id || teachingPlan.subjectId || null
+      };
+      
+      if (existingEvents && existingEvents.length > 0) {
+        // Update existing event
+        await supabase
+          .from("calendar_events")
+          .update(eventData)
+          .eq('teaching_plan_id', teachingPlan.id);
+      } else {
+        // Create new event
+        await supabase
+          .from("calendar_events")
+          .insert(eventData);
+      }
+    } catch (error) {
+      console.error('Error syncing teaching plan to calendar:', error);
+    }
+  },
+  
+  syncFromAssessment: async (assessment: any): Promise<void> => {
+    try {
+      // First, check if an event for this assessment already exists
+      const { data: existingEvents } = await supabase
+        .from("calendar_events")
+        .select('*')
+        .eq('assessment_id', assessment.id);
+        
+      const eventData = {
+        title: `Avaliação: ${assessment.title}`,
+        description: assessment.description || `Avaliação: ${assessment.title}`,
+        start_date: normalizeToISO(assessment.date),
+        end_date: assessment.dueDate ? normalizeToISO(assessment.dueDate) : normalizeToISO(assessment.date),
+        all_day: true,
+        type: 'exam',
+        assessment_id: assessment.id,
+        subject_id: assessment.subject_id || assessment.subjectId || null
+      };
+      
+      if (existingEvents && existingEvents.length > 0) {
+        // Update existing event
+        await supabase
+          .from("calendar_events")
+          .update(eventData)
+          .eq('assessment_id', assessment.id);
+      } else {
+        // Create new event
+        await supabase
+          .from("calendar_events")
+          .insert(eventData);
+      }
+    } catch (error) {
+      console.error('Error syncing assessment to calendar:', error);
     }
   }
 };

@@ -1,3 +1,4 @@
+
 import * as z from 'zod';
 
 // Define event categories as a string literal type

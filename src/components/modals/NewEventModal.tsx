@@ -40,7 +40,7 @@ import {
 } from '@/components/ui/select';
 import { Calendar } from '@/components/ui/calendar';
 import { toast } from '@/hooks/use-toast';
-import { eventSchema, eventCategoryOptions, mapCategoryToType, type EventFormValues } from '@/schemas/eventSchema';
+import { eventSchema, eventCategoryOptions, mapCategoryToType, mapTypeToCategory, type EventFormValues } from '@/schemas/eventSchema';
 import { calendarEventService } from '@/lib/services/calendarEventService';
 import { CalendarEvent } from '@/types';
 
@@ -76,6 +76,7 @@ const NewEventModal: React.FC<NewEventModalProps> = ({
         category: editEvent.type ? mapTypeToCategory(editEvent.type) : 'Aula',
         color: editEvent.color || '',
         all_day: editEvent.allDay || editEvent.all_day || false,
+        subject_id: editEvent.subjectId || editEvent.subject_id || null,
       }
     : {
         title: '',
@@ -85,6 +86,7 @@ const NewEventModal: React.FC<NewEventModalProps> = ({
         category: 'Aula',
         color: '',
         all_day: defaultAllDay,
+        subject_id: null,
       };
 
   const form = useForm<EventFormValues>({
@@ -92,8 +94,7 @@ const NewEventModal: React.FC<NewEventModalProps> = ({
     defaultValues,
   });
 
-  const { status, handleSubmit } = form;
-  const isSubmitting = status === 'submitting';
+  const isSubmitting = form.formState.isSubmitting;
 
   const onSubmit = async (data: EventFormValues) => {
     try {
@@ -151,7 +152,9 @@ const NewEventModal: React.FC<NewEventModalProps> = ({
   };
 
   const modalTitle = isEditMode ? 'Editar Evento' : 'Novo Evento';
-  const submitButtonText = isEditMode ? (isSubmitting ? "Salvando..." : "Salvar Alterações") : (isSubmitting ? "Criando..." : "Criar Evento");
+  const submitButtonText = isEditMode 
+    ? (isSubmitting ? "Salvando..." : "Salvar Alterações") 
+    : (isSubmitting ? "Criando..." : "Criar Evento");
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -160,7 +163,7 @@ const NewEventModal: React.FC<NewEventModalProps> = ({
           <DialogTitle>{modalTitle}</DialogTitle>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
               name="title"
