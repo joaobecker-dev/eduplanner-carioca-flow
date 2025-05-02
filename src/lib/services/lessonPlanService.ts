@@ -1,7 +1,6 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { LessonPlan } from "@/types";
-import { mapToCamelCase } from "@/integrations/supabase/supabaseAdapter";
+import { mapToCamelCase, normalizeToISO } from "@/integrations/supabase/supabaseAdapter";
 import { LessonPlanFormValues } from "@/components/forms/LessonPlanForm";
 import { calendarEventService } from "./calendarEventService";
 
@@ -46,10 +45,7 @@ export async function create(lessonPlanForm: Partial<LessonPlanFormValues>): Pro
   const lessonPlanData = {
     title: lessonPlanForm.title,
     teaching_plan_id: lessonPlanForm.teachingPlanId,
-    date: typeof lessonPlanForm.date === 'string' ? 
-      lessonPlanForm.date : 
-      lessonPlanForm.date instanceof Date ? 
-        lessonPlanForm.date.toISOString() : new Date().toISOString(),
+    date: normalizeToISO(lessonPlanForm.date),
     duration: lessonPlanForm.duration,
     objectives: Array.isArray(lessonPlanForm.objectives) ? lessonPlanForm.objectives : 
       (typeof lessonPlanForm.objectives === 'string' ? 
@@ -98,10 +94,7 @@ export async function update(id: string, lessonPlanForm: Partial<LessonPlanFormV
   if (lessonPlanForm.teachingPlanId !== undefined) updateData.teaching_plan_id = lessonPlanForm.teachingPlanId;
   
   if (lessonPlanForm.date !== undefined) {
-    updateData.date = typeof lessonPlanForm.date === 'string' ? 
-      lessonPlanForm.date : 
-      lessonPlanForm.date instanceof Date ? 
-        lessonPlanForm.date.toISOString() : null;
+    updateData.date = normalizeToISO(lessonPlanForm.date);
   }
   
   if (lessonPlanForm.duration !== undefined) updateData.duration = lessonPlanForm.duration;
