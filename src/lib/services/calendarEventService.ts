@@ -1,8 +1,7 @@
-
-import { CalendarEvent, ID, Assessment, StudentAssessment } from '@/types';
+import { CalendarEvent, ID, Assessment, StudentAssessment, LessonPlan, TeachingPlan } from '@/types';
 import { createService, handleError } from './baseService';
 import { supabase } from "@/integrations/supabase/client";
-import { mapToCamelCase, mapToSnakeCase } from '@/integrations/supabase/supabaseAdapter';
+import { mapToCamelCase, mapToSnakeCase, toISO } from '@/integrations/supabase/supabaseAdapter';
 
 // Calendar Event Service
 export const calendarEventService = {
@@ -111,6 +110,82 @@ export const calendarEventService = {
       */
     } catch (error) {
       handleError(error, 'sincronizar evento do calendário com avaliação de aluno');
+    }
+  },
+
+  // Sync a calendar event from a lesson plan
+  syncFromLessonPlan: async (lessonPlan: LessonPlan): Promise<void> => {
+    try {
+      // Skip if date is missing
+      if (!lessonPlan.date) {
+        console.log('Lesson plan date is missing, skipping calendar sync');
+        return;
+      }
+
+      // Event data preparation
+      const eventData = {
+        title: `Plano de Aula: ${lessonPlan.title}`,
+        description: lessonPlan.notes || null,
+        type: "class" as const,
+        start_date: lessonPlan.date, // Already an ISO string
+        end_date: lessonPlan.date, // Lesson plans typically last one day
+        all_day: true, // Lesson plans are typically all-day events
+        subject_id: null, // Lesson plans don't have a direct subject reference
+        teaching_plan_id: lessonPlan.teachingPlanId,
+        lesson_plan_id: lessonPlan.id,
+        color: null,
+      };
+      
+      // Upsert the event - create or update based on lesson_plan_id
+      const { error } = await supabase
+        .from("calendar_events")
+        .upsert(eventData, {
+          onConflict: 'lesson_plan_id',
+          ignoreDuplicates: false
+        });
+      
+      if (error) throw error;
+      
+    } catch (error) {
+      handleError(error, 'sincronizar evento do calendário com plano de aula');
+    }
+  },
+
+  // Sync a calendar event from a teaching plan
+  syncFromTeachingPlan: async (teachingPlan: TeachingPlan): Promise<void> => {
+    try {
+      // Skip if start date is missing
+      if (!teachingPlan.startDate) {
+        console.log('Teaching plan start date is missing, skipping calendar sync');
+        return;
+      }
+
+      // Event data preparation
+      const eventData = {
+        title: `Plano de Ensino: ${teachingPlan.title}`,
+        description: teachingPlan.description || null,
+        type: "teaching" as const,
+        start_date: teachingPlan.startDate, // Already an ISO string
+        end_date: teachingPlan.endDate || teachingPlan.startDate, // Use endDate if available
+        all_day: true, // Teaching plans are typically all-day events
+        subject_id: teachingPlan.subjectId,
+        teaching_plan_id: teachingPlan.id,
+        lesson_plan_id: null,
+        color: null,
+      };
+      
+      // Upsert the event - create or update based on teaching_plan_id
+      const { error } = await supabase
+        .from("calendar_events")
+        .upsert(eventData, {
+          onConflict: 'teaching_plan_id',
+          ignoreDuplicates: false
+        });
+      
+      if (error) throw error;
+      
+    } catch (error) {
+      handleError(error, 'sincronizar evento do calendário com plano de ensino');
     }
   }
 };

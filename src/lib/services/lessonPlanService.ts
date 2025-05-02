@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { LessonPlan } from "@/types";
 import { mapToCamelCase } from "@/integrations/supabase/supabaseAdapter";
 import { LessonPlanFormValues } from "@/components/forms/LessonPlanForm";
+import { calendarEventService } from "./calendarEventService";
 
 const tableName = 'lesson_plans';
 
@@ -74,7 +75,13 @@ export async function create(lessonPlanForm: Partial<LessonPlanFormValues>): Pro
     .single();
   
   if (error) throw error;
-  return mapToCamelCase<LessonPlan>(data);
+  
+  const createdLessonPlan = mapToCamelCase<LessonPlan>(data);
+  
+  // Sync with calendar events
+  await calendarEventService.syncFromLessonPlan(createdLessonPlan);
+  
+  return createdLessonPlan;
 }
 
 /**
@@ -137,7 +144,13 @@ export async function update(id: string, lessonPlanForm: Partial<LessonPlanFormV
     .single();
   
   if (error) throw error;
-  return mapToCamelCase<LessonPlan>(data);
+  
+  const updatedLessonPlan = mapToCamelCase<LessonPlan>(data);
+  
+  // Sync with calendar events
+  await calendarEventService.syncFromLessonPlan(updatedLessonPlan);
+  
+  return updatedLessonPlan;
 }
 
 /**
