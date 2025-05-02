@@ -55,16 +55,23 @@ const TeachingPlanModals: React.FC<TeachingPlanModalsProps> = ({
     }
 
     try {
+      // Convert Date objects to ISO strings for API
+      const planData = {
+        ...data,
+        startDate: data.startDate ? data.startDate.toISOString() : new Date().toISOString(),
+        endDate: data.endDate ? data.endDate.toISOString() : new Date().toISOString()
+      };
+      
       if (selectedTeachingPlan?.id) {
         // Update existing teaching plan
-        await services.teachingPlan.update(selectedTeachingPlan.id, data);
+        await services.teachingPlan.update(selectedTeachingPlan.id, planData);
         toast({
           title: "Plano de ensino atualizado",
           description: "O plano de ensino foi atualizado com sucesso.",
         });
       } else {
         // Create new teaching plan with required fields guaranteed
-        await services.teachingPlan.create(data as Omit<TeachingPlan, "id">);
+        await services.teachingPlan.create(planData as Omit<TeachingPlan, "id">);
         toast({
           title: "Plano de ensino criado",
           description: "O plano de ensino foi criado com sucesso.",

@@ -44,16 +44,23 @@ const AssessmentModals: React.FC<AssessmentModalsProps> = ({
     setIsSubmitting(true);
     
     try {
+      // Convert Date objects to ISO strings for API
+      const assessmentData = {
+        ...data,
+        date: data.date ? data.date.toISOString() : new Date().toISOString(),
+        dueDate: data.dueDate ? data.dueDate.toISOString() : undefined
+      };
+      
       if (selectedAssessment?.id) {
         // Update existing assessment
-        await services.assessment.update(selectedAssessment.id, data);
+        await services.assessment.update(selectedAssessment.id, assessmentData);
         toast({
           title: "Avaliação atualizada",
           description: "A avaliação foi atualizada com sucesso.",
         });
       } else {
         // Create new assessment
-        await services.assessment.create(data as Omit<Assessment, "id">);
+        await services.assessment.create(assessmentData as Omit<Assessment, "id">);
         toast({
           title: "Avaliação criada",
           description: "A avaliação foi criada com sucesso.",
