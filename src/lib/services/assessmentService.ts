@@ -1,7 +1,6 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Assessment, ID } from '@/types';
-import { mapToCamelCase, mapToSnakeCase, toISO } from "@/integrations/supabase/supabaseAdapter";
+import { mapToCamelCase, mapToSnakeCase, normalizeToISO } from "@/integrations/supabase/supabaseAdapter";
 import { calendarEventService } from "./calendarEventService";
 
 const tableName = 'assessments';
@@ -71,13 +70,10 @@ export async function getByTeachingPlan(teachingPlanId: ID): Promise<Assessment[
  * @returns Promise<Assessment>
  */
 export async function create(assessment: Omit<Assessment, "id">): Promise<Assessment> {
-  // Convert form data to database structure with snake_case
   const assessmentData = mapToSnakeCase<any>(assessment);
-  
-  // Ensure date formats are ISO strings
-  assessmentData.date = toISO(assessment.date);
-  assessmentData.due_date = toISO(assessment.dueDate);
-  
+  assessmentData.date = normalizeToISO(assessment.date);
+  assessmentData.due_date = normalizeToISO(assessment.dueDate);
+
   const { data, error } = await supabase
     .from(tableName)
     .insert(assessmentData)
@@ -85,12 +81,10 @@ export async function create(assessment: Omit<Assessment, "id">): Promise<Assess
     .single();
   
   if (error) throw error;
-  
+
   const createdAssessment = mapToCamelCase<Assessment>(data);
-  
-  // Sync with calendar events
   await calendarEventService.syncFromAssessment(createdAssessment);
-  
+
   return createdAssessment;
 }
 
@@ -101,27 +95,22 @@ export async function create(assessment: Omit<Assessment, "id">): Promise<Assess
  * @returns Promise<Assessment>
  */
 export async function update(id: ID, assessment: Partial<Assessment>): Promise<Assessment> {
-  // Convert form data to database structure with snake_case
   const assessmentData = mapToSnakeCase<any>(assessment);
-  
-  // Ensure date formats are ISO strings
-  assessmentData.date = toISO(assessment.date);
-  assessmentData.due_date = toISO(assessment.dueDate);
-  
+  assessmentData.date = normalizeToISO(assessment.date);
+  assessmentData.due_date = normalizeToISO(assessment.dueDate);
+
   const { data, error } = await supabase
     .from(tableName)
     .update(assessmentData)
     .eq('id', id)
     .select()
     .single();
-  
+
   if (error) throw error;
-  
+
   const updatedAssessment = mapToCamelCase<Assessment>(data);
-  
-  // Sync with calendar events
   await calendarEventService.syncFromAssessment(updatedAssessment);
-  
+
   return updatedAssessment;
 }
 
@@ -135,7 +124,7 @@ export async function deleteAssessment(id: ID): Promise<void> {
     .from(tableName)
     .delete()
     .eq('id', id);
-  
+
   if (error) throw error;
 }
 
