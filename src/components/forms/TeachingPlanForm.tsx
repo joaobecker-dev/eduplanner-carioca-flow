@@ -1,40 +1,19 @@
 import React from 'react';
-import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { CalendarIcon, Plus, X } from 'lucide-react';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
-import { Calendar } from '@/components/ui/calendar';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
 import {
   Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
 } from '@/components/ui/form';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { TeachingPlan, Subject, AnnualPlan } from '@/types';
 import { teachingPlanService } from '@/lib/services/teachingPlanService';
 import { toast } from '@/hooks/use-toast';
 import { teachingPlanSchema, TeachingPlanSchemaValues } from '@/schemas/teachingPlanSchema';
 import ArrayInputField from './fields/ArrayInputField';
+import TextAreaField from './fields/TextAreaField';
+import InputField from './fields/InputField';
+import SelectField from './fields/SelectField';
+import DatePickerField from './fields/DatePickerField';
 
 export type TeachingPlanFormValues = TeachingPlanSchemaValues;
 
@@ -144,191 +123,78 @@ const TeachingPlanForm: React.FC<TeachingPlanFormProps> = ({
     }
   };
 
+  // Convert data structure for SelectField
+  const subjectOptions = subjects.map((subject) => ({
+    label: subject.name,
+    value: subject.id
+  }));
+
+  const annualPlanOptions = filteredAnnualPlans.map((plan) => ({
+    label: plan.title,
+    value: plan.id
+  }));
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Basic Information Section */}
           <div className="space-y-4">
-            <FormField
-              control={form.control}
+            <InputField
               name="title"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Título do Plano de Ensino</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Ex: Plano de Ensino de Matemática - 2º Bimestre" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+              label="Título do Plano de Ensino"
+              placeholder="Ex: Plano de Ensino de Matemática - 2º Bimestre"
             />
             
-            <FormField
-              control={form.control}
+            <TextAreaField
               name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Descrição (opcional)</FormLabel>
-                  <FormControl>
-                    <Textarea placeholder="Breve descrição sobre este plano de ensino" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+              label="Descrição (opcional)"
+              placeholder="Breve descrição sobre este plano de ensino"
             />
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
+              <SelectField
                 name="subjectId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Disciplina</FormLabel>
-                    <Select 
-                      onValueChange={field.onChange} 
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecione a disciplina" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {subjects.map((subject) => (
-                          <SelectItem key={subject.id} value={subject.id}>
-                            {subject.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                label="Disciplina"
+                placeholder="Selecione a disciplina"
+                options={subjectOptions}
               />
               
-              <FormField
-                control={form.control}
+              <SelectField
                 name="annualPlanId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Plano Anual</FormLabel>
-                    <Select 
-                      onValueChange={field.onChange} 
-                      defaultValue={field.value}
-                      disabled={!form.watch("subjectId") || filteredAnnualPlans.length === 0}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecione o plano anual" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {filteredAnnualPlans.map((plan) => (
-                          <SelectItem key={plan.id} value={plan.id}>
-                            {plan.title}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                label="Plano Anual"
+                placeholder="Selecione o plano anual"
+                options={annualPlanOptions}
+                disabled={!form.watch("subjectId") || filteredAnnualPlans.length === 0}
               />
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
+              <DatePickerField
                 name="startDate"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <FormLabel>Data de Início</FormLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant="outline"
-                            className={`w-full justify-start text-left font-normal ${!field.value && "text-muted-foreground"}`}
-                          >
-                            <CalendarIcon className="mr-2 h-4 w-4" />
-                            {field.value ? (
-                              format(field.value, "PPP", { locale: ptBR })
-                            ) : (
-                              <span>Selecione uma data</span>
-                            )}
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={field.onChange}
-                          initialFocus
-                          locale={ptBR}
-                        />
-                      </PopoverContent>
-                    </Popover>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                label="Data de Início"
+                placeholder="Selecione uma data"
               />
               
-              <FormField
-                control={form.control}
+              <DatePickerField
                 name="endDate"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <FormLabel>Data de Término</FormLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant="outline"
-                            className={`w-full justify-start text-left font-normal ${!field.value && "text-muted-foreground"}`}
-                          >
-                            <CalendarIcon className="mr-2 h-4 w-4" />
-                            {field.value ? (
-                              format(field.value, "PPP", { locale: ptBR })
-                            ) : (
-                              <span>Selecione uma data</span>
-                            )}
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={field.onChange}
-                          initialFocus
-                          disabled={(date) => 
-                            form.watch("startDate") ? 
-                            date < form.watch("startDate") :
-                            false
-                          }
-                          locale={ptBR}
-                        />
-                      </PopoverContent>
-                    </Popover>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                label="Data de Término"
+                placeholder="Selecione uma data"
+                disabledBefore={form.watch("startDate")}
               />
             </div>
           </div>
           
           {/* Objectives and Contents Section */}
           <div className="space-y-4">
-            {/* Using the new ArrayInputField component for objectives */}
+            {/* Using ArrayInputField component for objectives */}
             <ArrayInputField 
               name="objectives"
               label="Objetivos"
               placeholder="Digite um objetivo"
             />
             
-            {/* Using the new ArrayInputField component for contents */}
+            {/* Using ArrayInputField component for contents */}
             <ArrayInputField 
               name="contents"
               label="Conteúdos"
@@ -338,52 +204,30 @@ const TeachingPlanForm: React.FC<TeachingPlanFormProps> = ({
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <FormField
-            control={form.control}
+          <TextAreaField
             name="methodology"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Metodologia</FormLabel>
-                <FormControl>
-                  <Textarea 
-                    rows={4}
-                    placeholder="Descreva a metodologia que será utilizada" 
-                    {...field} 
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
+            label="Metodologia"
+            placeholder="Descreva a metodologia que será utilizada"
+            rows={4}
           />
           
-          <FormField
-            control={form.control}
+          <TextAreaField
             name="evaluation"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Avaliação</FormLabel>
-                <FormControl>
-                  <Textarea 
-                    rows={4}
-                    placeholder="Descreva os métodos de avaliação que serão utilizados" 
-                    {...field} 
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
+            label="Avaliação"
+            placeholder="Descreva os métodos de avaliação que serão utilizados"
+            rows={4}
           />
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Using the new ArrayInputField component for resources */}
+          {/* Using ArrayInputField component for resources */}
           <ArrayInputField 
             name="resources"
             label="Recursos"
             placeholder="Digite um recurso"
           />
           
-          {/* Using the new ArrayInputField component for BNCC references */}
+          {/* Using ArrayInputField component for BNCC references */}
           <ArrayInputField 
             name="bnccReferences"
             label="Referências BNCC (opcional)"

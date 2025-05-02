@@ -2,27 +2,16 @@ import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import {
   Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
 } from '@/components/ui/form';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { AnnualPlan, Subject, AcademicPeriod } from '@/types';
 import { annualPlanService } from '@/lib/services/annualPlanService';
 import { toast } from '@/hooks/use-toast';
 import ArrayInputField from './fields/ArrayInputField';
+import TextAreaField from './fields/TextAreaField';
+import InputField from './fields/InputField';
+import SelectField from './fields/SelectField';
 
 // Import zod schema from a central location
 import { z } from 'zod';
@@ -150,101 +139,54 @@ const AnnualPlanForm: React.FC<AnnualPlanFormProps> = ({
     }
   };
 
+  // Convert data structure for SelectField
+  const academicPeriodOptions = academicPeriods.map((period) => ({
+    label: period.name,
+    value: period.id
+  }));
+
+  const subjectOptions = filteredSubjects.map((subject) => ({
+    label: subject.name,
+    value: subject.id
+  }));
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Basic Information Section */}
           <div className="space-y-4">
-            <FormField
-              control={form.control}
+            <InputField
               name="title"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Título do Plano Anual</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Ex: Plano Anual de Matemática - 5º Ano" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+              label="Título do Plano Anual"
+              placeholder="Ex: Plano Anual de Matemática - 5º Ano"
             />
             
-            <FormField
-              control={form.control}
+            <TextAreaField
               name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Descrição (opcional)</FormLabel>
-                  <FormControl>
-                    <Textarea placeholder="Breve descrição sobre este plano anual" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+              label="Descrição (opcional)"
+              placeholder="Breve descrição sobre este plano anual"
             />
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
+              <SelectField
                 name="academicPeriodId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Período Acadêmico</FormLabel>
-                    <Select 
-                      onValueChange={field.onChange} 
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecione o período" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {academicPeriods.map((period) => (
-                          <SelectItem key={period.id} value={period.id}>
-                            {period.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                label="Período Acadêmico"
+                placeholder="Selecione o período"
+                options={academicPeriodOptions}
               />
               
-              <FormField
-                control={form.control}
+              <SelectField
                 name="subjectId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Disciplina</FormLabel>
-                    <Select 
-                      onValueChange={field.onChange} 
-                      defaultValue={field.value}
-                      disabled={!form.watch("academicPeriodId") || filteredSubjects.length === 0}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecione a disciplina" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {filteredSubjects.map((subject) => (
-                          <SelectItem key={subject.id} value={subject.id}>
-                            {subject.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                label="Disciplina"
+                placeholder="Selecione a disciplina"
+                options={subjectOptions}
+                disabled={!form.watch("academicPeriodId") || filteredSubjects.length === 0}
               />
             </div>
           </div>
           
-          {/* Objectives Section - Using the new ArrayInputField component */}
+          {/* Objectives Section */}
           <ArrayInputField
             name="objectives"
             label="Objetivos"
@@ -253,63 +195,30 @@ const AnnualPlanForm: React.FC<AnnualPlanFormProps> = ({
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <FormField
-            control={form.control}
+          <TextAreaField
             name="generalContent"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Conteúdo Geral</FormLabel>
-                <FormControl>
-                  <Textarea 
-                    rows={4}
-                    placeholder="Descreva o conteúdo geral que será abordado durante o ano" 
-                    {...field} 
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
+            label="Conteúdo Geral"
+            placeholder="Descreva o conteúdo geral que será abordado durante o ano"
+            rows={4}
           />
           
-          <FormField
-            control={form.control}
+          <TextAreaField
             name="methodology"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Metodologia</FormLabel>
-                <FormControl>
-                  <Textarea 
-                    rows={4}
-                    placeholder="Descreva a metodologia que será utilizada" 
-                    {...field} 
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
+            label="Metodologia"
+            placeholder="Descreva a metodologia que será utilizada"
+            rows={4}
           />
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <FormField
-            control={form.control}
+          <TextAreaField
             name="evaluation"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Avaliação</FormLabel>
-                <FormControl>
-                  <Textarea 
-                    rows={4}
-                    placeholder="Descreva os métodos de avaliação que serão utilizados" 
-                    {...field} 
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
+            label="Avaliação"
+            placeholder="Descreva os métodos de avaliação que serão utilizados"
+            rows={4}
           />
           
-          {/* Reference Materials Section - Using the new ArrayInputField component */}
+          {/* Reference Materials Section */}
           <ArrayInputField
             name="referenceMaterials"
             label="Materiais de Referência (opcional)"
