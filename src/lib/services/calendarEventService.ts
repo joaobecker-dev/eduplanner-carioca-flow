@@ -1,5 +1,5 @@
 
-import { CalendarEvent, ID, Assessment } from '@/types';
+import { CalendarEvent, ID, Assessment, StudentAssessment } from '@/types';
 import { createService, handleError } from './baseService';
 import { supabase } from "@/integrations/supabase/client";
 import { mapToCamelCase, mapToSnakeCase } from '@/integrations/supabase/supabaseAdapter';
@@ -69,6 +69,51 @@ export const calendarEventService = {
       
     } catch (error) {
       handleError(error, 'sincronizar evento do calendário com avaliação');
+    }
+  },
+  
+  // Sync a calendar event from a student assessment (placeholder for future implementation)
+  syncFromStudentAssessment: async (studentAssessment: StudentAssessment): Promise<void> => {
+    try {
+      // This is a placeholder function, not actively used in current implementation
+      // In a future version, this could create personal calendar events for students
+      // when their assessments are graded or when they have submissions due
+      
+      console.log('Student assessment synced with calendar:', studentAssessment.id);
+      
+      // Example implementation if needed in the future:
+      /*
+      // Get the assessment details to create the event
+      const { data: assessmentData } = await supabase
+        .from("assessments")
+        .select('*')
+        .eq('id', studentAssessment.assessmentId)
+        .single();
+        
+      if (!assessmentData) return;
+      
+      const assessment = mapToCamelCase<Assessment>(assessmentData);
+      
+      const eventData = {
+        title: `Grade for: ${assessment.title}`,
+        description: studentAssessment.feedback || '',
+        type: "deadline" as const,
+        start_date: studentAssessment.gradedDate || assessment.date,
+        all_day: true,
+        student_id: studentAssessment.studentId, // Would need to add this field to calendar_events
+        assessment_id: assessment.id,
+        subject_id: assessment.subjectId,
+      };
+      
+      await supabase
+        .from("calendar_events")
+        .upsert(eventData, {
+          onConflict: 'student_assessment_id', // Would need to add this field and constraint
+          ignoreDuplicates: false
+        });
+      */
+    } catch (error) {
+      handleError(error, 'sincronizar evento do calendário com avaliação de aluno');
     }
   }
 };
