@@ -23,22 +23,37 @@ const lessonPlanSpecificQueries = {
   },
   
   // Override the create method to add calendar event sync
-  create: async (lessonPlan: Omit<LessonPlan, 'id' | 'created_at'>): Promise<LessonPlan | null> => {
+  create: async (lessonPlanData: Omit<LessonPlan, 'id' | 'created_at'>): Promise<LessonPlan | null> => {
     try {
-      // Handle arrays in lesson plan
-      const processedLessonPlan = {
-        ...lessonPlan,
-        objectives: Array.isArray(lessonPlan.objectives) ? lessonPlan.objectives : 
-                   (typeof lessonPlan.objectives === 'string' ? [lessonPlan.objectives] : []),
-        contents: Array.isArray(lessonPlan.contents) ? lessonPlan.contents : 
-                 (typeof lessonPlan.contents === 'string' ? [lessonPlan.contents] : []),
-        activities: Array.isArray(lessonPlan.activities) ? lessonPlan.activities : 
-                   (typeof lessonPlan.activities === 'string' ? [lessonPlan.activities] : []),
-        resources: Array.isArray(lessonPlan.resources) ? lessonPlan.resources : 
-                  (typeof lessonPlan.resources === 'string' ? [lessonPlan.resources] : []),
-      };
+      // Ensure arrays for array fields
+      const objectives = Array.isArray(lessonPlanData.objectives) ? lessonPlanData.objectives : 
+                        (typeof lessonPlanData.objectives === 'string' ? [lessonPlanData.objectives] : []);
+      const contents = Array.isArray(lessonPlanData.contents) ? lessonPlanData.contents : 
+                      (typeof lessonPlanData.contents === 'string' ? [lessonPlanData.contents] : []);
+      const activities = Array.isArray(lessonPlanData.activities) ? lessonPlanData.activities : 
+                        (typeof lessonPlanData.activities === 'string' ? [lessonPlanData.activities] : []);
+      const resources = Array.isArray(lessonPlanData.resources) ? lessonPlanData.resources : 
+                       (typeof lessonPlanData.resources === 'string' ? [lessonPlanData.resources] : []);
       
-      const processedData = mapToSnakeCase(processedLessonPlan);
+      // Convert date if necessary
+      const date = typeof lessonPlanData.date === 'object' && lessonPlanData.date instanceof Date
+                   ? lessonPlanData.date.toISOString() : lessonPlanData.date;
+      
+      // Prepare structured data
+      const processedData = mapToSnakeCase({
+        title: lessonPlanData.title,
+        teaching_plan_id: lessonPlanData.teachingPlanId || lessonPlanData.teaching_plan_id,
+        date,
+        duration: lessonPlanData.duration,
+        objectives,
+        contents,
+        activities,
+        resources,
+        homework: lessonPlanData.homework || null,
+        evaluation: lessonPlanData.evaluation || null,
+        notes: lessonPlanData.notes || null,
+        material_ids: lessonPlanData.materialIds || lessonPlanData.material_ids || null,
+      });
       
       const { data, error } = await supabase
         .from("lesson_plans")
@@ -70,30 +85,47 @@ const lessonPlanSpecificQueries = {
   // Override the update method to add calendar event sync
   update: async (id: ID, updates: Partial<LessonPlan>): Promise<LessonPlan | null> => {
     try {
-      // Handle arrays in lesson plan updates
-      const processedUpdates = { ...updates };
+      const updateData: Record<string, any> = {};
       
-      if (updates.objectives) {
-        processedUpdates.objectives = Array.isArray(updates.objectives) ? updates.objectives : 
-                                      (typeof updates.objectives === 'string' ? [updates.objectives] : []);
+      if (updates.title !== undefined) updateData.title = updates.title;
+      if (updates.teachingPlanId !== undefined || updates.teaching_plan_id !== undefined) 
+        updateData.teaching_plan_id = updates.teachingPlanId || updates.teaching_plan_id;
+      
+      // Convert date if it's a Date object
+      if (updates.date !== undefined) {
+        updateData.date = updates.date instanceof Date ? updates.date.toISOString() : updates.date;
       }
       
-      if (updates.contents) {
-        processedUpdates.contents = Array.isArray(updates.contents) ? updates.contents : 
-                                    (typeof updates.contents === 'string' ? [updates.contents] : []);
+      if (updates.duration !== undefined) updateData.duration = updates.duration;
+      
+      // Handle arrays properly
+      if (updates.objectives !== undefined) {
+        updateData.objectives = Array.isArray(updates.objectives) ? updates.objectives : 
+                              (typeof updates.objectives === 'string' ? [updates.objectives] : []);
       }
       
-      if (updates.activities) {
-        processedUpdates.activities = Array.isArray(updates.activities) ? updates.activities : 
-                                      (typeof updates.activities === 'string' ? [updates.activities] : []);
+      if (updates.contents !== undefined) {
+        updateData.contents = Array.isArray(updates.contents) ? updates.contents : 
+                            (typeof updates.contents === 'string' ? [updates.contents] : []);
       }
       
-      if (updates.resources) {
-        processedUpdates.resources = Array.isArray(updates.resources) ? updates.resources : 
-                                     (typeof updates.resources === 'string' ? [updates.resources] : []);
+      if (updates.activities !== undefined) {
+        updateData.activities = Array.isArray(updates.activities) ? updates.activities : 
+                              (typeof updates.activities === 'string' ? [updates.activities] : []);
       }
       
-      const processedData = mapToSnakeCase(processedUpdates);
+      if (updates.resources !== undefined) {
+        updateData.resources = Array.isArray(updates.resources) ? updates.resources : 
+                             (typeof updates.resources === 'string' ? [updates.resources] : []);
+      }
+      
+      if (updates.homework !== undefined) updateData.homework = updates.homework;
+      if (updates.evaluation !== undefined) updateData.evaluation = updates.evaluation;
+      if (updates.notes !== undefined) updateData.notes = updates.notes;
+      if (updates.materialIds !== undefined || updates.material_ids !== undefined)
+        updateData.material_ids = updates.materialIds || updates.material_ids;
+      
+      const processedData = mapToSnakeCase(updateData);
       
       const { data, error } = await supabase
         .from("lesson_plans")

@@ -9,7 +9,8 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import TeachingPlanForm from '@/components/forms/TeachingPlanForm';
 import { toast } from '@/hooks/use-toast';
-import { TeachingPlanFormValues } from '@/components/forms/TeachingPlanForm';
+import { TeachingPlanFormValues } from '@/schemas/teachingPlanSchema';
+import { TeachingPlan } from '@/types';
 
 const TeachingPlanEdit: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -22,13 +23,13 @@ const TeachingPlanEdit: React.FC = () => {
     enabled: !!id,
   });
 
-  // Fetch subjects
+  // Fetch subjects for dropdown
   const { data: subjects = [], isLoading: isLoadingSubjects } = useQuery({
     queryKey: ['subjects'],
     queryFn: subjectService.getAll,
   });
 
-  // Fetch annual plans
+  // Fetch annual plans for dropdown
   const { data: annualPlans = [], isLoading: isLoadingAnnualPlans } = useQuery({
     queryKey: ['annualPlans'],
     queryFn: annualPlanService.getAll,
@@ -48,7 +49,14 @@ const TeachingPlanEdit: React.FC = () => {
   // Update mutation
   const mutation = useMutation({
     mutationFn: (values: TeachingPlanFormValues) => {
-      return teachingPlanService.update(id as string, values);
+      // Process data for update
+      const processedValues: Partial<TeachingPlan> = {
+        ...values,
+        // Convert Date objects to ISO strings for the database
+        startDate: values.startDate instanceof Date ? values.startDate.toISOString() : values.startDate,
+        endDate: values.endDate instanceof Date ? values.endDate.toISOString() : values.endDate
+      };
+      return teachingPlanService.update(id as string, processedValues);
     },
     onSuccess: () => {
       toast({
@@ -98,7 +106,7 @@ const TeachingPlanEdit: React.FC = () => {
     );
   }
 
-  // Convert string dates to Date objects for the form
+  // Convert date strings to Date objects for the form
   const formInitialData = {
     ...teachingPlan,
     startDate: new Date(teachingPlan.startDate || teachingPlan.start_date),
@@ -119,7 +127,7 @@ const TeachingPlanEdit: React.FC = () => {
       <TeachingPlanForm
         initialData={formInitialData}
         onSubmit={mutation.mutate}
-        isSubmitting={mutation.status === "pending"}
+        isSubmitting={mutation.isPending}
         subjects={subjects}
         annualPlans={annualPlans}
       />

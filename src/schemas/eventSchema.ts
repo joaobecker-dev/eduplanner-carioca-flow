@@ -3,12 +3,13 @@ import * as z from 'zod';
 
 // Define event categories as a string literal type
 const eventCategories = ['Aula', 'Avaliação', 'Reunião', 'Outro'] as const;
+export type EventCategory = typeof eventCategories[number];
 
 export const eventSchema = z.object({
   title: z.string().min(1, { message: "O título é obrigatório" }),
   description: z.string().optional(),
   start_date: z.date({ required_error: "A data de início é obrigatória" }),
-  end_date: z.date({ required_error: "A data de término é obrigatória" }).nullable().optional(),
+  end_date: z.date().nullable().optional(),
   category: z.enum(eventCategories, {
     errorMap: () => ({ message: "Selecione uma categoria válida" })
   }),
@@ -25,7 +26,7 @@ export const eventCategoryOptions = eventCategories.map(category => ({
 }));
 
 // Helper function to map category to type
-export const mapCategoryToType = (category: string): 'class' | 'exam' | 'meeting' | 'other' => {
+export const mapCategoryToType = (category: EventCategory): 'class' | 'exam' | 'meeting' | 'other' => {
   switch (category) {
     case 'Aula':
       return 'class';
@@ -39,7 +40,7 @@ export const mapCategoryToType = (category: string): 'class' | 'exam' | 'meeting
 };
 
 // Helper function to map type to category
-export const mapTypeToCategory = (type: string): string => {
+export const mapTypeToCategory = (type: string): EventCategory => {
   switch (type) {
     case 'class':
       return 'Aula';

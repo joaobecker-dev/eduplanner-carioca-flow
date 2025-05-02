@@ -40,7 +40,7 @@ import {
 } from '@/components/ui/select';
 import { Calendar } from '@/components/ui/calendar';
 import { toast } from '@/hooks/use-toast';
-import { eventSchema, eventCategoryOptions, mapCategoryToType, mapTypeToCategory, type EventFormValues } from '@/schemas/eventSchema';
+import { eventSchema, eventCategoryOptions, mapCategoryToType, mapTypeToCategory, EventCategory, type EventFormValues } from '@/schemas/eventSchema';
 import { calendarEventService } from '@/lib/services/calendarEventService';
 import { CalendarEvent } from '@/types';
 
@@ -83,7 +83,7 @@ const NewEventModal: React.FC<NewEventModalProps> = ({
         description: '',
         start_date: defaultStartDate || new Date(),
         end_date: defaultEndDate || null,
-        category: 'Aula',
+        category: 'Aula' as EventCategory,
         color: '',
         all_day: defaultAllDay,
         subject_id: null,

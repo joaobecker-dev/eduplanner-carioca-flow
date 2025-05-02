@@ -4,7 +4,8 @@ import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
-import { format, parse, startOfWeek, getDay } from 'date-fns';
+import { DateSelectArg, EventClickArg } from '@fullcalendar/core';
+import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { CalendarEvent } from '@/types';
 import NewEventModal from '@/components/modals/NewEventModal';
@@ -28,17 +29,9 @@ interface CalendarViewEvent {
   color?: string;
 }
 
-interface SlotInfo {
-  action: 'select' | 'click';
-  slots: Date[];
-  start: Date;
-  end: Date;
-  resourceId?: string;
-}
-
 const Calendar: React.FC<CalendarProps> = ({ events, isLoading }) => {
   const [modalOpen, setModalOpen] = useState(false);
-  const [selectedSlot, setSelectedSlot] = useState<SlotInfo | null>(null);
+  const [selectedSlot, setSelectedSlot] = useState<DateSelectArg | null>(null);
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
   const [calendarEvents, setCalendarEvents] = useState<CalendarViewEvent[]>([]);
 
@@ -67,16 +60,16 @@ const Calendar: React.FC<CalendarProps> = ({ events, isLoading }) => {
   }, [events]);
 
   // Handle slot selection
-  const handleSelectSlot = useCallback((slotInfo: SlotInfo) => {
-    setSelectedSlot(slotInfo);
+  const handleSelectSlot = useCallback((selectInfo: DateSelectArg) => {
+    setSelectedSlot(selectInfo);
     setSelectedEvent(null);
     setModalOpen(true);
   }, []);
 
   // Handle event selection
-  const handleSelectEvent = useCallback((event: CalendarViewEvent) => {
+  const handleSelectEvent = useCallback((clickInfo: EventClickArg) => {
     // Get the original event data
-    const originalEvent = event.resource?.originalEvent;
+    const originalEvent = clickInfo.event.extendedProps?.resource?.originalEvent;
     if (originalEvent) {
       setSelectedEvent(originalEvent);
       setSelectedSlot(null);
@@ -130,7 +123,7 @@ const Calendar: React.FC<CalendarProps> = ({ events, isLoading }) => {
             events={calendarEvents}
             selectable={true}
             select={handleSelectSlot}
-            eventClick={({ event }) => handleSelectEvent(event as any)}
+            eventClick={handleSelectEvent}
             eventColor="#3788d8"
             locale="pt-BR"
             eventTimeFormat={{
@@ -155,7 +148,7 @@ const Calendar: React.FC<CalendarProps> = ({ events, isLoading }) => {
           onOpenChange={setModalOpen}
           defaultStartDate={selectedSlot?.start}
           defaultEndDate={selectedSlot?.end}
-          defaultAllDay={selectedSlot?.start?.getHours() === 0 && selectedSlot?.end?.getHours() === 0}
+          defaultAllDay={selectedSlot?.allDay || false}
           editEvent={selectedEvent}
           mode={selectedEvent ? 'edit' : 'create'}
         />

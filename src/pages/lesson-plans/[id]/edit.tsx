@@ -9,6 +9,7 @@ import { ArrowLeft } from 'lucide-react';
 import LessonPlanForm from '@/components/forms/LessonPlanForm';
 import { toast } from '@/hooks/use-toast';
 import { LessonPlanFormValues } from '@/components/forms/LessonPlanForm';
+import { LessonPlan } from '@/types';
 
 const LessonPlanEdit: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -41,7 +42,18 @@ const LessonPlanEdit: React.FC = () => {
   // Update mutation
   const mutation = useMutation({
     mutationFn: (values: LessonPlanFormValues) => {
-      return lessonPlanService.update(id as string, values);
+      // Process string array fields
+      const processedValues: Partial<LessonPlan> = {
+        ...values,
+        // Convert string fields to arrays if they're strings
+        objectives: typeof values.objectives === 'string' ? values.objectives.split('\n').filter(Boolean) : values.objectives,
+        contents: typeof values.contents === 'string' ? values.contents.split('\n').filter(Boolean) : values.contents,
+        activities: typeof values.activities === 'string' ? values.activities.split('\n').filter(Boolean) : values.activities,
+        resources: typeof values.resources === 'string' ? values.resources.split('\n').filter(Boolean) : values.resources,
+        // Convert Date to ISO string if it's a Date object
+        date: values.date instanceof Date ? values.date.toISOString() : values.date
+      };
+      return lessonPlanService.update(id as string, processedValues);
     },
     onSuccess: () => {
       toast({
@@ -94,7 +106,11 @@ const LessonPlanEdit: React.FC = () => {
   // Convert string date to Date object for the form
   const formInitialData = {
     ...lessonPlan,
-    date: new Date(lessonPlan.date)
+    date: new Date(lessonPlan.date),
+    objectives: Array.isArray(lessonPlan.objectives) ? lessonPlan.objectives.join('\n') : lessonPlan.objectives,
+    contents: Array.isArray(lessonPlan.contents) ? lessonPlan.contents.join('\n') : lessonPlan.contents,
+    activities: Array.isArray(lessonPlan.activities) ? lessonPlan.activities.join('\n') : lessonPlan.activities,
+    resources: Array.isArray(lessonPlan.resources) ? lessonPlan.resources.join('\n') : lessonPlan.resources
   };
 
   return (
@@ -111,7 +127,7 @@ const LessonPlanEdit: React.FC = () => {
       <LessonPlanForm
         initialData={formInitialData}
         onSubmit={mutation.mutate}
-        isSubmitting={mutation.status === "pending"}
+        isSubmitting={mutation.isPending}
         teachingPlans={teachingPlans}
       />
     </div>
