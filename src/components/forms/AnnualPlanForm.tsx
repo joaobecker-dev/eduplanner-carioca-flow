@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
@@ -24,6 +23,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { AnnualPlan, Subject, AcademicPeriod } from '@/types';
+import { annualPlanService } from '@/lib/services/annualPlanService';
+import { toast } from '@/hooks/use-toast';
 
 const annualPlanSchema = z.object({
   title: z.string().min(3, "O título deve ter pelo menos 3 caracteres"),
@@ -40,7 +41,7 @@ const annualPlanSchema = z.object({
 export type AnnualPlanFormValues = z.infer<typeof annualPlanSchema>;
 
 interface AnnualPlanFormProps {
-  onSubmit: (data: AnnualPlanFormValues) => void;
+  onSubmit?: (data: AnnualPlanFormValues) => void;
   subjects: Subject[];
   academicPeriods: AcademicPeriod[];
   initialData?: Partial<AnnualPlan>;
@@ -48,7 +49,7 @@ interface AnnualPlanFormProps {
 }
 
 const AnnualPlanForm: React.FC<AnnualPlanFormProps> = ({
-  onSubmit,
+  onSubmit: externalSubmitHandler,
   subjects,
   academicPeriods,
   initialData,
@@ -59,24 +60,39 @@ const AnnualPlanForm: React.FC<AnnualPlanFormProps> = ({
   
   const form = useForm<AnnualPlanFormValues>({
     resolver: zodResolver(annualPlanSchema),
-    defaultValues: initialData ? {
-      ...initialData,
-      // Convert DB value (reference_materials) to form value (referenceMaterials)
-      referenceMaterials: initialData.reference_materials || []
-    } : {
-      title: "",
-      description: "",
-      objectives: [],
-      generalContent: "",
-      methodology: "",
-      evaluation: "",
-      referenceMaterials: [],
+    defaultValues: {
+      title: initialData?.title || "",
+      description: initialData?.description || "",
+      academicPeriodId: initialData?.academicPeriodId || "",
+      subjectId: initialData?.subjectId || "",
+      objectives: Array.isArray(initialData?.objectives) ? initialData?.objectives : [],
+      generalContent: initialData?.generalContent || "",
+      methodology: initialData?.methodology || "",
+      evaluation: initialData?.evaluation || "",
+      referenceMaterials: Array.isArray(initialData?.reference_materials) ? initialData?.reference_materials : [],
     }
   });
 
   // Dynamic array fields management
   const [newObjective, setNewObjective] = React.useState<string>("");
   const [newReferenceMaterial, setNewReferenceMaterial] = React.useState<string>("");
+
+  // Update form values when initialData changes
+  React.useEffect(() => {
+    if (initialData) {
+      form.reset({
+        title: initialData.title || "",
+        description: initialData.description || "",
+        academicPeriodId: initialData.academicPeriodId || "",
+        subjectId: initialData.subjectId || "",
+        objectives: Array.isArray(initialData.objectives) ? initialData.objectives : [],
+        generalContent: initialData.generalContent || "",
+        methodology: initialData.methodology || "",
+        evaluation: initialData.evaluation || "",
+        referenceMaterials: Array.isArray(initialData.reference_materials) ? initialData.reference_materials : [],
+      });
+    }
+  }, [initialData, form]);
 
   // Update filtered subjects when academic period changes
   React.useEffect(() => {
@@ -93,7 +109,7 @@ const AnnualPlanForm: React.FC<AnnualPlanFormProps> = ({
     } else {
       setFilteredSubjects([]);
     }
-  }, [form.watch("academicPeriodId"), subjects]);
+  }, [form.watch("academicPeriodId"), subjects, form]);
 
   const addObjective = () => {
     if (newObjective.trim()) {
@@ -121,17 +137,46 @@ const AnnualPlanForm: React.FC<AnnualPlanFormProps> = ({
     form.setValue("referenceMaterials", currentReferences.filter((_, i) => i !== index));
   };
 
-  const handleFormSubmit = (data: AnnualPlanFormValues) => {
-    // Convert form value (referenceMaterials) to DB value (reference_materials)
-    const formattedData = {
-      ...data,
-      reference_materials: data.referenceMaterials
-    };
-    
-    // @ts-ignore - We need to delete the referenceMaterials field that's not in the API
-    delete formattedData.referenceMaterials;
-    
-    onSubmit(formattedData as any);
+  const handleFormSubmit = async (data: AnnualPlanFormValues) => {
+    try {
+      // Use external submit handler if provided
+      if (externalSubmitHandler) {
+        externalSubmitHandler(data);
+        return;
+      }
+
+      // Otherwise use the service directly
+      // Convert form value (referenceMaterials) to DB value (reference_materials)
+      const formattedData = {
+        ...data,
+        reference_materials: data.referenceMaterials
+      };
+      
+      // @ts-ignore - We need to delete the referenceMaterials field that's not in the API
+      delete formattedData.referenceMaterials;
+      
+      if (initialData?.id) {
+        await annualPlanService.update(initialData.id, formattedData as any);
+        toast({
+          title: "Plano Anual atualizado",
+          description: "O plano anual foi atualizado com sucesso!",
+        });
+      } else {
+        await annualPlanService.create(formattedData as any);
+        toast({
+          title: "Plano Anual criado",
+          description: "O novo plano anual foi criado com sucesso!",
+        });
+        form.reset(); // Reset form after successful creation
+      }
+    } catch (error) {
+      console.error("Error saving annual plan:", error);
+      toast({
+        title: "Erro ao salvar",
+        description: "Ocorreu um erro ao salvar o plano anual. Por favor, tente novamente.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -372,7 +417,7 @@ const AnnualPlanForm: React.FC<AnnualPlanFormProps> = ({
       
         <div className="flex justify-end space-x-2">
           <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Salvando..." : initialData ? "Atualizar" : "Criar"}
+            {isSubmitting ? "Salvando..." : initialData?.id ? "Atualizar" : "Criar"}
           </Button>
         </div>
       </form>

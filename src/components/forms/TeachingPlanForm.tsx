@@ -31,32 +31,14 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { TeachingPlan, Subject, AnnualPlan } from '@/types';
+import { teachingPlanService } from '@/lib/services/teachingPlanService';
+import { toast } from '@/hooks/use-toast';
+import { teachingPlanSchema, TeachingPlanSchemaValues } from '@/schemas/teachingPlanSchema';
 
-const teachingPlanSchema = z.object({
-  title: z.string().min(3, "O título deve ter pelo menos 3 caracteres"),
-  description: z.string().optional(),
-  annualPlanId: z.string().nonempty("Selecione um plano anual"),
-  subjectId: z.string().nonempty("Selecione uma disciplina"),
-  startDate: z.date({
-    required_error: "Data de início é obrigatória",
-  }),
-  endDate: z.date({
-    required_error: "Data de término é obrigatória",
-  }).refine(data => data, {
-    message: "Data de término é obrigatória",
-  }),
-  objectives: z.array(z.string()).optional().default([]),
-  contents: z.array(z.string()).optional().default([]),
-  methodology: z.string().min(10, "Adicione a metodologia com pelo menos 10 caracteres"),
-  resources: z.array(z.string()).optional().default([]),
-  evaluation: z.string().min(10, "Adicione os métodos de avaliação"),
-  bnccReferences: z.array(z.string()).optional().default([]),
-});
-
-export type TeachingPlanFormValues = z.infer<typeof teachingPlanSchema>;
+export type TeachingPlanFormValues = TeachingPlanSchemaValues;
 
 interface TeachingPlanFormProps {
-  onSubmit: (data: TeachingPlanFormValues) => void;
+  onSubmit?: (data: TeachingPlanFormValues) => void;
   subjects: Subject[];
   annualPlans: AnnualPlan[];
   initialData?: Partial<TeachingPlan> | Record<string, never>;
@@ -64,7 +46,7 @@ interface TeachingPlanFormProps {
 }
 
 const TeachingPlanForm: React.FC<TeachingPlanFormProps> = ({
-  onSubmit,
+  onSubmit: externalSubmitHandler,
   subjects,
   annualPlans,
   initialData = {},
@@ -91,6 +73,26 @@ const TeachingPlanForm: React.FC<TeachingPlanFormProps> = ({
     }
   });
 
+  // Update form values when initialData changes
+  React.useEffect(() => {
+    if (initialData && Object.keys(initialData).length > 0) {
+      form.reset({
+        title: initialData.title || "",
+        description: initialData.description || "",
+        annualPlanId: initialData.annualPlanId || "",
+        subjectId: initialData.subjectId || "",
+        startDate: initialData.startDate ? new Date(initialData.startDate) : new Date(),
+        endDate: initialData.endDate ? new Date(initialData.endDate) : new Date(),
+        objectives: Array.isArray(initialData.objectives) ? initialData.objectives : [],
+        contents: Array.isArray(initialData.contents) ? initialData.contents : [],
+        methodology: initialData.methodology || "",
+        resources: Array.isArray(initialData.resources) ? initialData.resources : [],
+        evaluation: initialData.evaluation || "",
+        bnccReferences: Array.isArray(initialData.bnccReferences) ? initialData.bnccReferences : [],
+      });
+    }
+  }, [initialData, form]);
+
   // Dynamic array fields management
   const [newObjective, setNewObjective] = React.useState<string>("");
   const [newContent, setNewContent] = React.useState<string>("");
@@ -112,7 +114,7 @@ const TeachingPlanForm: React.FC<TeachingPlanFormProps> = ({
     } else {
       setFilteredAnnualPlans([]);
     }
-  }, [form.watch("subjectId"), annualPlans]);
+  }, [form.watch("subjectId"), annualPlans, form]);
 
   // Add objectives
   const addObjective = () => {
@@ -170,9 +172,42 @@ const TeachingPlanForm: React.FC<TeachingPlanFormProps> = ({
     form.setValue("bnccReferences", currentReferences.filter((_, i) => i !== index));
   };
 
+  const handleFormSubmit = async (data: TeachingPlanFormValues) => {
+    try {
+      // Use external submit handler if provided
+      if (externalSubmitHandler) {
+        externalSubmitHandler(data);
+        return;
+      }
+      
+      // Otherwise use the service directly
+      if (initialData?.id) {
+        await teachingPlanService.update(initialData.id, data);
+        toast({
+          title: "Plano de Ensino atualizado",
+          description: "O plano de ensino foi atualizado com sucesso!",
+        });
+      } else {
+        await teachingPlanService.create(data);
+        toast({
+          title: "Plano de Ensino criado",
+          description: "O novo plano de ensino foi criado com sucesso!",
+        });
+        form.reset(); // Reset form after successful creation
+      }
+    } catch (error) {
+      console.error("Error saving teaching plan:", error);
+      toast({
+        title: "Erro ao salvar",
+        description: "Ocorreu um erro ao salvar o plano de ensino. Por favor, tente novamente.",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Basic Information Section */}
           <div className="space-y-4">
@@ -555,7 +590,7 @@ const TeachingPlanForm: React.FC<TeachingPlanFormProps> = ({
       
         <div className="flex justify-end space-x-2">
           <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "Salvando..." : initialData.id ? "Atualizar" : "Criar"}
+            {isSubmitting ? "Salvando..." : initialData?.id ? "Atualizar" : "Criar"}
           </Button>
         </div>
       </form>

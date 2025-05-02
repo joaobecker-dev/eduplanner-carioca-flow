@@ -9,12 +9,12 @@ export const teachingPlanSchema = z.object({
   subjectId: z.string().min(1, { message: 'Selecione uma disciplina' }),
   startDate: coerceToDate({ required: true }),
   endDate: coerceToDate({ required: true }),
-  objectives: z.string().optional().default(''),
-  bnccReferences: z.string().optional().default(''),
-  contents: z.string().optional().default(''),
-  methodology: z.string().optional().default(''),
-  resources: z.string().optional().default(''),
-  evaluation: z.string().optional().default(''),
+  objectives: z.array(z.string()).default([]),
+  bnccReferences: z.array(z.string()).default([]),
+  contents: z.array(z.string()).default([]),
+  methodology: z.string().min(10, { message: 'A metodologia deve ter pelo menos 10 caracteres' }),
+  resources: z.array(z.string()).default([]),
+  evaluation: z.string().min(10, { message: 'Os métodos de avaliação devem ser descritos' }),
 });
 
 export type TeachingPlanSchemaValues = z.infer<typeof teachingPlanSchema>;
