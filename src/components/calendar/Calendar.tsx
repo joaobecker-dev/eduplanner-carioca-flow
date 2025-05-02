@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback, useEffect } from 'react';
 import { Calendar as BigCalendar, Views, dateFnsLocalizer } from 'react-big-calendar';
 import { format, parse, startOfWeek, getDay, addMonths } from 'date-fns';
@@ -60,6 +61,7 @@ interface SlotInfo {
 const Calendar: React.FC<CalendarProps> = ({ events, isLoading }) => {
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState<SlotInfo | null>(null);
+  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
   const [calendarEvents, setCalendarEvents] = useState<CalendarViewEvent[]>([]);
 
   // Map Supabase events to Calendar view format
@@ -75,7 +77,8 @@ const Calendar: React.FC<CalendarProps> = ({ events, isLoading }) => {
         resource: {
           type: event.type,
           description: event.description,
-          category: event.type ? mapTypeToCategory(event.type) : "Outro"
+          category: event.type ? mapTypeToCategory(event.type) : "Outro",
+          originalEvent: event // Store the original event data
         }
       }));
 
@@ -88,7 +91,19 @@ const Calendar: React.FC<CalendarProps> = ({ events, isLoading }) => {
   // Handle slot selection
   const handleSelectSlot = useCallback((slotInfo: SlotInfo) => {
     setSelectedSlot(slotInfo);
+    setSelectedEvent(null);
     setModalOpen(true);
+  }, []);
+
+  // Handle event selection
+  const handleSelectEvent = useCallback((event: CalendarViewEvent) => {
+    // Get the original event data
+    const originalEvent = event.resource?.originalEvent;
+    if (originalEvent) {
+      setSelectedEvent(originalEvent);
+      setSelectedSlot(null);
+      setModalOpen(true);
+    }
   }, []);
 
   // Event style customization
@@ -134,6 +149,7 @@ const Calendar: React.FC<CalendarProps> = ({ events, isLoading }) => {
             style={{ height: '80vh' }}
             selectable
             onSelectSlot={handleSelectSlot}
+            onSelectEvent={handleSelectEvent}
             eventPropGetter={eventStyleGetter}
             messages={messages}
             culture="pt-BR"
@@ -144,13 +160,15 @@ const Calendar: React.FC<CalendarProps> = ({ events, isLoading }) => {
         </div>
       )}
 
-      {modalOpen && selectedSlot && (
+      {modalOpen && (
         <NewEventModal
           open={modalOpen}
           onOpenChange={setModalOpen}
-          defaultStartDate={selectedSlot.start}
-          defaultEndDate={selectedSlot.end}
-          defaultAllDay={selectedSlot.start.getHours() === 0 && selectedSlot.end.getHours() === 0}
+          defaultStartDate={selectedSlot?.start}
+          defaultEndDate={selectedSlot?.end}
+          defaultAllDay={selectedSlot?.start?.getHours() === 0 && selectedSlot?.end?.getHours() === 0}
+          editEvent={selectedEvent}
+          mode={selectedEvent ? 'edit' : 'create'}
         />
       )}
     </div>

@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery, useMutation } from '@tanstack/react-query';
@@ -96,6 +97,12 @@ const LessonPlanEdit: React.FC = () => {
     );
   }
 
+  // Convert string date to Date object for the form
+  const formInitialData = {
+    ...lessonPlan,
+    date: new Date(lessonPlan.date),
+  };
+
   return (
     <div className="container mx-auto py-6">
       <div className="flex justify-between items-center mb-6">
@@ -108,7 +115,7 @@ const LessonPlanEdit: React.FC = () => {
       </div>
 
       <LessonPlanForm
-        initialData={lessonPlan}
+        initialData={formInitialData}
         onSubmit={mutation.mutate}
         isSubmitting={mutation.status === "pending"}
         teachingPlans={teachingPlans}

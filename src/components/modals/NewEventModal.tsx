@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -41,6 +42,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { toast } from '@/hooks/use-toast';
 import { eventSchema, eventCategoryOptions, mapCategoryToType, type EventFormValues } from '@/schemas/eventSchema';
 import { calendarEventService } from '@/lib/services/calendarEventService';
+import { CalendarEvent } from '@/types';
 
 interface NewEventModalProps {
   open: boolean;
@@ -48,6 +50,8 @@ interface NewEventModalProps {
   defaultStartDate?: Date;
   defaultEndDate?: Date;
   defaultAllDay?: boolean;
+  editEvent?: CalendarEvent | null;
+  mode?: 'create' | 'edit';
 }
 
 const NewEventModal: React.FC<NewEventModalProps> = ({
@@ -56,20 +60,36 @@ const NewEventModal: React.FC<NewEventModalProps> = ({
   defaultStartDate,
   defaultEndDate,
   defaultAllDay = false,
+  editEvent = null,
+  mode = 'create'
 }) => {
   const queryClient = useQueryClient();
+  const isEditMode = mode === 'edit' && editEvent;
+
+  // Prepare default values
+  const defaultValues: EventFormValues = isEditMode 
+    ? {
+        title: editEvent.title,
+        description: editEvent.description || '',
+        start_date: new Date(editEvent.startDate || editEvent.start_date),
+        end_date: editEvent.endDate || editEvent.end_date ? new Date(editEvent.endDate || editEvent.end_date) : null,
+        category: editEvent.type ? mapTypeToCategory(editEvent.type) : 'Aula',
+        color: editEvent.color || '',
+        all_day: editEvent.allDay || editEvent.all_day || false,
+      }
+    : {
+        title: '',
+        description: '',
+        start_date: defaultStartDate || new Date(),
+        end_date: defaultEndDate || null,
+        category: 'Aula',
+        color: '',
+        all_day: defaultAllDay,
+      };
 
   const form = useForm<EventFormValues>({
     resolver: zodResolver(eventSchema),
-    defaultValues: {
-      title: '',
-      description: '',
-      start_date: defaultStartDate || new Date(),
-      end_date: defaultEndDate || new Date(),
-      category: 'Aula',
-      color: '',
-      all_day: defaultAllDay,
-    },
+    defaultValues,
   });
 
   const { status, handleSubmit } = form;
@@ -85,22 +105,35 @@ const NewEventModal: React.FC<NewEventModalProps> = ({
         title: data.title,
         description: data.description || null,
         start_date: data.start_date.toISOString(),
-        end_date: data.end_date ? data.end_date.toISOString() : null,
+        end_date: data.end_date ? data.end_date.toISOString() : data.start_date.toISOString(),
         all_day: data.all_day,
         color: data.color || null,
         type: eventType,
         subject_id: data.subject_id || null,
       };
 
-      // Save to database
-      const result = await calendarEventService.createEvent(eventData);
+      let result;
+      if (isEditMode && editEvent) {
+        // Update existing event
+        result = await calendarEventService.updateEvent(editEvent.id, eventData);
+        if (result) {
+          toast({
+            title: 'Evento atualizado',
+            description: 'O evento foi atualizado com sucesso.',
+          });
+        }
+      } else {
+        // Create new event
+        result = await calendarEventService.createEvent(eventData);
+        if (result) {
+          toast({
+            title: 'Evento criado',
+            description: 'O evento foi adicionado ao calendário com sucesso.',
+          });
+        }
+      }
       
       if (result) {
-        toast({
-          title: 'Evento criado',
-          description: 'O evento foi adicionado ao calendário com sucesso.',
-        });
-        
         // Invalidate queries to refresh calendar
         queryClient.invalidateQueries({ queryKey: ['calendarEvents'] });
         
@@ -108,20 +141,23 @@ const NewEventModal: React.FC<NewEventModalProps> = ({
         onOpenChange(false);
       }
     } catch (error) {
-      console.error('Error creating event:', error);
+      console.error('Error with event:', error);
       toast({
-        title: 'Erro ao criar evento',
-        description: 'Ocorreu um erro ao adicionar o evento ao calendário.',
+        title: isEditMode ? 'Erro ao atualizar evento' : 'Erro ao criar evento',
+        description: 'Ocorreu um erro ao processar o evento no calendário.',
         variant: 'destructive',
       });
     }
   };
 
+  const modalTitle = isEditMode ? 'Editar Evento' : 'Novo Evento';
+  const submitButtonText = isEditMode ? (isSubmitting ? "Salvando..." : "Salvar Alterações") : (isSubmitting ? "Criando..." : "Criar Evento");
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[550px]">
         <DialogHeader>
-          <DialogTitle>Novo Evento</DialogTitle>
+          <DialogTitle>{modalTitle}</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -207,7 +243,7 @@ const NewEventModal: React.FC<NewEventModalProps> = ({
                             {field.value ? (
                               format(field.value, "PPP", { locale: ptBR })
                             ) : (
-                              <span>Selecione uma data</span>
+                              <span>Igual à data de início</span>
                             )}
                             <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                           </Button>
@@ -300,8 +336,11 @@ const NewEventModal: React.FC<NewEventModalProps> = ({
             />
             
             <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                Cancelar
+              </Button>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Criando..." : "Criar Evento"}
+                {submitButtonText}
               </Button>
             </DialogFooter>
           </form>
