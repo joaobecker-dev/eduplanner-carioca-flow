@@ -1,9 +1,9 @@
 
 import React from 'react';
-import CalendarPageWrapper from './pages/Calendar/index';
+import Calendar from './Calendar/Calendar';
 
 const CalendarPage: React.FC = () => {
-  return <CalendarPageWrapper />;
+  return <Calendar />;
 };
 
 export default CalendarPage;

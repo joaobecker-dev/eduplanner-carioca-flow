@@ -1,3 +1,4 @@
+
 export const normalizeToISO = (value: Date | string | undefined | null): string | null => {
   if (!value) return null;
   return value instanceof Date ? value.toISOString() : value;
@@ -15,6 +16,32 @@ export function convertDatesToISO<T extends Record<string, any>>(obj: T): Record
   });
   
   return result;
+}
+
+// Alias for normalizeToISO function for backward compatibility
+export const toISO = normalizeToISO;
+
+// Add mapToCamelCase and mapToSnakeCase functions
+export function mapToCamelCase<T>(obj: Record<string, any>): T {
+  const newObj: Record<string, any> = {};
+  
+  Object.keys(obj).forEach(key => {
+    const camelKey = key.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
+    newObj[camelKey] = obj[key];
+  });
+  
+  return newObj as T;
+}
+
+export function mapToSnakeCase<T>(obj: Record<string, any>): Record<string, any> {
+  const newObj: Record<string, any> = {};
+  
+  Object.keys(obj).forEach(key => {
+    const snakeKey = key.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
+    newObj[snakeKey] = obj[key];
+  });
+  
+  return newObj;
 }
 
 export const formatDisplayDate = (isoDateString: string): string => {
