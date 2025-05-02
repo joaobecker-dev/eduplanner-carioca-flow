@@ -71,15 +71,17 @@ export async function getByTeachingPlan(teachingPlanId: ID): Promise<Assessment[
  * @returns Promise<Assessment>
  */
 export async function create(assessment: Omit<Assessment, "id">): Promise<Assessment> {
-  const assessmentData = mapToSnakeCase<any>(assessment);
-  
-  // Use normalizeToISO which handles both string and Date objects
-  if (assessment.date) {
-    assessmentData.date = normalizeToISO(assessment.date);
-  }
-  if (assessment.dueDate) {
-    assessmentData.due_date = normalizeToISO(assessment.dueDate);
-  }
+  // Instead of using mapToSnakeCase, create a properly typed object
+  const assessmentData = {
+    title: assessment.title,
+    description: assessment.description,
+    subject_id: assessment.subjectId,
+    teaching_plan_id: assessment.teachingPlanId,
+    type: assessment.type,
+    total_points: assessment.totalPoints,
+    date: normalizeToISO(assessment.date),
+    due_date: normalizeToISO(assessment.dueDate)
+  };
   
   // Ensure required fields
   if (!assessmentData.title || !assessmentData.type || !assessmentData.date || 
@@ -108,19 +110,21 @@ export async function create(assessment: Omit<Assessment, "id">): Promise<Assess
  * @returns Promise<Assessment>
  */
 export async function update(id: ID, assessment: Partial<Assessment>): Promise<Assessment> {
-  const assessmentData = mapToSnakeCase<any>(assessment);
+  // Create a properly typed update object instead of using mapToSnakeCase
+  const updateData: Record<string, any> = {};
   
-  // Use normalizeToISO which handles both string and Date objects
-  if (assessment.date) {
-    assessmentData.date = normalizeToISO(assessment.date);
-  }
-  if (assessment.dueDate) {
-    assessmentData.due_date = normalizeToISO(assessment.dueDate);
-  }
+  if (assessment.title !== undefined) updateData.title = assessment.title;
+  if (assessment.description !== undefined) updateData.description = assessment.description;
+  if (assessment.subjectId !== undefined) updateData.subject_id = assessment.subjectId;
+  if (assessment.teachingPlanId !== undefined) updateData.teaching_plan_id = assessment.teachingPlanId;
+  if (assessment.type !== undefined) updateData.type = assessment.type;
+  if (assessment.totalPoints !== undefined) updateData.total_points = assessment.totalPoints;
+  if (assessment.date !== undefined) updateData.date = normalizeToISO(assessment.date);
+  if (assessment.dueDate !== undefined) updateData.due_date = normalizeToISO(assessment.dueDate);
 
   const { data, error } = await supabase
     .from(tableName)
-    .update(assessmentData)
+    .update(updateData)
     .eq('id', id)
     .select()
     .single();

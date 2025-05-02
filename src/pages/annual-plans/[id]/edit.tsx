@@ -12,14 +12,11 @@ interface AnnualPlanFormData {
   title: string;
   description?: string;
   subjectId: string;
-  schoolYear?: string;
+  generalContent: string;
   objectives: string[];
   methodology: string;
   evaluation: string;
-  resources?: string[];
-  references?: string[];
-  startDate?: Date;
-  endDate?: Date;
+  referenceMaterials?: string[];
 }
 
 export default function AnnualPlanEdit() {
@@ -44,23 +41,18 @@ export default function AnnualPlanEdit() {
         title: annualPlan.title,
         description: annualPlan.description || "",
         subjectId: annualPlan.subjectId,
-        schoolYear: annualPlan.schoolYear,
-        objectives: annualPlan.objectives,
+        generalContent: annualPlan.generalContent || annualPlan.general_content || "",
+        objectives: annualPlan.objectives || [],
         methodology: annualPlan.methodology,
         evaluation: annualPlan.evaluation,
-        resources: annualPlan.resources,
-        references: annualPlan.references || [],
-        startDate: annualPlan.startDate ? new Date(annualPlan.startDate) : undefined,
-        endDate: annualPlan.endDate ? new Date(annualPlan.endDate) : undefined,
+        referenceMaterials: annualPlan.reference_materials || []
       });
     }
   }, [annualPlan]);
 
   const mutation = useMutation({
     mutationFn: (data: AnnualPlanFormData) => annualPlanService.update(id as string, {
-      ...data,
-      startDate: data.startDate ? normalizeToISO(data.startDate) : undefined,
-      endDate: data.endDate ? normalizeToISO(data.endDate) : undefined,
+      ...data
     }),
     onSuccess: () => {
       toast.success("Plano anual atualizado com sucesso!");

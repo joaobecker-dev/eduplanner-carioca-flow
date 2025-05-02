@@ -52,11 +52,15 @@ export async function getById(id: ID): Promise<StudentAssessment | null> {
 
 export async function create(studentAssessment: Omit<StudentAssessment, "id">): Promise<StudentAssessment | null> {
   try {
-    const assessmentData = mapToSnakeCase<any>(studentAssessment);
-    
-    // Use normalizeToISO which handles both string and Date objects
-    assessmentData.submitted_date = normalizeToISO(studentAssessment.submittedDate);
-    assessmentData.graded_date = normalizeToISO(studentAssessment.gradedDate);
+    // Create a properly typed object instead of using mapToSnakeCase
+    const assessmentData = {
+      student_id: studentAssessment.studentId,
+      assessment_id: studentAssessment.assessmentId,
+      score: studentAssessment.score,
+      feedback: studentAssessment.feedback,
+      submitted_date: normalizeToISO(studentAssessment.submittedDate),
+      graded_date: normalizeToISO(studentAssessment.gradedDate)
+    };
 
     const { data, error } = await supabase
       .from(tableName)
@@ -76,15 +80,19 @@ export async function create(studentAssessment: Omit<StudentAssessment, "id">): 
 
 export async function update(id: ID, studentAssessment: Partial<StudentAssessment>): Promise<StudentAssessment | null> {
   try {
-    const assessmentData = mapToSnakeCase<any>(studentAssessment);
+    // Create a properly typed update object
+    const updateData: Record<string, any> = {};
     
-    // Use normalizeToISO which handles both string and Date objects
-    assessmentData.submitted_date = normalizeToISO(studentAssessment.submittedDate);
-    assessmentData.graded_date = normalizeToISO(studentAssessment.gradedDate);
+    if (studentAssessment.studentId !== undefined) updateData.student_id = studentAssessment.studentId;
+    if (studentAssessment.assessmentId !== undefined) updateData.assessment_id = studentAssessment.assessmentId;
+    if (studentAssessment.score !== undefined) updateData.score = studentAssessment.score;
+    if (studentAssessment.feedback !== undefined) updateData.feedback = studentAssessment.feedback;
+    if (studentAssessment.submittedDate !== undefined) updateData.submitted_date = normalizeToISO(studentAssessment.submittedDate);
+    if (studentAssessment.gradedDate !== undefined) updateData.graded_date = normalizeToISO(studentAssessment.gradedDate);
 
     const { data, error } = await supabase
       .from(tableName)
-      .update(assessmentData)
+      .update(updateData)
       .eq('id', id)
       .select()
       .single();

@@ -41,8 +41,21 @@ export const calendarEventService = {
 
   create: async (eventData: Omit<CalendarEvent, 'id' | 'created_at'>): Promise<CalendarEvent> => {
     try {
-      // Convert camelCase to snake_case and handle date conversion
-      const preparedData = mapToSnakeCase<any>(eventData);
+      // Create a properly typed object instead of using mapToSnakeCase
+      const preparedData = {
+        title: eventData.title,
+        description: eventData.description,
+        type: eventData.type,
+        start_date: normalizeToISO(eventData.startDate),
+        end_date: normalizeToISO(eventData.endDate),
+        all_day: eventData.allDay,
+        subject_id: eventData.subjectId,
+        lesson_plan_id: eventData.lessonPlanId,
+        assessment_id: eventData.assessmentId,
+        teaching_plan_id: eventData.teachingPlanId,
+        location: eventData.location,
+        color: eventData.color
+      };
       
       // Ensure required fields are present
       if (!preparedData.title || !preparedData.type || !preparedData.start_date) {
@@ -65,12 +78,25 @@ export const calendarEventService = {
 
   update: async (id: ID, eventData: Partial<CalendarEvent>): Promise<CalendarEvent> => {
     try {
-      // Convert camelCase to snake_case and handle date conversion
-      const preparedData = mapToSnakeCase<any>(eventData);
+      // Create a properly typed update object
+      const updateData: Record<string, any> = {};
+      
+      if (eventData.title !== undefined) updateData.title = eventData.title;
+      if (eventData.description !== undefined) updateData.description = eventData.description;
+      if (eventData.type !== undefined) updateData.type = eventData.type;
+      if (eventData.startDate !== undefined) updateData.start_date = normalizeToISO(eventData.startDate);
+      if (eventData.endDate !== undefined) updateData.end_date = normalizeToISO(eventData.endDate);
+      if (eventData.allDay !== undefined) updateData.all_day = eventData.allDay;
+      if (eventData.subjectId !== undefined) updateData.subject_id = eventData.subjectId;
+      if (eventData.lessonPlanId !== undefined) updateData.lesson_plan_id = eventData.lessonPlanId;
+      if (eventData.assessmentId !== undefined) updateData.assessment_id = eventData.assessmentId;
+      if (eventData.teachingPlanId !== undefined) updateData.teaching_plan_id = eventData.teachingPlanId;
+      if (eventData.location !== undefined) updateData.location = eventData.location;
+      if (eventData.color !== undefined) updateData.color = eventData.color;
 
       const { data, error } = await supabase
         .from("calendar_events")
-        .update(preparedData)
+        .update(updateData)
         .eq('id', id)
         .select()
         .single();

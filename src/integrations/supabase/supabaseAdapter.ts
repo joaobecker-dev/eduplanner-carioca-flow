@@ -9,9 +9,9 @@ export function convertDatesToISO<T extends Record<string, any>>(obj: T): Record
   
   // Use type-safe approach to handle generic Record
   Object.keys(result).forEach(key => {
-    const value = result[key];
+    const value = result[key as keyof typeof result];
     if (value instanceof Date) {
-      result[key] = value.toISOString();
+      (result as Record<string, any>)[key] = value.toISOString();
     }
   });
   
