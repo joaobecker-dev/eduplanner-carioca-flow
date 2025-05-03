@@ -7,7 +7,6 @@ import {
   Assessment,
   Student,
   StudentAssessment,
-  CalendarEvent,
   Material,
   ID
 } from '@/types';
@@ -28,7 +27,7 @@ const handleError = (error: any, operation: string): void => {
 // Type for valid table names
 type TableName = "academic_periods" | "subjects" | "annual_plans" | 
   "teaching_plans" | "lesson_plans" | "assessments" | "students" | 
-  "student_assessments" | "calendar_events" | "materials";
+  "student_assessments" | "materials";
 
 // Create generic service for basic CRUD operations
 const createService = <T extends { id: ID }>(tableName: TableName) => {
@@ -317,44 +316,6 @@ export const studentAssessmentService = {
   }
 };
 
-// Calendar Event Service
-export const calendarEventService = {
-  ...createService<CalendarEvent>("calendar_events"),
-  
-  // Get all events between two dates
-  getByDateRange: async (startDate: string, endDate: string): Promise<CalendarEvent[]> => {
-    try {
-      const { data, error } = await supabase
-        .from("calendar_events")
-        .select('*')
-        .gte('start_date', startDate)
-        .lte('start_date', endDate);
-      
-      if (error) throw error;
-      return data ? data.map(item => mapToCamelCase<CalendarEvent>(item)) : [];
-    } catch (error) {
-      handleError(error, 'buscar eventos por período');
-      return [];
-    }
-  },
-  
-  // Get all events for a specific subject
-  getBySubject: async (subjectId: ID): Promise<CalendarEvent[]> => {
-    try {
-      const { data, error } = await supabase
-        .from("calendar_events")
-        .select('*')
-        .eq('subject_id', subjectId);
-      
-      if (error) throw error;
-      return data ? data.map(item => mapToCamelCase<CalendarEvent>(item)) : [];
-    } catch (error) {
-      handleError(error, 'buscar eventos por disciplina');
-      return [];
-    }
-  }
-};
-
 // Define valid material types for TypeScript validation
 type MaterialType = "document" | "video" | "link" | "image" | "other";
 
@@ -419,7 +380,11 @@ export const materialService = {
   }
 };
 
-// We'll keep the same service export structure for compatibility
+/**
+ * Legacy service exports for backward compatibility.
+ * Prefer importing services directly from '@/lib/services' (e.g., `import { calendarEventService } from '@/lib/services'`).
+ * This object will be removed in future releases.
+ */
 export const services = {
   academicPeriod: academicPeriodService,
   subject: subjectService,
@@ -429,6 +394,5 @@ export const services = {
   assessment: assessmentService,
   student: studentService,
   studentAssessment: studentAssessmentService,
-  calendarEvent: calendarEventService,
   material: materialService
 };
