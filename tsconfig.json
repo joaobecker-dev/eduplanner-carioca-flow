@@ -7,7 +7,9 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@/lib/services": ["src/lib/services/index"],
+      // Specific alias for services to ensure resolution to index.ts
+      "@/lib/services": ["src/lib/services/index.ts"],
+      // Generic alias for other src/* paths
       "@/*": ["src/*"]
     },
     "noImplicitAny": false,
