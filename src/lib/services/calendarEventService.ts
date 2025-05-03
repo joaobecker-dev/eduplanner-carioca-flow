@@ -4,8 +4,30 @@ import { createService, handleError } from './baseService';
 import { supabase } from "@/integrations/supabase/client";
 import { normalizeToISO } from '@/integrations/supabase/supabaseAdapter';
 
-// Create base service
+// Create base service with fully exposed implementation
 const baseService = createService<CalendarEvent>("calendar_events");
+
+// Function to map DB response to camelCase object
+const mapToCamelCase = (data: any): CalendarEvent => {
+  return {
+    id: data.id,
+    title: data.title,
+    description: data.description,
+    startDate: data.start_date,
+    endDate: data.end_date,
+    allDay: data.all_day,
+    type: data.type as EventType,
+    subjectId: data.subject_id,
+    lessonPlanId: data.lesson_plan_id,
+    assessmentId: data.assessment_id,
+    teachingPlanId: data.teaching_plan_id,
+    location: data.location,
+    color: data.color,
+    sourceType: data.source_type as EventSourceType,
+    sourceId: data.source_id,
+    created_at: data.created_at
+  };
+};
 
 // Custom deleteEvent method (distinct from baseService.delete)
 const deleteEvent = async (id: ID): Promise<boolean> => {
@@ -33,7 +55,7 @@ const getByDateRange = async (startDate: string, endDate: string): Promise<Calen
       .lte('start_date', endDate);
 
     if (error) throw error;
-    return data ? data.map(baseService.mapToCamelCase) : [];
+    return data ? data.map(mapToCamelCase) : [];
   } catch (error) {
     handleError(error, 'buscar eventos por período');
     return [];
@@ -49,7 +71,7 @@ const getBySubject = async (subjectId: ID): Promise<CalendarEvent[]> => {
       .eq('subject_id', subjectId);
 
     if (error) throw error;
-    return data ? data.map(baseService.mapToCamelCase) : [];
+    return data ? data.map(mapToCamelCase) : [];
   } catch (error) {
     handleError(error, 'buscar eventos por disciplina');
     return [];
@@ -88,7 +110,7 @@ const create = async (eventData: Omit<CalendarEvent, 'id' | 'created_at'>): Prom
       .single();
 
     if (error) throw error;
-    return baseService.mapToCamelCase(data);
+    return mapToCamelCase(data);
   } catch (error) {
     handleError(error, 'criar evento do calendário');
     throw error;
@@ -123,7 +145,7 @@ const update = async (id: ID, eventData: Partial<CalendarEvent>): Promise<Calend
       .single();
 
     if (error) throw error;
-    return baseService.mapToCamelCase(data);
+    return mapToCamelCase(data);
   } catch (error) {
     handleError(error, 'atualizar evento do calendário');
     throw error;

@@ -181,7 +181,7 @@ const CalendarView: React.FC = () => {
     try {
       setIsDeleting(true);
       
-      // Delete the event using the corrected method name
+      // Use the explicit deleteEvent method
       await calendarEventService.deleteEvent(selectedEvent.id);
       
       // Refresh calendar events by invalidating the query
