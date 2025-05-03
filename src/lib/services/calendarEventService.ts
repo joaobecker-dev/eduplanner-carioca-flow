@@ -174,18 +174,18 @@ const syncFromAssessment = async (assessment: Assessment): Promise<void> => {
   try {
     if (!assessment || !assessment.id) return;
 
-    // Direct object with snake_case keys instead of using mapToSnakeCase
+    // Direct object with snake_case keys
     const eventData = {
       title: `Avaliação: ${assessment.title}`,
       description: assessment.description || '',
-      type: "exam" as EventType, // Explicit typing
+      type: "exam" as EventType,
       start_date: normalizeToISO(assessment.date) || '',
       end_date: normalizeToISO(assessment.dueDate || assessment.date) || '',
       all_day: true,
       subject_id: assessment.subjectId,
       assessment_id: assessment.id,
       color: '#e67c73',
-      source_type: 'assessment' as EventSourceType, // Explicit typing
+      source_type: 'assessment' as EventSourceType,
       source_id: assessment.id
     };
 
@@ -209,24 +209,26 @@ const syncFromLessonPlan = async (lessonPlan: LessonPlan): Promise<void> => {
 
     const startDate = normalizeToISO(lessonPlan.date) || '';
     let endDate = startDate;
+    
+    // Calculate end date based on duration in minutes
     if (lessonPlan.duration) {
       const date = new Date(lessonPlan.date);
       date.setMinutes(date.getMinutes() + lessonPlan.duration);
       endDate = normalizeToISO(date) || startDate;
     }
 
-    // Direct object with snake_case keys instead of using mapToSnakeCase
+    // Direct object construction with explicit snake_case keys
     const eventData = {
       title: `Aula: ${lessonPlan.title}`,
       description: lessonPlan.notes || '',
-      type: "class" as EventType, // Explicit typing
+      type: "class" as EventType,
       start_date: startDate,
       end_date: endDate,
       all_day: false,
       teaching_plan_id: lessonPlan.teachingPlanId,
       lesson_plan_id: lessonPlan.id,
       color: '#9b87f5',
-      source_type: 'lesson_plan' as EventSourceType, // Explicit typing
+      source_type: 'lesson_plan' as EventSourceType,
       source_id: lessonPlan.id
     };
 
@@ -248,18 +250,18 @@ const syncFromTeachingPlan = async (teachingPlan: TeachingPlan): Promise<void> =
   try {
     if (!teachingPlan || !teachingPlan.startDate || !teachingPlan.id) return;
 
-    // Direct object with snake_case keys instead of using mapToSnakeCase
+    // Direct object construction with explicit snake_case keys
     const eventData = {
       title: `Plano de Ensino: ${teachingPlan.title}`,
       description: teachingPlan.description || '',
-      type: "class" as EventType, // Explicit typing
+      type: "class" as EventType,
       start_date: normalizeToISO(teachingPlan.startDate) || '',
       end_date: normalizeToISO(teachingPlan.endDate) || '',
       all_day: true,
       subject_id: teachingPlan.subjectId,
       teaching_plan_id: teachingPlan.id,
       color: '#7E69AB',
-      source_type: 'teaching_plan' as EventSourceType, // Explicit typing
+      source_type: 'teaching_plan' as EventSourceType,
       source_id: teachingPlan.id
     };
 
