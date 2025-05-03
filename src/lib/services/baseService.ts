@@ -28,7 +28,7 @@ export const createService = <T extends { id: ID }>(tableName: TableName) => {
           .select('*');
         
         if (error) throw error;
-        return data ? (data as any[]).map(item => mapToCamelCase<T>(item)) : [];
+        return data ? (data as any[]).map(item => mapToCamelCase(item) as T) : [];
       } catch (error) {
         handleError(error, `buscar ${tableName}`);
         return [];
@@ -44,7 +44,7 @@ export const createService = <T extends { id: ID }>(tableName: TableName) => {
           .maybeSingle();
         
         if (error) throw error;
-        return data ? mapToCamelCase<T>(data as any) : null;
+        return data ? mapToCamelCase(data as any) as T : null;
       } catch (error) {
         handleError(error, `buscar ${tableName} por ID`);
         return null;
@@ -60,7 +60,7 @@ export const createService = <T extends { id: ID }>(tableName: TableName) => {
           .single();
         
         if (error) throw error;
-        return data ? mapToCamelCase<T>(data as any) : null;
+        return data ? mapToCamelCase(data as any) as T : null;
       } catch (error) {
         handleError(error, `criar ${tableName}`);
         return null;
@@ -77,7 +77,7 @@ export const createService = <T extends { id: ID }>(tableName: TableName) => {
           .single();
         
         if (error) throw error;
-        return data ? mapToCamelCase<T>(data as any) : null;
+        return data ? mapToCamelCase(data as any) as T : null;
       } catch (error) {
         handleError(error, `atualizar ${tableName}`);
         return null;
