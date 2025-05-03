@@ -1,5 +1,6 @@
 
 import React, { createContext, useContext } from 'react';
+import { EventType } from '@/types';
 
 interface CalendarThemeContextProps {
   eventColors: {
@@ -9,7 +10,7 @@ interface CalendarThemeContextProps {
     other: string;
     deadline: string;
   };
-  getEventColor: (type: string) => string;
+  getEventColor: (type: EventType) => string;
 }
 
 const CalendarThemeContext = createContext<CalendarThemeContextProps>({
@@ -32,7 +33,7 @@ export const CalendarThemeProvider: React.FC<{ children: React.ReactNode }> = ({
     deadline: '#f6bf26'  // Yellow
   };
 
-  const getEventColor = (type: string): string => {
+  const getEventColor = (type: EventType): string => {
     return eventColors[type as keyof typeof eventColors] || eventColors.other;
   };
 
