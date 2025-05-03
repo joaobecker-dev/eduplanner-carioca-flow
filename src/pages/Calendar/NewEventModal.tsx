@@ -1,9 +1,11 @@
 
 import React from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { CalendarEvent } from '@/types';
-import { EventFormValues } from '@/schemas/eventSchema';
-import CrudModal from '@/components/ui-components/CrudModal';
+import { EventFormValues, eventSchema, eventFormDefaults } from '@/schemas/eventSchema';
 import { normalizeToISO } from '@/integrations/supabase/supabaseAdapter';
+import CrudModal from '@/components/ui-components/CrudModal';
 import EventForm from './components/EventForm';
 
 interface NewEventModalProps {
@@ -26,9 +28,9 @@ const NewEventModal: React.FC<NewEventModalProps> = ({ isOpen, onClose, onSave, 
         allDay: values.allDay,
         color: values.color,
         subjectId: values.subjectId || undefined,
-        // Preserve source information if editing an event
-        sourceType: eventToEdit?.sourceType || values.sourceType || 'manual',
-        sourceId: eventToEdit?.sourceId || values.sourceId || undefined,
+        // Ensure source information is preserved during edits or set to manual for new events
+        sourceType: eventToEdit?.sourceType || 'manual',
+        sourceId: eventToEdit?.sourceId || null,
         // Preserve reference IDs if editing
         assessmentId: eventToEdit?.assessmentId,
         lessonPlanId: eventToEdit?.lessonPlanId,

@@ -28,8 +28,13 @@ export const eventSchema = z.object({
 export type EventFormValues = z.infer<typeof eventSchema>;
 
 export const eventFormDefaults: Partial<EventFormValues> = {
+  title: '',
+  description: '',
   type: "class",
+  startDate: new Date(),
+  endDate: new Date(),
   allDay: true,
   color: "#3b82f6", // blue
-  sourceType: "manual"
+  sourceType: "manual",
+  subjectId: null
 };

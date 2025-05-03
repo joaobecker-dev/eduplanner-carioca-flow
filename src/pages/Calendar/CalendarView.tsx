@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { CalendarEvent } from '@/types';
@@ -42,7 +41,7 @@ const CalendarView: React.FC = () => {
   // State for delete confirmation
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  
+
   // Query client for data fetching and cache updates
   const { data: events = [], isLoading: eventsLoading, refetch: refetchEvents } = useQuery({
     queryKey: ['calendarEvents'],

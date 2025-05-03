@@ -2,7 +2,7 @@
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { EventFormValues, eventSchema } from '@/schemas/eventSchema';
+import { EventFormValues, eventSchema, eventFormDefaults } from '@/schemas/eventSchema';
 import { useQuery } from '@tanstack/react-query';
 import { subjectService } from '@/lib/services';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage, Form } from '@/components/ui/form';
@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
 import { useCalendarTheme } from './CalendarThemeProvider';
 import { eventCategoryLabels, eventCategories } from '@/schemas/eventSchema';
 import { CalendarEvent } from '@/types';
@@ -34,16 +35,7 @@ const EventForm: React.FC<EventFormProps> = ({ onSubmit, eventToEdit }) => {
 
   const form = useForm<EventFormValues>({
     resolver: zodResolver(eventSchema),
-    defaultValues: {
-      title: '',
-      description: '',
-      type: 'class',
-      startDate: new Date(),
-      endDate: new Date(),
-      allDay: true,
-      color: eventColors.class, // Default blue
-      subjectId: null,
-    }
+    defaultValues: eventFormDefaults
   });
 
   // When editing an existing event, populate the form
@@ -56,20 +48,11 @@ const EventForm: React.FC<EventFormProps> = ({ onSubmit, eventToEdit }) => {
         startDate: new Date(eventToEdit.startDate),
         endDate: eventToEdit.endDate ? new Date(eventToEdit.endDate) : null,
         allDay: eventToEdit.allDay,
-        color: eventToEdit.color || eventColors.class,
+        color: eventToEdit.color || eventColors[eventToEdit.type] || eventColors.other,
         subjectId: eventToEdit.subjectId || null,
       });
     } else {
-      form.reset({
-        title: '',
-        description: '',
-        type: 'class',
-        startDate: new Date(),
-        endDate: new Date(),
-        allDay: true,
-        color: eventColors.class,
-        subjectId: null,
-      });
+      form.reset(eventFormDefaults);
     }
   }, [eventToEdit, form, eventColors]);
 
@@ -173,6 +156,7 @@ const EventForm: React.FC<EventFormProps> = ({ onSubmit, eventToEdit }) => {
                       selected={field.value}
                       onSelect={field.onChange}
                       initialFocus
+                      className={cn("p-3 pointer-events-auto")}
                     />
                   </PopoverContent>
                 </Popover>
@@ -213,6 +197,7 @@ const EventForm: React.FC<EventFormProps> = ({ onSubmit, eventToEdit }) => {
                         const start = form.getValues("startDate");
                         return start ? date < start : false;
                       }}
+                      className={cn("p-3 pointer-events-auto")}
                     />
                   </PopoverContent>
                 </Popover>
