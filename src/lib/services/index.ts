@@ -1,4 +1,10 @@
-
+/**
+ * Service exports for direct imports.
+ * 
+ * Use individual service imports for new code (e.g., `import { calendarEventService } from '@/lib/services'`).
+ * The `services` object below is maintained for backward compatibility and will be removed in future releases.
+ * Avoid using `services.<serviceName>` in new code to prevent dependency on legacy structure.
+ */
 import { academicPeriodService } from './academicPeriodService';
 import { subjectService } from './subjectService';
 import { annualPlanService } from './annualPlanService';
@@ -24,7 +30,10 @@ export {
   materialService
 };
 
-// For backward compatibility during migration only - this should be removed in future releases
+/**
+ * Legacy service object for backward compatibility.
+ * This will be removed in future releases. Prefer direct imports above.
+ */
 export const services = {
   academicPeriod: academicPeriodService,
   subject: subjectService,
