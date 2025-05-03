@@ -14,19 +14,9 @@ export default defineConfig(({ mode }) => ({
     mode === 'development' && componentTagger(),
   ].filter(Boolean),
   resolve: {
-    alias: [
-      // Specific alias for services to ensure resolution to index.ts
-      {
-        find: "@/lib/services",
-        replacement: path.resolve(__dirname, "./src/lib/services/index.ts"),
-      },
-      // Generic alias for other src/* paths
-      {
-        find: "@",
-        replacement: path.resolve(__dirname, "./src"),
-      },
-    ],
-    // Ensure Vite resolves paths correctly without symlink issues
-    preserveSymlinks: false,
+    alias: {
+      "@": path.resolve(__dirname, "./src"),
+      "@/lib/services": path.resolve(__dirname, "./src/lib/services/index"),
+    },
   },
 }));
