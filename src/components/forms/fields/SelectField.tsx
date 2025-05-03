@@ -43,7 +43,7 @@ function SelectField<T extends FieldValues>({
 }: SelectFieldProps<T>) {
   const form = useFormContext<T>();
   
-  // Ensure we don't have empty string values
+  // Filter out options with empty string values to prevent the Radix UI error
   const validOptions = options.filter(option => option.value !== '');
   
   return (
@@ -62,7 +62,7 @@ function SelectField<T extends FieldValues>({
             }}
             defaultValue={field.value} 
             disabled={disabled}
-            value={field.value || "none"}
+            value={field.value || undefined}
           >
             <FormControl>
               <SelectTrigger>

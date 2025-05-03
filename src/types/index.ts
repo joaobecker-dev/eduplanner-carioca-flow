@@ -149,7 +149,7 @@ export interface StudentAssessment {
 
 // Calendar Event Types
 export type EventType = "class" | "exam" | "meeting" | "other" | "deadline";
-export type EventSourceType = "assessment" | "lesson_plan" | "teaching_plan" | "manual";
+export type EventSourceType = "assessment" | "lesson_plan" | "teaching_plan" | "manual" | "student_assessment";
 
 // Calendar Event
 export interface CalendarEvent {
@@ -200,48 +200,5 @@ export interface Material {
   updated_at?: DateISO; // For Supabase DB compatibility
 }
 
-// Helper function to map snake_case DB fields to camelCase for frontend
-export function mapToCamelCase(item: any): Record<string, any> {
-  if (!item) return null as unknown as T;
-  
-  const result: any = {};
-  
-  // Process each property
-  for (const key in item) {
-    if (Object.prototype.hasOwnProperty.call(item, key)) {
-      // Convert snake_case to camelCase
-      const camelKey = key.replace(/_([a-z])/g, (g) => g[1].toUpperCase());
-      result[camelKey] = item[key];
-      
-      // Keep original snake_case key for compatibility
-      if (camelKey !== key) {
-        result[key] = item[key];
-      }
-    }
-  }
-  
-  return result as T;
-}
-
-// Helper function to map camelCase frontend fields to snake_case for DB
-export function mapToSnakeCase<T>(item: any): T {
-  if (!item) return null as unknown as T;
-  
-  const result: any = {};
-  
-  // Process each property
-  for (const key in item) {
-    if (Object.prototype.hasOwnProperty.call(item, key)) {
-      // Convert camelCase to snake_case
-      const snakeKey = key.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
-      result[snakeKey] = item[key];
-      
-      // Keep original camelCase key for compatibility
-      if (snakeKey !== key) {
-        result[key] = item[key];
-      }
-    }
-  }
-  
-  return result as T;
-}
+// Remove these problematic functions that cause deep recursion
+// Instead, we use direct object construction throughout the codebase

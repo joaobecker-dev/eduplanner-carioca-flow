@@ -1,5 +1,4 @@
-
-import { ID, mapToCamelCase } from '@/types';
+import { ID } from '@/types';
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
@@ -28,7 +27,26 @@ export const createService = <T extends { id: ID }>(tableName: TableName) => {
           .select('*');
         
         if (error) throw error;
-        return data ? (data as any[]).map(item => mapToCamelCase(item) as T) : [];
+        
+        // Convert snake_case to camelCase without deep recursion
+        if (!data) return [];
+        
+        return data.map(item => {
+          const result: any = {};
+          for (const key in item) {
+            if (Object.prototype.hasOwnProperty.call(item, key)) {
+              // Convert snake_case to camelCase
+              const camelKey = key.replace(/_([a-z])/g, (g) => g[1].toUpperCase());
+              result[camelKey] = item[key];
+              
+              // Keep original snake_case key for compatibility
+              if (camelKey !== key) {
+                result[key] = item[key];
+              }
+            }
+          }
+          return result as T;
+        });
       } catch (error) {
         handleError(error, `buscar ${tableName}`);
         return [];
@@ -44,7 +62,25 @@ export const createService = <T extends { id: ID }>(tableName: TableName) => {
           .maybeSingle();
         
         if (error) throw error;
-        return data ? mapToCamelCase(data as any) as T : null;
+        
+        if (!data) return null;
+        
+        // Convert snake_case to camelCase without deep recursion
+        const result: any = {};
+        for (const key in data) {
+          if (Object.prototype.hasOwnProperty.call(data, key)) {
+            // Convert snake_case to camelCase
+            const camelKey = key.replace(/_([a-z])/g, (g) => g[1].toUpperCase());
+            result[camelKey] = data[key];
+            
+            // Keep original snake_case key for compatibility
+            if (camelKey !== key) {
+              result[key] = data[key];
+            }
+          }
+        }
+        
+        return result as T;
       } catch (error) {
         handleError(error, `buscar ${tableName} por ID`);
         return null;
@@ -60,7 +96,25 @@ export const createService = <T extends { id: ID }>(tableName: TableName) => {
           .single();
         
         if (error) throw error;
-        return data ? mapToCamelCase(data as any) as T : null;
+        
+        if (!data) return null;
+        
+        // Convert snake_case to camelCase without deep recursion
+        const result: any = {};
+        for (const key in data) {
+          if (Object.prototype.hasOwnProperty.call(data, key)) {
+            // Convert snake_case to camelCase
+            const camelKey = key.replace(/_([a-z])/g, (g) => g[1].toUpperCase());
+            result[camelKey] = data[key];
+            
+            // Keep original snake_case key for compatibility
+            if (camelKey !== key) {
+              result[key] = data[key];
+            }
+          }
+        }
+        
+        return result as T;
       } catch (error) {
         handleError(error, `criar ${tableName}`);
         return null;
@@ -77,7 +131,25 @@ export const createService = <T extends { id: ID }>(tableName: TableName) => {
           .single();
         
         if (error) throw error;
-        return data ? mapToCamelCase(data as any) as T : null;
+        
+        if (!data) return null;
+        
+        // Convert snake_case to camelCase without deep recursion
+        const result: any = {};
+        for (const key in data) {
+          if (Object.prototype.hasOwnProperty.call(data, key)) {
+            // Convert snake_case to camelCase
+            const camelKey = key.replace(/_([a-z])/g, (g) => g[1].toUpperCase());
+            result[camelKey] = data[key];
+            
+            // Keep original snake_case key for compatibility
+            if (camelKey !== key) {
+              result[key] = data[key];
+            }
+          }
+        }
+        
+        return result as T;
       } catch (error) {
         handleError(error, `atualizar ${tableName}`);
         return null;

@@ -79,7 +79,7 @@ const getBySubject = async (subjectId: ID): Promise<CalendarEvent[]> => {
 };
 
 // Create new event with proper typing
-const create = async (eventData: Omit<CalendarEvent, 'id' | 'created_at'>): Promise<CalendarEvent> => {
+const create = async (eventData: Omit<CalendarEvent, 'id' | 'created_at'>): Promise<CalendarEvent | null> => {
   try {
     // Use direct object construction with snake_case keys
     const preparedData = {
@@ -118,7 +118,7 @@ const create = async (eventData: Omit<CalendarEvent, 'id' | 'created_at'>): Prom
 };
 
 // Update event with proper typing
-const update = async (id: ID, eventData: Partial<CalendarEvent>): Promise<CalendarEvent> => {
+const update = async (id: ID, eventData: Partial<CalendarEvent>): Promise<CalendarEvent | null> => {
   try {
     // Use direct object construction with snake_case keys
     const updateData: Record<string, any> = {};
