@@ -1,4 +1,3 @@
-
 import { 
   AcademicPeriod, 
   Subject, 
@@ -10,11 +9,11 @@ import {
   StudentAssessment,
   CalendarEvent,
   Material,
-  ID,
-  mapToCamelCase
+  ID
 } from '@/types';
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { mapToCamelCase } from '@/lib/utils/caseConverters';
 
 // Helper function for error handling
 const handleError = (error: any, operation: string): void => {

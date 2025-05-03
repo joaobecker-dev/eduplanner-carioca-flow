@@ -1,14 +1,14 @@
-
 import { CalendarEvent, ID, Assessment, StudentAssessment, LessonPlan, TeachingPlan, EventType, EventSourceType } from '@/types';
 import { createService, handleError } from './baseService';
 import { supabase } from "@/integrations/supabase/client";
 import { normalizeToISO } from '@/integrations/supabase/supabaseAdapter';
+import { mapToCamelCase } from '@/lib/utils/caseConverters';
 
 // Create base service with fully exposed implementation
 const baseService = createService<CalendarEvent>("calendar_events");
 
 // Function to map DB response to camelCase object
-const mapToCamelCase = (data: any): CalendarEvent => {
+const mapToCamelCaseEvent = (data: any): CalendarEvent => {
   return {
     id: data.id,
     title: data.title,
@@ -55,7 +55,7 @@ const getByDateRange = async (startDate: string, endDate: string): Promise<Calen
       .lte('start_date', endDate);
 
     if (error) throw error;
-    return data ? data.map(mapToCamelCase) : [];
+    return data ? data.map(mapToCamelCaseEvent) : [];
   } catch (error) {
     handleError(error, 'buscar eventos por período');
     return [];
@@ -71,7 +71,7 @@ const getBySubject = async (subjectId: ID): Promise<CalendarEvent[]> => {
       .eq('subject_id', subjectId);
 
     if (error) throw error;
-    return data ? data.map(mapToCamelCase) : [];
+    return data ? data.map(mapToCamelCaseEvent) : [];
   } catch (error) {
     handleError(error, 'buscar eventos por disciplina');
     return [];
@@ -110,7 +110,7 @@ const create = async (eventData: Omit<CalendarEvent, 'id' | 'created_at'>): Prom
       .single();
 
     if (error) throw error;
-    return mapToCamelCase(data);
+    return mapToCamelCaseEvent(data);
   } catch (error) {
     handleError(error, 'criar evento do calendário');
     throw error;
@@ -146,7 +146,7 @@ const update = async (id: ID, eventData: Partial<CalendarEvent>): Promise<Calend
       .single();
 
     if (error) throw error;
-    return mapToCamelCase(data);
+    return mapToCamelCaseEvent(data);
   } catch (error) {
     handleError(error, 'atualizar evento do calendário');
     throw error;

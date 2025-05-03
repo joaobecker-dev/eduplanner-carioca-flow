@@ -2,7 +2,7 @@
 import { Material, ID } from '@/types';
 import { createService, handleError } from './baseService';
 import { supabase } from "@/integrations/supabase/client";
-import { mapToCamelCase } from '@/types';
+import { mapToCamelCase } from '@/lib/utils/caseConverters';
 
 // Define valid material types for TypeScript validation
 export type MaterialType = "document" | "video" | "link" | "image" | "other";

@@ -2,7 +2,7 @@
 import { Subject, ID } from '@/types';
 import { createService, handleError } from './baseService';
 import { supabase } from "@/integrations/supabase/client";
-import { mapToCamelCase } from '@/types';
+import { mapToCamelCase } from '@/lib/utils/caseConverters';
 
 // Subject Service
 export const subjectService = {

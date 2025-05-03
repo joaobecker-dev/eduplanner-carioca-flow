@@ -44,7 +44,7 @@ function SelectField<T extends FieldValues>({
   const form = useFormContext<T>();
   
   // Filter out options with empty string values to prevent the Radix UI error
-  const validOptions = options.filter(option => option.value !== '');
+  const validOptions = options.filter(option => option.value.trim() !== '');
   
   return (
     <FormField
@@ -71,7 +71,10 @@ function SelectField<T extends FieldValues>({
             </FormControl>
             <SelectContent>
               {validOptions.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
+                <SelectItem 
+                  key={option.value} 
+                  value={option.value || 'none'} // Ensure no empty string values
+                >
                   {option.label}
                 </SelectItem>
               ))}
