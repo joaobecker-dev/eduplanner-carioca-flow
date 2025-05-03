@@ -43,7 +43,7 @@ function SelectField<T extends FieldValues>({
 }: SelectFieldProps<T>) {
   const form = useFormContext<T>();
   
-  // Filter out options with empty string values to prevent the Radix UI error
+  // Filter out options with Empty string values to prevent the Radix UI error
   const validOptions = options.filter(option => option.value.trim() !== '');
   
   return (
