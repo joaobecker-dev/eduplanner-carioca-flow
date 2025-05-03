@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -101,9 +100,9 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({
   const handleSubmit = (values: z.infer<typeof formSchema>) => {
     const formattedData = {
       ...values,
-      subjectId: values.subjectId || null,
-      assessmentId: values.assessmentId || null,
-      lessonPlanId: values.lessonPlanId || null,
+      subjectId: values.subjectId === 'none' ? null : values.subjectId,
+      assessmentId: values.assessmentId === 'none' ? null : values.assessmentId,
+      lessonPlanId: values.lessonPlanId === 'none' ? null : values.lessonPlanId,
     };
     onSubmit(formattedData);
   };
@@ -125,8 +124,8 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({
   );
   
   const filteredLessonPlans = lessonPlans.filter(plan => {
-    const teachingPlan = plan.teachingPlanId; // This is assuming we can get the teaching plan from the lesson plan
-    return !selectedSubjectId || teachingPlan === selectedSubjectId; // Simplified for this example
+    const teachingPlan = plan.teachingPlanId;
+    return !selectedSubjectId || teachingPlan === selectedSubjectId;
   });
 
   return (
@@ -185,9 +184,9 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({
                 <FormLabel>Disciplina (opcional)</FormLabel>
                 <Select
                   disabled={isSubmitting}
-                  onValueChange={field.onChange}
+                  onValueChange={(value) => field.onChange(value === 'none' ? '' : value)}
                   defaultValue={field.value}
-                  value={field.value || ''}
+                  value={field.value || 'none'}
                 >
                   <FormControl>
                     <SelectTrigger>
@@ -195,7 +194,7 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="">Nenhuma disciplina</SelectItem>
+                    <SelectItem value="none">Nenhuma disciplina</SelectItem>
                     {subjects.map(subject => (
                       <SelectItem key={subject.id} value={subject.id}>
                         {subject.name}
@@ -399,9 +398,9 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({
                 <FormLabel>Plano de Aula (opcional)</FormLabel>
                 <Select
                   disabled={isSubmitting}
-                  onValueChange={field.onChange}
+                  onValueChange={(value) => field.onChange(value === 'none' ? '' : value)}
                   defaultValue={field.value}
-                  value={field.value || ''}
+                  value={field.value || 'none'}
                 >
                   <FormControl>
                     <SelectTrigger>
@@ -409,7 +408,7 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="">Nenhum plano selecionado</SelectItem>
+                    <SelectItem value="none">Nenhum plano selecionado</SelectItem>
                     {filteredLessonPlans.map(plan => (
                       <SelectItem key={plan.id} value={plan.id}>
                         {plan.title}
@@ -432,9 +431,9 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({
                 <FormLabel>Avaliação (opcional)</FormLabel>
                 <Select
                   disabled={isSubmitting}
-                  onValueChange={field.onChange}
+                  onValueChange={(value) => field.onChange(value === 'none' ? '' : value)}
                   defaultValue={field.value}
-                  value={field.value || ''}
+                  value={field.value || 'none'}
                 >
                   <FormControl>
                     <SelectTrigger>
@@ -442,7 +441,7 @@ const CalendarEventForm: React.FC<CalendarEventFormProps> = ({
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="">Nenhuma avaliação selecionada</SelectItem>
+                    <SelectItem value="none">Nenhuma avaliação selecionada</SelectItem>
                     {filteredAssessments.map(assessment => (
                       <SelectItem key={assessment.id} value={assessment.id}>
                         {assessment.title}
