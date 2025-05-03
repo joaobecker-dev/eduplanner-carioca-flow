@@ -10,8 +10,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { CalendarEvent } from '@/types';
-// Explicit import from index.ts to avoid alias resolution issues
-import { calendarEventService, subjectService } from '@/lib/services/index';
+// Import services from @/lib/services, which resolves to index.ts via alias configuration
+import { calendarEventService, subjectService } from '@/lib/services';
 import { DateSelectArg, EventClickArg } from '@fullcalendar/core';
 import SectionHeader from '@/components/ui-components/SectionHeader';
 import { toast } from 'sonner';
@@ -267,7 +267,7 @@ const CalendarView: React.FC = () => {
         isOpen={showDeleteConfirmation}
         isLoading={isDeleting}
         title="Excluir Evento"
-        description="Tem certeza que deseja excluir este evento? Esta ação não pode ser desfeita."
+        description="Tem certeza que deseja excluir este evento? Esta ação não pode be desfeita."
         onClose={handleDeleteCancel}
         onConfirm={handleDeleteConfirm}
         cancelLabel="Cancelar"
