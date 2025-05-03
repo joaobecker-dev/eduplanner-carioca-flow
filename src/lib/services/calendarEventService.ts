@@ -279,9 +279,36 @@ const syncFromTeachingPlan = async (teachingPlan: TeachingPlan): Promise<void> =
   }
 };
 
-// Stub for future implementation
-const syncFromStudentAssessment = async (_studentAssessment: StudentAssessment): Promise<void> => {
-  // No-op for now
+// Implement syncFromStudentAssessment
+const syncFromStudentAssessment = async (studentAssessment: StudentAssessment): Promise<void> => {
+  try {
+    if (!studentAssessment || !studentAssessment.id) return;
+    
+    // Direct object with snake_case keys
+    const eventData = {
+      title: `Prova Individual: ${studentAssessment.assessmentId}`,
+      description: studentAssessment.feedback || '',
+      type: "exam" as EventType,
+      start_date: normalizeToISO(studentAssessment.submittedDate) || '',
+      end_date: normalizeToISO(studentAssessment.gradedDate || studentAssessment.submittedDate) || '',
+      all_day: true,
+      assessment_id: studentAssessment.assessmentId,
+      color: '#e67c73',
+      source_type: 'student_assessment' as EventSourceType,
+      source_id: studentAssessment.id
+    };
+
+    const { error } = await supabase
+      .from("calendar_events")
+      .upsert(eventData, {
+        onConflict: 'source_id,source_type',
+        ignoreDuplicates: false
+      });
+
+    if (error) throw error;
+  } catch (error) {
+    handleError(error, 'sincronizar evento do calendário com avaliação do estudante');
+  }
 };
 
 // Export service with explicit method definitions - avoid using spread operator
