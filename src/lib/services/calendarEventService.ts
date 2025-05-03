@@ -81,11 +81,11 @@ const getBySubject = async (subjectId: ID): Promise<CalendarEvent[]> => {
 // Create new event with proper typing
 const create = async (eventData: Omit<CalendarEvent, 'id' | 'created_at'>): Promise<CalendarEvent> => {
   try {
-    // Direct object with snake_case keys instead of using mapToSnakeCase
+    // Use direct object construction with snake_case keys
     const preparedData = {
       title: eventData.title,
       description: eventData.description,
-      type: eventData.type as EventType, // Explicit type assertion
+      type: eventData.type as EventType,
       start_date: normalizeToISO(eventData.startDate),
       end_date: normalizeToISO(eventData.endDate),
       all_day: eventData.allDay,
@@ -95,7 +95,7 @@ const create = async (eventData: Omit<CalendarEvent, 'id' | 'created_at'>): Prom
       teaching_plan_id: eventData.teachingPlanId,
       location: eventData.location,
       color: eventData.color,
-      source_type: eventData.sourceType as EventSourceType || 'manual', // Explicit type assertion
+      source_type: eventData.sourceType as EventSourceType || 'manual',
       source_id: eventData.sourceId
     };
 
@@ -120,6 +120,7 @@ const create = async (eventData: Omit<CalendarEvent, 'id' | 'created_at'>): Prom
 // Update event with proper typing
 const update = async (id: ID, eventData: Partial<CalendarEvent>): Promise<CalendarEvent> => {
   try {
+    // Use direct object construction with snake_case keys
     const updateData: Record<string, any> = {};
 
     if (eventData.title !== undefined) updateData.title = eventData.title;
@@ -289,10 +290,10 @@ export const calendarEventService = {
   getAll: baseService.getAll,
   getById: baseService.getById,
   delete: baseService.delete, // Original delete method from base service
-
+  
   // Custom delete method - ensure it's explicitly exported
   deleteEvent,
-
+  
   // Custom methods
   getByDateRange,
   getBySubject,
