@@ -231,7 +231,7 @@ const EventForm: React.FC<EventFormProps> = ({ onSubmit, eventToEdit }) => {
               <FormLabel>Disciplina</FormLabel>
               <Select
                 onValueChange={field.onChange}
-                value={field.value || ""}
+                value={field.value || "none"}
               >
                 <FormControl>
                   <SelectTrigger>
@@ -239,7 +239,7 @@ const EventForm: React.FC<EventFormProps> = ({ onSubmit, eventToEdit }) => {
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="">Nenhuma</SelectItem>
+                  <SelectItem value="none">Nenhuma</SelectItem>
                   {subjects.map((subject) => (
                     <SelectItem key={subject.id} value={subject.id}>
                       {subject.name} - {subject.grade}

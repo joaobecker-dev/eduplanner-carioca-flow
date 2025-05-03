@@ -43,6 +43,9 @@ function SelectField<T extends FieldValues>({
 }: SelectFieldProps<T>) {
   const form = useFormContext<T>();
   
+  // Ensure we don't have empty string values
+  const validOptions = options.filter(option => option.value !== '');
+  
   return (
     <FormField
       control={form.control}
@@ -59,6 +62,7 @@ function SelectField<T extends FieldValues>({
             }}
             defaultValue={field.value} 
             disabled={disabled}
+            value={field.value || "none"}
           >
             <FormControl>
               <SelectTrigger>
@@ -66,7 +70,7 @@ function SelectField<T extends FieldValues>({
               </SelectTrigger>
             </FormControl>
             <SelectContent>
-              {options.map((option) => (
+              {validOptions.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
                   {option.label}
                 </SelectItem>

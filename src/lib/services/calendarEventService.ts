@@ -148,18 +148,17 @@ export const calendarEventService = {
     try {
       if (!assessment || !assessment.id) return;
 
-      // Using direct object assignment instead of mapToSnakeCase to avoid deep type issues
       const eventData = {
         title: `Avaliação: ${assessment.title}`,
         description: assessment.description || '',
-        type: "exam" as const,
+        type: "exam",
         start_date: normalizeToISO(assessment.date) || '',
         end_date: normalizeToISO(assessment.dueDate || assessment.date) || '',
         all_day: true,
         subject_id: assessment.subjectId,
         assessment_id: assessment.id,
         color: '#e67c73',
-        source_type: 'assessment' as const,
+        source_type: 'assessment',
         source_id: assessment.id
       };
 
@@ -176,10 +175,6 @@ export const calendarEventService = {
     }
   },
 
-  syncFromStudentAssessment: async (_studentAssessment: StudentAssessment): Promise<void> => {
-    // No-op for now
-  },
-
   syncFromLessonPlan: async (lessonPlan: LessonPlan): Promise<void> => {
     try {
       if (!lessonPlan || !lessonPlan.date || !lessonPlan.id) return;
@@ -192,18 +187,17 @@ export const calendarEventService = {
         endDate = normalizeToISO(date) || startDate;
       }
 
-      // Using direct object assignment instead of mapToSnakeCase to avoid deep type issues
       const eventData = {
         title: `Aula: ${lessonPlan.title}`,
         description: lessonPlan.notes || '',
-        type: "class" as const,
+        type: "class",
         start_date: startDate,
         end_date: endDate,
         all_day: false,
         teaching_plan_id: lessonPlan.teachingPlanId,
         lesson_plan_id: lessonPlan.id,
         color: '#9b87f5',
-        source_type: 'lesson_plan' as const,
+        source_type: 'lesson_plan',
         source_id: lessonPlan.id
       };
 
@@ -224,18 +218,17 @@ export const calendarEventService = {
     try {
       if (!teachingPlan || !teachingPlan.startDate || !teachingPlan.id) return;
 
-      // Using direct object assignment instead of mapToSnakeCase to avoid deep type issues
       const eventData = {
         title: `Plano de Ensino: ${teachingPlan.title}`,
         description: teachingPlan.description || '',
-        type: "class" as const,
+        type: "class",
         start_date: normalizeToISO(teachingPlan.startDate) || '',
         end_date: normalizeToISO(teachingPlan.endDate) || '',
         all_day: true,
         subject_id: teachingPlan.subjectId,
         teaching_plan_id: teachingPlan.id,
         color: '#7E69AB',
-        source_type: 'teaching_plan' as const,
+        source_type: 'teaching_plan',
         source_id: teachingPlan.id
       };
 
@@ -250,5 +243,9 @@ export const calendarEventService = {
     } catch (error) {
       handleError(error, 'sincronizar evento do calendário com plano de ensino');
     }
+  },
+
+  syncFromStudentAssessment: async (_studentAssessment: StudentAssessment): Promise<void> => {
+    // No-op for now
   }
 };

@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -154,7 +153,7 @@ const MaterialForm: React.FC<MaterialFormProps> = ({
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="">Nenhuma disciplina</SelectItem>
+                    <SelectItem value="none">Nenhuma disciplina</SelectItem>
                     {subjects.map(subject => (
                       <SelectItem key={subject.id} value={subject.id}>
                         {subject.name}
