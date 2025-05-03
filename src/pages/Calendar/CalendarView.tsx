@@ -1,7 +1,17 @@
+/**
+ * CalendarView component for displaying and managing academic calendar events.
+ * 
+ * Features:
+ * - Displays events in a FullCalendar interface with filtering by subject, event type, and date range.
+ * - Supports creating, editing, and deleting events via modals.
+ * - Integrates with calendarEventService for CRUD operations and subjectService for subject data.
+ * - Uses React Query for data fetching and cache management.
+ */
 import React, { useState, useEffect, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { CalendarEvent } from '@/types';
-import { calendarEventService, subjectService } from '@/lib/services';
+// Explicit import from index.ts to avoid alias resolution issues
+import { calendarEventService, subjectService } from '@/lib/services/index';
 import { DateSelectArg, EventClickArg } from '@fullcalendar/core';
 import SectionHeader from '@/components/ui-components/SectionHeader';
 import { toast } from 'sonner';
@@ -99,11 +109,18 @@ const CalendarView: React.FC = () => {
     if (event) {
       setSelectedEvent(event);
       setShowEventModal(true);
+    } else {
+      toast.error('Evento não encontrado.');
     }
   };
 
   // Handle date select for creating new events
   const handleDateSelect = (arg: DateSelectArg) => {
+    if (!arg.start) {
+      toast.error('Data de início inválida.');
+      return;
+    }
+
     // Create a new event with default values
     setEventToEdit(null);
     setShowNewEventModal(true);
