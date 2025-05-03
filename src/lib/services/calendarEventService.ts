@@ -1,3 +1,4 @@
+
 import { CalendarEvent, ID, Assessment, StudentAssessment, LessonPlan, TeachingPlan } from '@/types';
 import { createService, handleError } from './baseService';
 import { supabase } from "@/integrations/supabase/client";
@@ -147,6 +148,7 @@ export const calendarEventService = {
     try {
       if (!assessment || !assessment.id) return;
 
+      // Using direct object assignment instead of mapToSnakeCase to avoid deep type issues
       const eventData = {
         title: `Avaliação: ${assessment.title}`,
         description: assessment.description || '',
@@ -190,6 +192,7 @@ export const calendarEventService = {
         endDate = normalizeToISO(date) || startDate;
       }
 
+      // Using direct object assignment instead of mapToSnakeCase to avoid deep type issues
       const eventData = {
         title: `Aula: ${lessonPlan.title}`,
         description: lessonPlan.notes || '',
@@ -221,6 +224,7 @@ export const calendarEventService = {
     try {
       if (!teachingPlan || !teachingPlan.startDate || !teachingPlan.id) return;
 
+      // Using direct object assignment instead of mapToSnakeCase to avoid deep type issues
       const eventData = {
         title: `Plano de Ensino: ${teachingPlan.title}`,
         description: teachingPlan.description || '',
