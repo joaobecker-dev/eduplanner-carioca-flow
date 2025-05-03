@@ -50,13 +50,14 @@ export function mapArrayToCamelCase<T extends Record<string, any>>(dataArray: Re
  * Optional deep conversion utility for nested objects
  * Use with caution to avoid excessive type instantiation (TS2589)
  * Only use when you know the structure has a limited nesting depth
+ * This function is intended for Supabase responses with confirmed JSON columns containing nested objects
  * 
  * @param data Object with potentially nested snake_case keys
  * @param depth Maximum recursion depth to prevent infinite recursion
  * @returns Object with camelCase keys, including in nested objects
  */
 export function mapToCamelCaseDeep<T extends Record<string, any>>(
-  data: Record<string, any>,
+  data: Record<string, any> | any[],
   depth: number = 3
 ): T {
   // Return early for null, undefined, non-objects, or exceeded depth
@@ -66,11 +67,12 @@ export function mapToCamelCaseDeep<T extends Record<string, any>>(
   
   // Handle arrays differently
   if (Array.isArray(data)) {
-    return (depth > 1 
+    const result = depth > 1 
       ? data.map(item => typeof item === 'object' && item !== null 
         ? mapToCamelCaseDeep(item, depth - 1) 
         : item)
-      : data) as T;
+      : data;
+    return result as unknown as T;
   }
   
   const result: Record<string, any> = {};
