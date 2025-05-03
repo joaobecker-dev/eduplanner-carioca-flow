@@ -201,7 +201,7 @@ export interface Material {
 }
 
 // Helper function to map snake_case DB fields to camelCase for frontend
-export function mapToCamelCase<T>(item: any): T {
+export function mapToCamelCase(item: any): Record<string, any> {
   if (!item) return null as unknown as T;
   
   const result: any = {};
