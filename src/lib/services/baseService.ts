@@ -3,7 +3,7 @@ import { ID, mapToCamelCase } from '@/types';
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
-// Helper function for error handling
+// Helper function for error Handling
 export const handleError = (error: any, operation: string): void => {
   console.error(`Error ${operation}:`, error);
   toast({
