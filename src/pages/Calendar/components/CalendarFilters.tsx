@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Subject } from '@/types';
 import { Label } from '@/components/ui/label';
@@ -44,14 +43,14 @@ const CalendarFilters: React.FC<CalendarFiltersProps> = ({
           <div className="w-full md:w-1/3">
             <Label htmlFor="subject-filter">Disciplina</Label>
             <Select
-              value={selectedSubjectId || ''}
-              onValueChange={(value) => setSelectedSubjectId(value || null)}
+              value={selectedSubjectId || 'none'}
+              onValueChange={(value) => setSelectedSubjectId(value === 'none' ? null : value)}
             >
               <SelectTrigger id="subject-filter" className="w-full">
                 <SelectValue placeholder="Todas as disciplinas" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todas as disciplinas</SelectItem>
+                <SelectItem value="none">Todas as disciplinas</SelectItem>
                 {subjects.map((subject) => (
                   <SelectItem key={subject.id} value={subject.id}>
                     {subject.name} - {subject.grade}
