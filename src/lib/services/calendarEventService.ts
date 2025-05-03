@@ -1,12 +1,29 @@
-
 import { CalendarEvent, ID, Assessment, StudentAssessment, LessonPlan, TeachingPlan } from '@/types';
 import { createService, handleError } from './baseService';
 import { supabase } from "@/integrations/supabase/client";
-import { mapToCamelCase, mapToSnakeCase, normalizeToISO, toISO } from '@/integrations/supabase/supabaseAdapter';
+import { mapToCamelCase, normalizeToISO } from '@/integrations/supabase/supabaseAdapter';
+
+// DELETE method (needs to be defined outside to avoid being overwritten)
+const deleteEvent = async (id: ID): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from("calendar_events")
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+    return true;
+  } catch (error) {
+    handleError(error, 'excluir evento do calendário');
+    return false;
+  }
+};
 
 // Calendar Event Service
 export const calendarEventService = {
   ...createService<CalendarEvent>("calendar_events"),
+
+  deleteEvent,
 
   getByDateRange: async (startDate: string, endDate: string): Promise<CalendarEvent[]> => {
     try {
@@ -41,7 +58,6 @@ export const calendarEventService = {
 
   create: async (eventData: Omit<CalendarEvent, 'id' | 'created_at'>): Promise<CalendarEvent> => {
     try {
-      // Create a properly typed object for insertion
       const preparedData = {
         title: eventData.title,
         description: eventData.description,
@@ -55,11 +71,10 @@ export const calendarEventService = {
         teaching_plan_id: eventData.teachingPlanId,
         location: eventData.location,
         color: eventData.color,
-        source_type: eventData.sourceType || 'manual', // Default to manual if not specified
+        source_type: eventData.sourceType || 'manual',
         source_id: eventData.sourceId
       };
-      
-      // Ensure required fields are present
+
       if (!preparedData.title || !preparedData.type || !preparedData.start_date) {
         throw new Error("Missing required fields for calendar event");
       }
@@ -80,9 +95,8 @@ export const calendarEventService = {
 
   update: async (id: ID, eventData: Partial<CalendarEvent>): Promise<CalendarEvent> => {
     try {
-      // Create a properly typed update object
       const updateData: Record<string, any> = {};
-      
+
       if (eventData.title !== undefined) updateData.title = eventData.title;
       if (eventData.description !== undefined) updateData.description = eventData.description;
       if (eventData.type !== undefined) updateData.type = eventData.type;
@@ -113,23 +127,6 @@ export const calendarEventService = {
     }
   },
 
-  // Implement the delete method
-  deleteEvent: async (id: ID): Promise<boolean> => {
-    try {
-      const { error } = await supabase
-        .from("calendar_events")
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-      return true;
-    } catch (error) {
-      handleError(error, 'excluir evento do calendário');
-      throw error;
-    }
-  },
-
-  // Delete events by source
   deleteBySource: async (sourceType: string, sourceId: ID): Promise<boolean> => {
     try {
       const { error } = await supabase
@@ -148,12 +145,8 @@ export const calendarEventService = {
 
   syncFromAssessment: async (assessment: Assessment): Promise<void> => {
     try {
-      if (!assessment || !assessment.id) {
-        console.log('Assessment data is missing, skipping calendar sync');
-        return;
-      }
+      if (!assessment || !assessment.id) return;
 
-      // Define the event data with explicitly typed fields
       const eventData = {
         title: `Avaliação: ${assessment.title}`,
         description: assessment.description || '',
@@ -163,12 +156,11 @@ export const calendarEventService = {
         all_day: true,
         subject_id: assessment.subjectId,
         assessment_id: assessment.id,
-        color: '#e67c73', // Reddish color for exams
+        color: '#e67c73',
         source_type: 'assessment' as const,
         source_id: assessment.id
       };
 
-      // Use upsert with onConflict to prevent duplication
       const { error } = await supabase
         .from("calendar_events")
         .upsert(eventData, {
@@ -182,26 +174,15 @@ export const calendarEventService = {
     }
   },
 
-  syncFromStudentAssessment: async (studentAssessment: StudentAssessment): Promise<void> => {
-    try {
-      if (!studentAssessment) return;
-      console.log('Student assessment synced with calendar:', studentAssessment.id);
-      // Currently not creating calendar events for student assessments
-    } catch (error) {
-      handleError(error, 'sincronizar evento do calendário com avaliação de aluno');
-    }
+  syncFromStudentAssessment: async (_studentAssessment: StudentAssessment): Promise<void> => {
+    // No-op for now
   },
 
   syncFromLessonPlan: async (lessonPlan: LessonPlan): Promise<void> => {
     try {
-      if (!lessonPlan || !lessonPlan.date || !lessonPlan.id) {
-        console.log('Lesson plan data is missing, skipping calendar sync');
-        return;
-      }
+      if (!lessonPlan || !lessonPlan.date || !lessonPlan.id) return;
 
       const startDate = normalizeToISO(lessonPlan.date) || '';
-      
-      // Calculate end date based on duration (in minutes)
       let endDate = startDate;
       if (lessonPlan.duration) {
         const date = new Date(lessonPlan.date);
@@ -209,22 +190,20 @@ export const calendarEventService = {
         endDate = normalizeToISO(date) || startDate;
       }
 
-      // Define the event data with explicitly typed fields
       const eventData = {
         title: `Aula: ${lessonPlan.title}`,
         description: lessonPlan.notes || '',
         type: "class" as const,
         start_date: startDate,
         end_date: endDate,
-        all_day: false, // Lesson plans typically have a duration
+        all_day: false,
         teaching_plan_id: lessonPlan.teachingPlanId,
         lesson_plan_id: lessonPlan.id,
-        color: '#9b87f5', // Purple color for classes
+        color: '#9b87f5',
         source_type: 'lesson_plan' as const,
         source_id: lessonPlan.id
       };
 
-      // Use upsert with onConflict to prevent duplication
       const { error } = await supabase
         .from("calendar_events")
         .upsert(eventData, {
@@ -240,12 +219,8 @@ export const calendarEventService = {
 
   syncFromTeachingPlan: async (teachingPlan: TeachingPlan): Promise<void> => {
     try {
-      if (!teachingPlan || !teachingPlan.startDate || !teachingPlan.id) {
-        console.log('Teaching plan data is missing, skipping calendar sync');
-        return;
-      }
+      if (!teachingPlan || !teachingPlan.startDate || !teachingPlan.id) return;
 
-      // Define the event data with explicitly typed fields
       const eventData = {
         title: `Plano de Ensino: ${teachingPlan.title}`,
         description: teachingPlan.description || '',
@@ -255,12 +230,11 @@ export const calendarEventService = {
         all_day: true,
         subject_id: teachingPlan.subjectId,
         teaching_plan_id: teachingPlan.id,
-        color: '#7E69AB', // Darker purple for teaching plans
+        color: '#7E69AB',
         source_type: 'teaching_plan' as const,
         source_id: teachingPlan.id
       };
 
-      // Use upsert with onConflict to prevent duplication
       const { error } = await supabase
         .from("calendar_events")
         .upsert(eventData, {
@@ -274,4 +248,3 @@ export const calendarEventService = {
     }
   }
 };
-
