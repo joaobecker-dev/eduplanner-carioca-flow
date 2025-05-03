@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { CalendarEvent } from '@/types';
@@ -183,7 +182,7 @@ const CalendarView: React.FC = () => {
       setIsDeleting(true);
       
       // Use the explicit deleteEvent method
-      await calendarEventService.deleteEvent(selectedEvent.id);
+      await calendarEventService.delete(selectedEvent.id);
       
       // Refresh calendar events by invalidating the query
       queryClient.invalidateQueries({ queryKey: ['calendarEvents'] });

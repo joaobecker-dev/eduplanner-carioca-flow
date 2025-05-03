@@ -55,7 +55,7 @@ const getByDateRange = async (startDate: string, endDate: string): Promise<Calen
       .lte('start_date', endDate);
 
     if (error) throw error;
-    return data ? data.map(mapToCamelCaseEvent) : [];
+    return data ? data.map(item => mapToCamelCase(item as Record<string, any>) as CalendarEvent) : [];
   } catch (error) {
     handleError(error, 'buscar eventos por período');
     return [];
@@ -71,7 +71,7 @@ const getBySubject = async (subjectId: ID): Promise<CalendarEvent[]> => {
       .eq('subject_id', subjectId);
 
     if (error) throw error;
-    return data ? data.map(mapToCamelCaseEvent) : [];
+    return data ? data.map(item => mapToCamelCase(item as Record<string, any>) as CalendarEvent) : [];
   } catch (error) {
     handleError(error, 'buscar eventos por disciplina');
     return [];
