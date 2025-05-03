@@ -182,7 +182,7 @@ const CalendarView: React.FC = () => {
       setIsDeleting(true);
       
       // Use the explicit deleteEvent method
-      await calendarEventService.delete(selectedEvent.id);
+      await calendarEventService.deleteEvent(selectedEvent.id);
       
       // Refresh calendar events by invalidating the query
       queryClient.invalidateQueries({ queryKey: ['calendarEvents'] });
