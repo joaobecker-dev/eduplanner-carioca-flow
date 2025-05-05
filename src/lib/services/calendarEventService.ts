@@ -121,12 +121,13 @@ const mapToCamelCaseEvent = (data: any): CalendarEvent => {
   };
 };
 
-// Fixed: Explicit type definition for database fields
+// Fixed: Explicit type definition for database fields with required fields
+// Making database-required fields non-optional
 interface CalendarEventDatabaseFields {
-  title?: string;
+  title: string;
   description?: string;
-  type?: EventType;
-  start_date?: string;
+  type: EventType;
+  start_date: string;
   end_date?: string;
   all_day?: boolean;
   subject_id?: string;
@@ -141,12 +142,15 @@ interface CalendarEventDatabaseFields {
 
 // Prepare data for database operations - Fixed by using explicit types
 const prepareEventData = (eventData: Partial<CalendarEvent>): CalendarEventDatabaseFields => {
-  const updateData: CalendarEventDatabaseFields = {};
+  // Start with defaults for required fields to ensure they're always present
+  const updateData: CalendarEventDatabaseFields = {
+    title: eventData.title || '',
+    type: eventData.type || 'other',
+    start_date: eventData.startDate ? normalizeToISO(eventData.startDate) : ''
+  };
 
-  if (eventData.title !== undefined) updateData.title = eventData.title;
+  // Add optional fields only if they exist
   if (eventData.description !== undefined) updateData.description = eventData.description;
-  if (eventData.type !== undefined) updateData.type = eventData.type;
-  if (eventData.startDate !== undefined) updateData.start_date = normalizeToISO(eventData.startDate);
   if (eventData.endDate !== undefined) updateData.end_date = normalizeToISO(eventData.endDate);
   if (eventData.allDay !== undefined) updateData.all_day = eventData.allDay;
   if (eventData.subjectId !== undefined) updateData.subject_id = eventData.subjectId;
@@ -164,13 +168,13 @@ const prepareEventData = (eventData: Partial<CalendarEvent>): CalendarEventDatab
 // Create and update operations
 const create = async (eventData: Omit<CalendarEvent, 'id' | 'created_at'>): Promise<CalendarEvent | null> => {
   try {
-    // Create snake_case object for the database
+    // Create snake_case object for the database ensuring required fields are present
     const preparedData: CalendarEventDatabaseFields = {
       title: eventData.title,
       description: eventData.description,
       type: eventData.type,
       start_date: normalizeToISO(eventData.startDate) || '',
-      end_date: normalizeToISO(eventData.endDate) || normalizeToISO(eventData.startDate) || '',
+      end_date: eventData.endDate ? normalizeToISO(eventData.endDate) : undefined,
       all_day: eventData.allDay,
       subject_id: eventData.subjectId,
       lesson_plan_id: eventData.lessonPlanId,
@@ -224,13 +228,13 @@ const syncFromAssessment = async (assessment: Assessment): Promise<void> => {
   try {
     if (!assessment || !assessment.id) return;
 
-    // Direct object with snake_case keys
+    // Direct object with snake_case keys with required fields explicitly set
     const eventData: CalendarEventDatabaseFields = {
       title: `Avaliação: ${assessment.title}`,
       description: assessment.description || '',
       type: "exam",
       start_date: normalizeToISO(assessment.date) || '',
-      end_date: normalizeToISO(assessment.dueDate || assessment.date) || '',
+      end_date: assessment.dueDate ? normalizeToISO(assessment.dueDate) : normalizeToISO(assessment.date),
       all_day: true,
       subject_id: assessment.subjectId,
       assessment_id: assessment.id,
@@ -302,7 +306,7 @@ const syncFromTeachingPlan = async (teachingPlan: TeachingPlan): Promise<void> =
       description: teachingPlan.description || '',
       type: "class",
       start_date: normalizeToISO(teachingPlan.startDate) || '',
-      end_date: normalizeToISO(teachingPlan.endDate) || '',
+      end_date: normalizeToISO(teachingPlan.endDate),
       all_day: true,
       subject_id: teachingPlan.subjectId,
       teaching_plan_id: teachingPlan.id,
@@ -333,7 +337,7 @@ const syncFromStudentAssessment = async (studentAssessment: StudentAssessment): 
       description: studentAssessment.feedback || '',
       type: "exam",
       start_date: normalizeToISO(studentAssessment.submittedDate) || '',
-      end_date: normalizeToISO(studentAssessment.gradedDate || studentAssessment.submittedDate) || '',
+      end_date: studentAssessment.gradedDate ? normalizeToISO(studentAssessment.gradedDate) : undefined,
       all_day: true,
       assessment_id: studentAssessment.assessmentId,
       color: '#e67c73',

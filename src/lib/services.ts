@@ -14,10 +14,12 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { mapToCamelCase } from '@/lib/utils/caseConverters';
-import { calendarEventService as importedCalendarEventService } from './services/calendarEventService';
+
+// Import services directly from their modular files to avoid circular dependencies
+import { calendarEventService as calendarEventServiceImport } from './services/calendarEventService';
 
 // Re-export the calendar event service
-export const calendarEventService = importedCalendarEventService;
+export const calendarEventService = calendarEventServiceImport;
 
 // Helper function for error handling
 const handleError = (error: any, operation: string): void => {
@@ -400,5 +402,5 @@ export const services = {
   student: studentService,
   studentAssessment: studentAssessmentService,
   material: materialService,
-  calendarEvent: calendarEventService
+  calendarEvent: calendarEventServiceImport
 };
