@@ -1,8 +1,9 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { TeachingPlan } from "@/types";
 import { mapToCamelCase, normalizeToISO } from "@/integrations/supabase/supabaseAdapter";
 import { TeachingPlanFormValues } from "@/components/forms/TeachingPlanForm";
-import { calendarEventService } from "./calendarEventService";
+import { calendarEventService } from "./calendar";
 
 const tableName = 'teaching_plans';
 
@@ -32,8 +33,8 @@ export async function create(teachingPlanForm: Partial<TeachingPlanFormValues>):
     description: teachingPlanForm.description || null,
     annual_plan_id: teachingPlanForm.annualPlanId,
     subject_id: teachingPlanForm.subjectId,
-    start_date: normalizeToISO(teachingPlanForm.startDate),
-    end_date: normalizeToISO(teachingPlanForm.endDate),
+    start_date: teachingPlanForm.startDate ? normalizeToISO(teachingPlanForm.startDate) : null,
+    end_date: teachingPlanForm.endDate ? normalizeToISO(teachingPlanForm.endDate) : null,
     objectives: Array.isArray(teachingPlanForm.objectives) ? teachingPlanForm.objectives : [],
     bncc_references: Array.isArray(teachingPlanForm.bnccReferences) ? teachingPlanForm.bnccReferences : [],
     contents: Array.isArray(teachingPlanForm.contents) ? teachingPlanForm.contents : [],
@@ -63,8 +64,15 @@ export async function update(id: string, teachingPlanForm: Partial<TeachingPlanF
   if (teachingPlanForm.description !== undefined) updateData.description = teachingPlanForm.description;
   if (teachingPlanForm.annualPlanId !== undefined) updateData.annual_plan_id = teachingPlanForm.annualPlanId;
   if (teachingPlanForm.subjectId !== undefined) updateData.subject_id = teachingPlanForm.subjectId;
-  if (teachingPlanForm.startDate !== undefined) updateData.start_date = normalizeToISO(teachingPlanForm.startDate);
-  if (teachingPlanForm.endDate !== undefined) updateData.end_date = normalizeToISO(teachingPlanForm.endDate);
+  
+  if (teachingPlanForm.startDate !== undefined) {
+    updateData.start_date = normalizeToISO(teachingPlanForm.startDate);
+  }
+  
+  if (teachingPlanForm.endDate !== undefined) {
+    updateData.end_date = normalizeToISO(teachingPlanForm.endDate);
+  }
+  
   if (teachingPlanForm.objectives !== undefined)
     updateData.objectives = Array.isArray(teachingPlanForm.objectives) ? teachingPlanForm.objectives : [];
   if (teachingPlanForm.bnccReferences !== undefined)

@@ -68,11 +68,11 @@ export const deleteBySource = async (sourceType: string, sourceId: ID): Promise<
   }
 };
 
-// Create operation with explicit type annotations to fix excessive type instantiation
-export const create = async (eventData: Omit<CalendarEvent, 'id' | 'created_at'>): Promise<CalendarEvent | null> => {
+// Fixed create operation with proper typing to avoid excessive type instantiation
+export const create = async (eventData: Partial<CalendarEvent>): Promise<CalendarEvent | null> => {
   try {
-    // Use explicit typing here to avoid excessive type instantiation
-    const preparedData: CalendarEventDatabaseFields = prepareEventData(eventData);
+    // Use the utility function with explicit typing
+    const preparedData = prepareEventData(eventData);
 
     if (!preparedData.title || !preparedData.type || !preparedData.start_date) {
       throw new Error("Missing required fields for calendar event");
@@ -92,11 +92,11 @@ export const create = async (eventData: Omit<CalendarEvent, 'id' | 'created_at'>
   }
 };
 
-// Update operation with explicit type annotations
+// Fixed update operation with proper typing
 export const update = async (id: ID, eventData: Partial<CalendarEvent>): Promise<CalendarEvent | null> => {
   try {
-    // Use explicit typing here to avoid excessive type instantiation
-    const updateData: Partial<CalendarEventDatabaseFields> = prepareEventData(eventData);
+    // Use the utility function with explicit typing
+    const updateData = prepareEventData(eventData);
 
     const { data, error } = await supabase
       .from("calendar_events")

@@ -45,21 +45,16 @@ const LessonPlanModals: React.FC<LessonPlanModalsProps> = ({
   const handleLessonPlanSubmit = async (data: LessonPlanFormValues) => {
     setIsSubmitting(true);
     try {
-      // Format the data for the service - convert Date to string for database
-      const formattedData = {
+      // Format the data as expected by the LessonPlanFormValues type
+      const formattedData: Partial<LessonPlanFormValues> = {
         title: data.title,
         teachingPlanId: data.teachingPlanId,
-        // Convert Date to ISO string for the service
-        date: data.date?.toISOString(),
+        date: data.date,
         duration: data.duration,
-        objectives: Array.isArray(data.objectives) ? data.objectives : 
-                  (data.objectives ? data.objectives.split('\n').filter(item => item.trim() !== '') : []),
-        contents: Array.isArray(data.contents) ? data.contents : 
-                (data.contents ? data.contents.split('\n').filter(item => item.trim() !== '') : []),
-        activities: Array.isArray(data.activities) ? data.activities : 
-                  (data.activities ? data.activities.split('\n').filter(item => item.trim() !== '') : []),
-        resources: Array.isArray(data.resources) ? data.resources : 
-                 (data.resources ? data.resources.split('\n').filter(item => item.trim() !== '') : []),
+        objectives: data.objectives,
+        contents: data.contents,
+        activities: data.activities,
+        resources: data.resources,
         homework: data.homework,
         evaluation: data.evaluation,
         notes: data.notes

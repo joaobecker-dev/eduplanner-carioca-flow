@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { toast } from '@/hooks/use-toast';
-import { services } from '@/lib/services';
+import { teachingPlanService } from '@/lib/services';
 import { AnnualPlan, Subject, TeachingPlan } from '@/types';
 import CrudModal from '@/components/ui-components/CrudModal';
 import DeleteConfirmationDialog from '@/components/ui-components/DeleteConfirmationDialog';
@@ -31,7 +31,12 @@ const TeachingPlanModals: React.FC<TeachingPlanModalsProps> = ({
   };
 
   const handleEditTeachingPlan = (teachingPlan: TeachingPlan) => {
-    setSelectedTeachingPlan(teachingPlan);
+    setSelectedTeachingPlan({
+      ...teachingPlan,
+      // Convert string dates to Date objects for the form
+      startDate: new Date(teachingPlan.startDate),
+      endDate: new Date(teachingPlan.endDate)
+    });
     setIsTeachingPlanModalOpen(true);
   };
 
@@ -55,23 +60,17 @@ const TeachingPlanModals: React.FC<TeachingPlanModalsProps> = ({
     }
 
     try {
-      // Convert Date objects to ISO strings for API
-      const planData = {
-        ...data,
-        startDate: data.startDate ? data.startDate.toISOString() : new Date().toISOString(),
-        endDate: data.endDate ? data.endDate.toISOString() : new Date().toISOString()
-      };
-      
+      // Pass the form data directly - the service handles date conversion
       if (selectedTeachingPlan?.id) {
         // Update existing teaching plan
-        await services.teachingPlan.update(selectedTeachingPlan.id, planData);
+        await teachingPlanService.update(selectedTeachingPlan.id, data);
         toast({
           title: "Plano de ensino atualizado",
           description: "O plano de ensino foi atualizado com sucesso.",
         });
       } else {
         // Create new teaching plan with required fields guaranteed
-        await services.teachingPlan.create(planData as Omit<TeachingPlan, "id">);
+        await teachingPlanService.create(data);
         toast({
           title: "Plano de ensino criado",
           description: "O plano de ensino foi criado com sucesso.",
@@ -96,7 +95,7 @@ const TeachingPlanModals: React.FC<TeachingPlanModalsProps> = ({
 
     setIsSubmitting(true);
     try {
-      await services.teachingPlan.delete(selectedTeachingPlan.id);
+      await teachingPlanService.delete(selectedTeachingPlan.id);
       toast({
         title: "Plano de ensino excluído",
         description: "O plano de ensino foi excluído com sucesso.",

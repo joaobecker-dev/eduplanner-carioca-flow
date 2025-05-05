@@ -26,16 +26,14 @@ export const mapToCamelCaseEvent = (data: any): CalendarEvent => {
 };
 
 // Prepare data for database operations with explicit typing
-export const prepareEventData = (eventData: Partial<CalendarEvent>): CalendarEventDatabaseFields => {
+export const prepareEventData = (eventData: Partial<CalendarEvent>): Partial<CalendarEventDatabaseFields> => {
   // Create a base object with required fields
   const updateData: Partial<CalendarEventDatabaseFields> = {};
   
-  // Add required fields
+  // Add fields only if they exist
   if (eventData.title !== undefined) updateData.title = eventData.title;
   if (eventData.type !== undefined) updateData.type = eventData.type;
   if (eventData.startDate !== undefined) updateData.start_date = normalizeToISO(eventData.startDate);
-  
-  // Add optional fields only if they exist
   if (eventData.description !== undefined) updateData.description = eventData.description;
   if (eventData.endDate !== undefined) updateData.end_date = normalizeToISO(eventData.endDate);
   if (eventData.allDay !== undefined) updateData.all_day = eventData.allDay;
@@ -48,6 +46,5 @@ export const prepareEventData = (eventData: Partial<CalendarEvent>): CalendarEve
   if (eventData.sourceType !== undefined) updateData.source_type = eventData.sourceType;
   if (eventData.sourceId !== undefined) updateData.source_id = eventData.sourceId;
 
-  // Cast to complete type to ensure we have required fields
-  return updateData as CalendarEventDatabaseFields;
+  return updateData;
 };

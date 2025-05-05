@@ -1,11 +1,24 @@
 
 import { StudentAssessment, ID } from '@/types';
 import { supabase } from "@/integrations/supabase/client";
-import { mapToCamelCase, mapToSnakeCase, normalizeToISO } from '@/integrations/supabase/supabaseAdapter';
+import { mapToCamelCase, normalizeToISO } from '@/integrations/supabase/supabaseAdapter';
 import { handleError } from './baseService';
-import { calendarEventService } from './calendarEventService';
+import { calendarEventService } from './calendar';
 
 const tableName = "student_assessments";
+
+export async function getAll(): Promise<StudentAssessment[]> {
+  try {
+    const { data, error } = await supabase
+      .from(tableName)
+      .select('*');
+    if (error) throw error;
+    return data ? data.map(item => mapToCamelCase<StudentAssessment>(item)) : [];
+  } catch (error) {
+    handleError(error, 'buscar todas as avaliações de alunos');
+    return [];
+  }
+}
 
 export async function getByStudent(studentId: ID): Promise<StudentAssessment[]> {
   try {
@@ -70,7 +83,7 @@ export async function create(studentAssessment: Omit<StudentAssessment, "id">): 
     if (error) throw error;
 
     const created = mapToCamelCase<StudentAssessment>(data);
-    // await calendarEventService.syncFromStudentAssessment(created);
+    await calendarEventService.syncFromStudentAssessment(created);
     return created;
   } catch (error) {
     handleError(error, 'criar avaliação de aluno');
@@ -99,7 +112,7 @@ export async function update(id: ID, studentAssessment: Partial<StudentAssessmen
     if (error) throw error;
 
     const updated = mapToCamelCase<StudentAssessment>(data);
-    // await calendarEventService.syncFromStudentAssessment(updated);
+    await calendarEventService.syncFromStudentAssessment(updated);
     return updated;
   } catch (error) {
     handleError(error, 'atualizar avaliação de aluno');
@@ -138,6 +151,7 @@ export async function getAssessmentAverage(assessmentId: ID): Promise<number> {
 }
 
 export const studentAssessmentService = {
+  getAll,
   getByStudent,
   getByAssessment,
   getById,
