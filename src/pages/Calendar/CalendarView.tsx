@@ -1,5 +1,5 @@
+
 import React, { useState } from 'react';
-import { Calendar } from '@fullcalendar/core';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
@@ -11,7 +11,6 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { CalendarIcon, X } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { DateRange } from "react-day-picker";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { Calendar as CalendarUI } from "@/components/ui/calendar";
@@ -82,7 +81,7 @@ const CalendarView: React.FC = () => {
                 >
                   <option value="">Todas as Disciplinas</option>
                   {subjects.map(subject => (
-                    <option key={subject.id} value={subject.id}>{subject.title}</option>
+                    <option key={subject.id} value={subject.id}>{subject.name}</option>
                   ))}
                 </select>
               </div>
@@ -129,8 +128,8 @@ const CalendarView: React.FC = () => {
                       <CalendarUI
                         mode="range"
                         defaultMonth={dateRange?.from ? dateRange.from : new Date()}
-                        selected={dateRange}
-                        onSelect={handleDateRangeChange}
+                        selected={dateRange as any}
+                        onSelect={handleDateRangeChange as any}
                         numberOfMonths={2}
                       />
                     </PopoverContent>
@@ -158,7 +157,7 @@ const CalendarView: React.FC = () => {
             }}
             events={calendarEvents}
             eventClick={handleEventClick}
-            loading={eventsLoading}
+            loading={(isLoading: boolean) => eventsLoading}
             height="700px"
             locale="pt-br"
             editable={true}

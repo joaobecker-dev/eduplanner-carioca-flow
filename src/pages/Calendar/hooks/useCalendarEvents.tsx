@@ -1,7 +1,12 @@
 
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { subjectService, calendarEventService } from '@/lib/services';
+import { calendarEventService, subjectService } from '@/lib/services';
+
+interface DateRange {
+  from: Date | null;
+  to: Date | null;
+}
 
 export const useCalendarEvents = () => {
   // State for filters
@@ -13,7 +18,7 @@ export const useCalendarEvents = () => {
     other: true,
     deadline: true
   });
-  const [dateRange, setDateRange] = useState<{ from: Date | null; to: Date | null }>({ 
+  const [dateRange, setDateRange] = useState<DateRange>({ 
     from: null, 
     to: null 
   });

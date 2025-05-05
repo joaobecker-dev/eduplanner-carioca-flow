@@ -1,224 +1,189 @@
-import React, { useState, useEffect } from 'react';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Button } from "@/components/ui/button"
-import { Calendar } from "@/components/ui/calendar"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { format } from "date-fns"
-import { cn } from "@/lib/utils"
-import { Textarea } from "@/components/ui/textarea"
-import { useToast } from "@/hooks/use-toast"
+
+import React from 'react';
+import { useQueryClient, useMutation } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { CalendarEvent } from '@/types';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { EventFormValues } from '@/schemas/eventSchema';
+import { normalizeToISO } from '@/integrations/supabase/supabaseAdapter';
+import CrudModal from '@/components/ui-components/CrudModal';
+import DeleteConfirmationDialog from '@/components/ui-components/DeleteConfirmationDialog';
+import EventForm from './components/EventForm';
+import EventDetailsModal from './components/EventDetailsModal';
 import { calendarEventService } from '@/lib/services';
 
-interface CalendarEventModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  event?: CalendarEvent;
+interface EventModalsProps {
+  selectedEvent: CalendarEvent | null;
+  setSelectedEvent: (event: CalendarEvent | null) => void;
+  showEventModal: boolean;
+  setShowEventModal: (show: boolean) => void;
+  showNewEventModal: boolean;
+  setShowNewEventModal: (show: boolean) => void;
+  eventToEdit: CalendarEvent | null;
+  showDeleteConfirmation: boolean;
+  setShowDeleteConfirmation: (show: boolean) => void;
+  subjects: any[];
 }
 
-export const CalendarEventModal: React.FC<CalendarEventModalProps> = ({ isOpen, onClose, event }) => {
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [startDate, setStartDate] = useState<Date | undefined>(undefined);
-  const [endDate, setEndDate] = useState<Date | undefined>(undefined);
-  const { toast } = useToast();
+export const EventModals: React.FC<EventModalsProps> = ({
+  selectedEvent,
+  setSelectedEvent,
+  showEventModal,
+  setShowEventModal,
+  showNewEventModal,
+  setShowNewEventModal,
+  eventToEdit,
+  showDeleteConfirmation,
+  setShowDeleteConfirmation,
+  subjects
+}) => {
   const queryClient = useQueryClient();
 
-  useEffect(() => {
-    if (event) {
-      setTitle(event.title);
-      setDescription(event.description);
-      setStartDate(new Date(event.startDate));
-      setEndDate(new Date(event.endDate));
-    } else {
-      setTitle('');
-      setDescription('');
-      setStartDate(undefined);
-      setEndDate(undefined);
-    }
-  }, [event]);
-
-  const { mutate: createEvent, isLoading: isCreating } = useMutation(
-    async (newEvent: Omit<CalendarEvent, 'id' | 'created_at'>) => {
-      return calendarEventService.create(newEvent);
+  // Create event mutation
+  const createEventMutation = useMutation({
+    mutationFn: async (newEvent: Omit<CalendarEvent, "id" | "created_at">) => {
+      return await calendarEventService.create(newEvent);
     },
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries(['calendarEvents']);
-        toast({
-          title: "Evento criado com sucesso!",
-        });
-        onClose();
-      },
-      onError: (error: any) => {
-        toast({
-          title: "Ocorreu um erro ao criar o evento.",
-          description: error.message,
-          variant: "destructive",
-        });
-      },
-    }
-  );
-
-  const { mutate: updateEvent, isLoading: isUpdating } = useMutation(
-    async (updatedEvent: CalendarEvent) => {
-      if (!event?.id) {
-        throw new Error("Event ID is missing for update.");
-      }
-      return calendarEventService.update(event.id, updatedEvent);
+    onSuccess: () => {
+      toast.success("Evento criado com sucesso!");
+      queryClient.invalidateQueries({ queryKey: ['calendarEvents'] });
+      setShowNewEventModal(false);
     },
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries(['calendarEvents']);
-        toast({
-          title: "Evento atualizado com sucesso!",
-        });
-        onClose();
-      },
-      onError: (error: any) => {
-        toast({
-          title: "Ocorreu um erro ao atualizar o evento.",
-          description: error.message,
-          variant: "destructive",
-        });
-      },
+    onError: (error) => {
+      console.error("Error creating event:", error);
+      toast.error("Erro ao criar evento. Tente novamente.");
     }
-  );
+  });
 
-  const handleSubmit = () => {
-    if (!startDate || !endDate) {
-      toast({
-        title: "Por favor, selecione as datas de início e fim.",
-        variant: "destructive",
-      });
-      return;
+  // Update event mutation
+  const updateEventMutation = useMutation({
+    mutationFn: async (updatedEvent: CalendarEvent) => {
+      const { id, ...eventData } = updatedEvent;
+      return await calendarEventService.update(id, eventData);
+    },
+    onSuccess: () => {
+      toast.success("Evento atualizado com sucesso!");
+      queryClient.invalidateQueries({ queryKey: ['calendarEvents'] });
+      setShowNewEventModal(false);
+    },
+    onError: (error) => {
+      console.error("Error updating event:", error);
+      toast.error("Erro ao atualizar evento. Tente novamente.");
     }
+  });
 
-    const newEventData = {
-      title,
-      description,
-      startDate: startDate.toISOString(),
-      endDate: endDate.toISOString(),
-      allDay: true,
-      type: 'other',
-      subjectId: 'a96913ff-2669-41ca-b178-190b8ca916fa',
+  // Delete event mutation
+  const deleteEventMutation = useMutation({
+    mutationFn: async (eventId: string) => {
+      return await calendarEventService.deleteEvent(eventId);
+    },
+    onSuccess: () => {
+      toast.success("Evento excluído com sucesso!");
+      queryClient.invalidateQueries({ queryKey: ['calendarEvents'] });
+      setShowDeleteConfirmation(false);
+      setSelectedEvent(null);
+    },
+    onError: (error) => {
+      console.error("Error deleting event:", error);
+      toast.error("Erro ao excluir evento. Tente novamente.");
+    }
+  });
+
+  // Handle form submission for both create and update
+  const handleFormSubmit = async (values: EventFormValues) => {
+    const eventData = {
+      title: values.title,
+      description: values.description || '',
+      type: values.type,
+      startDate: normalizeToISO(values.startDate) || '',
+      endDate: normalizeToISO(values.endDate || values.startDate) || '',
+      allDay: values.allDay,
+      color: values.color,
+      subjectId: values.subjectId || null,
       sourceType: 'manual',
-      sourceId: '123'
+      sourceId: null
     };
 
-    if (event) {
-      updateEvent({ ...event, ...newEventData });
+    if (eventToEdit) {
+      updateEventMutation.mutate({
+        ...eventData,
+        id: eventToEdit.id,
+        created_at: eventToEdit.created_at,
+        location: eventToEdit.location,
+        assessmentId: eventToEdit.assessmentId,
+        lessonPlanId: eventToEdit.lessonPlanId,
+        teachingPlanId: eventToEdit.teachingPlanId
+      } as CalendarEvent);
     } else {
-      createEvent(newEventData);
+      createEventMutation.mutate(eventData as any);
     }
   };
 
+  // Get the subject name for an event
+  const getRelatedSubject = (subjectId?: string) => {
+    if (!subjectId) return undefined;
+    return subjects.find(s => s.id === subjectId);
+  };
+
+  // Get human-readable event type label
+  const getEventTypeLabel = (type: string) => {
+    const labels: Record<string, string> = {
+      'class': 'Aula',
+      'exam': 'Prova',
+      'meeting': 'Reunião',
+      'other': 'Outro',
+      'deadline': 'Prazo'
+    };
+    return labels[type] || type;
+  };
+
   return (
-    <AlertDialog open={isOpen} onOpenChange={onClose}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>{event ? "Editar Evento" : "Novo Evento"}</AlertDialogTitle>
-          <AlertDialogDescription>
-            {event ? "Atualize os detalhes do seu evento." : "Adicione um novo evento ao calendário."}
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid gap-2">
-            <Label htmlFor="name">Título</Label>
-            <Input
-              type="text"
-              id="name"
-              placeholder="Nome do evento"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-            />
-          </div>
-          <div className="grid gap-2">
-            <Label htmlFor="description">Descrição</Label>
-            <Textarea
-              id="description"
-              placeholder="Detalhes do evento"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="grid gap-2">
-              <Label>Início</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant={"outline"}
-                    className={cn(
-                      "w-[240px] justify-start text-left font-normal",
-                      !startDate && "text-muted-foreground"
-                    )}
-                  >
-                    {startDate ? format(startDate, "PPP") : <span>Escolher data</span>}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="center" side="bottom">
-                  <Calendar
-                    mode="single"
-                    selected={startDate}
-                    onSelect={setStartDate}
-                    disabled={(date) =>
-                      date > (endDate ? endDate : new Date())
-                    }
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
-            <div className="grid gap-2">
-              <Label>Fim</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant={"outline"}
-                    className={cn(
-                      "w-[240px] justify-start text-left font-normal",
-                      !endDate && "text-muted-foreground"
-                    )}
-                  >
-                    {endDate ? format(endDate, "PPP") : <span>Escolher data</span>}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="center" side="bottom">
-                  <Calendar
-                    mode="single"
-                    selected={endDate}
-                    onSelect={setEndDate}
-                    disabled={(date) =>
-                      date < (startDate ? startDate : new Date())
-                    }
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
-          </div>
-        </div>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancelar</AlertDialogCancel>
-          <AlertDialogAction onClick={handleSubmit} disabled={isCreating || isUpdating}>
-            {isCreating || isUpdating ? 'Salvando...' : 'Salvar'}
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+    <>
+      {/* Event Details Modal */}
+      {showEventModal && selectedEvent && (
+        <EventDetailsModal
+          isOpen={showEventModal}
+          setIsOpen={setShowEventModal}
+          selectedEvent={selectedEvent}
+          handleEditEvent={() => {
+            setSelectedEvent(null);
+            setShowEventModal(false);
+            setShowNewEventModal(true);
+          }}
+          handleDeleteEvent={() => {
+            setShowEventModal(false);
+            setShowDeleteConfirmation(true);
+          }}
+          getEventTypeLabel={getEventTypeLabel}
+          getRelatedSubject={getRelatedSubject}
+        />
+      )}
+
+      {/* Create/Edit Event Modal */}
+      <CrudModal
+        title={eventToEdit ? "Editar Evento" : "Novo Evento"}
+        description="Preencha os detalhes do evento"
+        isOpen={showNewEventModal}
+        onClose={() => setShowNewEventModal(false)}
+        onSubmit={(e) => e.preventDefault()}
+        isLoading={createEventMutation.isPending || updateEventMutation.isPending}
+      >
+        <EventForm
+          onSubmit={handleFormSubmit}
+          eventToEdit={eventToEdit}
+        />
+      </CrudModal>
+
+      {/* Delete Confirmation Dialog */}
+      <DeleteConfirmationDialog
+        isOpen={showDeleteConfirmation}
+        onClose={() => setShowDeleteConfirmation(false)}
+        onConfirm={() => selectedEvent && deleteEventMutation.mutate(selectedEvent.id)}
+        title="Excluir Evento"
+        description="Tem certeza que deseja excluir este evento? Esta ação não pode ser desfeita."
+        isLoading={deleteEventMutation.isPending}
+      />
+    </>
   );
 };
+
+export default EventModals;
