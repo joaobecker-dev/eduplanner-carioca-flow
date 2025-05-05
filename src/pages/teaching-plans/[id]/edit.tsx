@@ -1,28 +1,39 @@
+
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/router';
+import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { TeachingPlanFormValues, teachingPlanSchema } from '@/components/forms/TeachingPlanForm';
+import { teachingPlanSchema } from '@/schemas/teachingPlanSchema';
 import TeachingPlanForm from '@/components/forms/TeachingPlanForm';
-import { teachingPlanService } from '@/lib/services/teachingPlanService';
+import { teachingPlanService } from '@/lib/services';
 import { AnnualPlan, Subject, TeachingPlan } from '@/types';
-import { annualPlanService } from '@/lib/services/annualPlanService';
-import { subjectService } from '@/lib/services/subjectService';
+import { annualPlanService } from '@/lib/services';
+import { subjectService } from '@/lib/services';
 import CrudModal from '@/components/ui-components/CrudModal';
 
-interface EditTeachingPlanPageProps {
-  // You can define props here if needed
-}
+type TeachingPlanFormValues = {
+  title: string;
+  description?: string;
+  annualPlanId: string;
+  subjectId: string;
+  startDate?: Date;
+  endDate?: Date;
+  objectives: string[];
+  bnccReferences: string[];
+  contents: string[];
+  methodology: string;
+  resources: string[];
+  evaluation: string;
+};
 
-const EditTeachingPlanPage: React.FC<EditTeachingPlanPageProps> = () => {
-  const router = useRouter();
-  const { id } = router.query;
-  const teachingPlanId = Array.isArray(id) ? id[0] : id;
+const EditTeachingPlanPage: React.FC = () => {
+  const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>();
+  const teachingPlanId = id;
 
   const [teachingPlan, setTeachingPlan] = useState<TeachingPlan | null>(null);
   const [isFetching, setIsFetching] = useState(true);
-  const [showModal, setShowModal] = useState(false);
   const [annualPlans, setAnnualPlans] = useState<AnnualPlan[]>([]);
   const [subjects, setSubjects] = useState<Subject[]>([]);
 
@@ -98,14 +109,6 @@ const EditTeachingPlanPage: React.FC<EditTeachingPlanPageProps> = () => {
     fetchDependencies();
   }, []);
 
-  const handleOpenModal = () => {
-    setShowModal(true);
-  };
-
-  const handleCloseModal = () => {
-    setShowModal(false);
-  };
-
   const processFormValues = (values: TeachingPlanFormValues): TeachingPlanFormValues => {
     return {
       ...values,
@@ -121,7 +124,7 @@ const EditTeachingPlanPage: React.FC<EditTeachingPlanPageProps> = () => {
       if (teachingPlanId) {
         await teachingPlanService.update(teachingPlanId, processedValues);
         toast.success('Plano de ensino atualizado com sucesso!');
-        router.push('/planejamento');
+        navigate('/planejamento');
       } else {
         toast.error('ID do plano de ensino não encontrado.');
       }
@@ -144,7 +147,7 @@ const EditTeachingPlanPage: React.FC<EditTeachingPlanPageProps> = () => {
       title="Editar Plano de Ensino"
       description="Atualize os detalhes do plano de ensino"
       isOpen={true}
-      onClose={() => router.push('/planejamento')}
+      onClose={() => navigate('/planejamento')}
       onSubmit={(e) => {
         e.preventDefault();
         form.handleSubmit(handleUpdateTeachingPlan)();
@@ -152,10 +155,10 @@ const EditTeachingPlanPage: React.FC<EditTeachingPlanPageProps> = () => {
       isLoading={false}
     >
       <TeachingPlanForm
-        form={form}
+        initialData={teachingPlan}
+        onSubmit={handleUpdateTeachingPlan}
         annualPlans={annualPlans}
         subjects={subjects}
-        onSubmit={handleUpdateTeachingPlan}
       />
     </CrudModal>
   );

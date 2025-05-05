@@ -70,35 +70,32 @@ export const deleteBySource = async (sourceType: string, sourceId: ID): Promise<
 // Fixed create operation with proper typing
 export const create = async (eventData: Partial<CalendarEvent>): Promise<CalendarEvent | null> => {
   try {
-    // Prepare data for database insertion
+    // Prepare data for database insertion with proper type checking
     const preparedData = prepareEventData(eventData);
     
-    // Validate required fields
+    // Make sure required fields are present
     if (!preparedData.title || !preparedData.type || !preparedData.start_date) {
       throw new Error("Missing required fields for calendar event");
     }
 
-    // Use explicit type annotation to avoid deep type instantiation
-    const insertData: Record<string, any> = {
-      title: preparedData.title,
-      type: preparedData.type,
-      start_date: preparedData.start_date,
-      description: preparedData.description,
-      end_date: preparedData.end_date,
-      all_day: preparedData.all_day,
-      subject_id: preparedData.subject_id,
-      lesson_plan_id: preparedData.lesson_plan_id,
-      assessment_id: preparedData.assessment_id,
-      teaching_plan_id: preparedData.teaching_plan_id,
-      location: preparedData.location,
-      color: preparedData.color,
-      source_type: preparedData.source_type,
-      source_id: preparedData.source_id
-    };
-
     const { data, error } = await supabase
       .from("calendar_events")
-      .insert(insertData)
+      .insert({
+        title: preparedData.title,
+        type: preparedData.type,
+        start_date: preparedData.start_date,
+        description: preparedData.description,
+        end_date: preparedData.end_date,
+        all_day: preparedData.all_day,
+        subject_id: preparedData.subject_id,
+        lesson_plan_id: preparedData.lesson_plan_id,
+        assessment_id: preparedData.assessment_id,
+        teaching_plan_id: preparedData.teaching_plan_id,
+        location: preparedData.location,
+        color: preparedData.color,
+        source_type: preparedData.source_type,
+        source_id: preparedData.source_id
+      })
       .select()
       .single();
 
@@ -113,8 +110,8 @@ export const create = async (eventData: Partial<CalendarEvent>): Promise<Calenda
 // Fixed update operation with proper typing
 export const update = async (id: ID, eventData: Partial<CalendarEvent>): Promise<CalendarEvent | null> => {
   try {
-    // Prepare data for database update using explicit type annotation
-    const updateData: Record<string, any> = prepareEventData(eventData);
+    // Prepare data with proper type checking
+    const updateData = prepareEventData(eventData);
 
     const { data, error } = await supabase
       .from("calendar_events")
