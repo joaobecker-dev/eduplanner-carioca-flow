@@ -125,7 +125,7 @@ Aplicar os conceitos em situações do cotidiano"
           />
 
           <TextAreaField
-            name="contents"
+            name="content"
             label="Conteúdos (um por linha)"
             placeholder="Frações: adição e subtração
 Denominadores iguais
