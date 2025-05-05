@@ -15,18 +15,19 @@ import AnnualPlanDetail from "./pages/annual-plans/[id]";
 import TeachingPlanDetail from "./pages/teaching-plans/[id]";
 import LessonPlanDetail from "./pages/lesson-plans/[id]";
 import AssessmentDetail from "./pages/assessments/[id]";
+import MaterialDetail from "./pages/materials/[id]";
 
-// Import new Edit pages
+// Import Edit pages
 import AnnualPlanEdit from "./pages/annual-plans/[id]/edit";
 import TeachingPlanEdit from "./pages/teaching-plans/[id]/edit";
 import LessonPlanEdit from "./pages/lesson-plans/[id]/edit";
 import AssessmentEdit from "./pages/assessments/[id]/edit";
 
-// Import the new AssignAssessmentPage
+// Import the AssignAssessmentPage
 import AssignAssessmentPage from "./pages/avaliacoes/AssignAssessmentPage";
 import StudentAssessmentGradingPage from "./pages/avaliacoes/StudentAssessmentGradingPage";
 
-// Import the new StudentPerformancePage
+// Import the StudentPerformancePage
 import StudentPerformancePage from "./pages/students/StudentPerformancePage";
 
 const queryClient = new QueryClient();
@@ -45,6 +46,7 @@ const App = () => (
             <Route path="/avaliacoes/atribuir" element={<AssignAssessmentPage />} />
             <Route path="/avaliacoes/correcao/:assessmentId" element={<StudentAssessmentGradingPage />} />
             <Route path="/materiais" element={<Materials />} />
+            <Route path="/materiais/:id" element={<MaterialDetail />} />
             <Route path="/calendario" element={<Calendar />} />
             <Route path="/desempenho" element={<StudentPerformancePage />} />
             

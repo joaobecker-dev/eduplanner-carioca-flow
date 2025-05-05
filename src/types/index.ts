@@ -152,6 +152,7 @@ export interface Material {
   tags: string[];
   subjectId?: ID;
   thumbnailUrl?: string;
+  notes?: string;
   created_at: string;
   updatedAt: string;
 }
