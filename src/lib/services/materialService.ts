@@ -81,5 +81,23 @@ export const materialService = {
       console.error('Error updating material:', error);
       return null;
     }
+  },
+  
+  // Method to get by id for detail page
+  getById: async (id: string): Promise<Material | null> => {
+    try {
+      const { data, error } = await supabase
+        .from('materials')
+        .select('*')
+        .eq('id', id)
+        .single();
+      
+      if (error) throw error;
+      
+      return data ? mapToCamelCase<Material>(data) : null;
+    } catch (error) {
+      console.error('Error getting material by id:', error);
+      return null;
+    }
   }
 };

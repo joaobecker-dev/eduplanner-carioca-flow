@@ -152,6 +152,7 @@ export interface Material {
   tags: string[];
   subjectId?: ID;
   thumbnailUrl?: string;
+  notes?: string; // Added notes field for user annotations
   created_at: string;
   updatedAt: string;
 }
@@ -206,3 +207,6 @@ export interface Settings {
   language: string;
   created_at: DateTimeString;
 }
+
+// Add EventType definition for calendar
+export type EventType = 'class' | 'exam' | 'meeting' | 'deadline' | 'other';

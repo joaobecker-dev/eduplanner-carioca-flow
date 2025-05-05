@@ -10,8 +10,9 @@ import {
   Link as LinkIcon, 
   Image, 
   File,
-  Play 
+  Play
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -44,6 +45,7 @@ import {
 } from '@/components/ui/dialog';
 
 const Materials: React.FC = () => {
+  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [subjects, setSubjects] = useState<Subject[]>([]);
@@ -197,6 +199,11 @@ const Materials: React.FC = () => {
         variant: "destructive",
       });
     }
+  };
+  
+  // Navigate to material detail page
+  const handleViewDetail = (material: Material) => {
+    navigate(`/materiais/${material.id}`);
   };
 
   const materialFilterGroups: FilterGroup[] = [
@@ -387,6 +394,14 @@ const Materials: React.FC = () => {
                       Atualizado em {formatDate(material.updatedAt)}
                     </div>
                     <div className="flex gap-2">
+                      <Button
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => handleViewDetail(material)}
+                        className="text-edu-blue-600 hover:text-edu-blue-700 hover:bg-edu-blue-50"
+                      >
+                        Detalhes
+                      </Button>
                       <Button
                         size="sm"
                         variant="ghost"

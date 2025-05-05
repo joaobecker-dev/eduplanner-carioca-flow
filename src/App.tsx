@@ -29,6 +29,9 @@ import StudentAssessmentGradingPage from "./pages/avaliacoes/StudentAssessmentGr
 // Import the new StudentPerformancePage
 import StudentPerformancePage from "./pages/students/StudentPerformancePage";
 
+// Import the Material Detail page
+import MaterialDetail from "./pages/Materials/[id]";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -45,6 +48,7 @@ const App = () => (
             <Route path="/avaliacoes/atribuir" element={<AssignAssessmentPage />} />
             <Route path="/avaliacoes/correcao/:assessmentId" element={<StudentAssessmentGradingPage />} />
             <Route path="/materiais" element={<Materials />} />
+            <Route path="/materiais/:id" element={<MaterialDetail />} />
             <Route path="/calendario" element={<Calendar />} />
             <Route path="/desempenho" element={<StudentPerformancePage />} />
             
