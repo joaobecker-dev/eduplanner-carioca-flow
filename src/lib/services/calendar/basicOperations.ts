@@ -3,6 +3,7 @@ import { CalendarEvent, ID } from '@/types';
 import { handleError } from '../baseService';
 import { supabase } from "@/integrations/supabase/client";
 import { mapToCamelCaseEvent, prepareEventData } from './utils';
+import { CalendarEventDatabaseFields } from './types';
 
 // Basic CRUD operations
 export const getAll = async (): Promise<CalendarEvent[]> => {
@@ -67,10 +68,11 @@ export const deleteBySource = async (sourceType: string, sourceId: ID): Promise<
   }
 };
 
-// Create and update operations
+// Create operation with explicit type annotations to fix excessive type instantiation
 export const create = async (eventData: Omit<CalendarEvent, 'id' | 'created_at'>): Promise<CalendarEvent | null> => {
   try {
-    const preparedData = prepareEventData(eventData);
+    // Use explicit typing here to avoid excessive type instantiation
+    const preparedData: CalendarEventDatabaseFields = prepareEventData(eventData);
 
     if (!preparedData.title || !preparedData.type || !preparedData.start_date) {
       throw new Error("Missing required fields for calendar event");
@@ -83,16 +85,18 @@ export const create = async (eventData: Omit<CalendarEvent, 'id' | 'created_at'>
       .single();
 
     if (error) throw error;
-    return mapToCamelCaseEvent(data);
+    return data ? mapToCamelCaseEvent(data) : null;
   } catch (error) {
     handleError(error, 'criar evento do calendário');
     throw error;
   }
 };
 
+// Update operation with explicit type annotations
 export const update = async (id: ID, eventData: Partial<CalendarEvent>): Promise<CalendarEvent | null> => {
   try {
-    const updateData = prepareEventData(eventData);
+    // Use explicit typing here to avoid excessive type instantiation
+    const updateData: Partial<CalendarEventDatabaseFields> = prepareEventData(eventData);
 
     const { data, error } = await supabase
       .from("calendar_events")
@@ -102,7 +106,7 @@ export const update = async (id: ID, eventData: Partial<CalendarEvent>): Promise
       .single();
 
     if (error) throw error;
-    return mapToCamelCaseEvent(data);
+    return data ? mapToCamelCaseEvent(data) : null;
   } catch (error) {
     handleError(error, 'atualizar evento do calendário');
     throw error;
