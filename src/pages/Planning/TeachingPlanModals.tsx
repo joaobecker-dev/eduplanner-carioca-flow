@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -13,12 +14,16 @@ interface TeachingPlanModalsProps {
   setShowDeleteModal: (show: boolean) => void;
   teachingPlanIdToDelete: string | null;
   setTeachingPlanIdToDelete: (id: string | null) => void;
+  subjects?: any[];
+  annualPlans?: any[];
+  refreshPlans?: () => void;
 }
 
 const TeachingPlanModals: React.FC<TeachingPlanModalsProps> = ({
   showCreateModal,
   setShowCreateModal,
   showDeleteModal,
+  setShowDeleteModal,
   teachingPlanIdToDelete,
   setTeachingPlanIdToDelete,
 }) => {
@@ -26,42 +31,42 @@ const TeachingPlanModals: React.FC<TeachingPlanModalsProps> = ({
   const [isCreatingPlan, setIsCreatingPlan] = useState(false);
   const [isDeletingPlan, setIsDeletingPlan] = useState(false);
 
-  const createTeachingPlanMutation = useMutation(
-    (values: TeachingPlanFormValues) => teachingPlanService.create(values),
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ['teachingPlans'] });
-        toast.success('Plano de ensino criado com sucesso!');
-        setShowCreateModal(false);
-      },
-      onError: (error) => {
-        console.error('Error creating teaching plan:', error);
-        toast.error('Erro ao criar plano de ensino');
-      },
-      onSettled: () => {
-        setIsCreatingPlan(false);
-      },
-    }
-  );
+  const createTeachingPlanMutation = useMutation({
+    mutationFn: async (values: TeachingPlanFormValues) => {
+      return await teachingPlanService.create(values);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['teachingPlans'] });
+      toast.success('Plano de ensino criado com sucesso!');
+      setShowCreateModal(false);
+    },
+    onError: (error) => {
+      console.error('Error creating teaching plan:', error);
+      toast.error('Erro ao criar plano de ensino');
+    },
+    onSettled: () => {
+      setIsCreatingPlan(false);
+    },
+  });
 
-  const deleteTeachingPlanMutation = useMutation(
-    (id: string) => teachingPlanService.delete(id),
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ['teachingPlans'] });
-        toast.success('Plano de ensino excluído com sucesso!');
-        setShowDeleteModal(false);
-        setTeachingPlanIdToDelete(null);
-      },
-      onError: (error) => {
-        console.error('Error deleting teaching plan:', error);
-        toast.error('Erro ao excluir plano de ensino');
-      },
-      onSettled: () => {
-        setIsDeletingPlan(false);
-      },
-    }
-  );
+  const deleteTeachingPlanMutation = useMutation({
+    mutationFn: async (id: string) => {
+      return await teachingPlanService.delete(id);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['teachingPlans'] });
+      toast.success('Plano de ensino excluído com sucesso!');
+      setShowDeleteModal(false);
+      setTeachingPlanIdToDelete(null);
+    },
+    onError: (error) => {
+      console.error('Error deleting teaching plan:', error);
+      toast.error('Erro ao excluir plano de ensino');
+    },
+    onSettled: () => {
+      setIsDeletingPlan(false);
+    },
+  });
 
   const handleCreateTeachingPlan = async (values: TeachingPlanFormValues) => {
     try {

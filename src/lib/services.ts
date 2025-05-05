@@ -13,7 +13,7 @@ export { assessmentService } from './services/assessmentService';
 export { studentService } from './services/studentService';
 export { studentAssessmentService } from './services/studentAssessmentService';
 export { materialService } from './services/materialService';
-export { calendarEventService } from './services/calendarEventService';
+export { calendarEventService } from './services/calendar';
 
 // Legacy services object for backward compatibility
 // Will be kept until all direct references are updated

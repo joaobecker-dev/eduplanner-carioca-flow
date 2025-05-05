@@ -72,18 +72,17 @@ export const create = async (eventData: Partial<CalendarEvent>): Promise<Calenda
   try {
     // Prepare data for database insertion
     const preparedData = prepareEventData(eventData);
-
+    
     // Validate required fields
     if (!preparedData.title || !preparedData.type || !preparedData.start_date) {
       throw new Error("Missing required fields for calendar event");
     }
 
-    // Explicitly set the insert data with required fields to satisfy TypeScript
-    const insertData = {
+    // Use explicit type annotation to avoid deep type instantiation
+    const insertData: Record<string, any> = {
       title: preparedData.title,
       type: preparedData.type,
       start_date: preparedData.start_date,
-      // Optional fields
       description: preparedData.description,
       end_date: preparedData.end_date,
       all_day: preparedData.all_day,
@@ -114,8 +113,8 @@ export const create = async (eventData: Partial<CalendarEvent>): Promise<Calenda
 // Fixed update operation with proper typing
 export const update = async (id: ID, eventData: Partial<CalendarEvent>): Promise<CalendarEvent | null> => {
   try {
-    // Prepare data for database update
-    const updateData = prepareEventData(eventData);
+    // Prepare data for database update using explicit type annotation
+    const updateData: Record<string, any> = prepareEventData(eventData);
 
     const { data, error } = await supabase
       .from("calendar_events")

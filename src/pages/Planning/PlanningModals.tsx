@@ -1,9 +1,9 @@
 
 import React from 'react';
 import { AnnualPlan, TeachingPlan, LessonPlan } from '@/types';
-import { AnnualPlanModals } from './AnnualPlanModals';
-import { TeachingPlanModals } from './TeachingPlanModals';
-import { LessonPlanModals } from './LessonPlanModals';
+import AnnualPlanModals from './AnnualPlanModals';
+import TeachingPlanModals from './TeachingPlanModals';
+import LessonPlanModals from './LessonPlanModals';
 
 interface PlanningModalsProps {
   subjects: any[];
@@ -45,8 +45,5 @@ const PlanningModals: React.FC<PlanningModalsProps> = ({
 // Export both the component and handlers for parent components
 export { 
   PlanningModals,
-  type PlanningModalsProps,
-  AnnualPlanModals,
-  TeachingPlanModals,
-  LessonPlanModals
+  type PlanningModalsProps
 };
