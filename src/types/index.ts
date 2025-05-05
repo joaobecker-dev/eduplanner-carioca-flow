@@ -66,7 +66,7 @@ export interface LessonPlan {
   date: DateTimeString;
   duration?: number;
   objectives?: string[];
-  content?: string;
+  contents?: string[];  // Changed from content to contents to match DB
   activities?: string[];
   resources?: string[];
   assessment?: string;
@@ -152,9 +152,9 @@ export interface Material {
   tags: string[];
   subjectId?: ID;
   thumbnailUrl?: string;
-  notes?: string; // Added notes field for user annotations
+  notes?: string; // Keeping notes field as it exists in the DB schema
   created_at: string;
-  updatedAt: string;
+  updated_at: string;  // Changed from updatedAt to updated_at to match DB
 }
 
 // Calendar event types
