@@ -1,25 +1,25 @@
 
 // Reexport all calendar operations
-import { getAll, getById, deleteEvent, deleteBySource, create, update } from './basicOperations';
+import { getAll, getById, deleteEvent, create, update } from './basicOperations';
+import { deleteBySourceEvent } from './wrapperOperations';
 import { getByDateRange, getBySubject } from './queryOperations';
 import { 
-  syncFromAssessment, 
-  syncFromLessonPlan,
+  syncFromAssessment,
+  syncFromLessonPlan, 
   syncFromTeachingPlan,
-  syncFromStudentAssessment 
+  syncFromStudentAssessment
 } from './syncOperations';
 
-// Export all services directly
+// Reexport all functions
 export const calendarEventService = {
   getAll,
   getById,
-  delete: deleteEvent,
-  deleteEvent,
   getByDateRange,
   getBySubject,
   create,
   update,
-  deleteBySource,
+  delete: deleteEvent,
+  deleteBySource: deleteBySourceEvent,
   syncFromAssessment,
   syncFromLessonPlan,
   syncFromTeachingPlan,

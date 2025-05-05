@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { 
@@ -16,7 +15,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Check, X, Loader2 } from 'lucide-react';
 import { 
   studentAssessmentService, 
-  assessmentService 
+  assessmentService,
+  studentService 
 } from '@/lib/services';
 import { formatDate } from '@/lib/utils/date-formatter';
 import { Assessment, Student, StudentAssessment, ID } from '@/types';
@@ -57,6 +57,13 @@ export function StudentAssessmentTable({ assessmentId }: StudentAssessmentTableP
     queryFn: () => studentAssessmentService.getByAssessment(assessmentId),
     enabled: !!assessmentId,
   });
+  
+  // Fetch students to associate with student assessments
+  const { data: students = [] } = useQuery({
+    queryKey: ['students'],
+    queryFn: () => studentService.getAll(),
+    enabled: true,
+  });
 
   useEffect(() => {
     if (assessmentData) {
@@ -65,21 +72,30 @@ export function StudentAssessmentTable({ assessmentId }: StudentAssessmentTableP
   }, [assessmentData]);
 
   useEffect(() => {
-    if (studentAssessments) {
-      const mappedRows = studentAssessments.map(sa => ({
-        id: sa.id,
-        student: sa.student || { id: sa.studentId, name: 'Unknown', registration: '' },
-        score: sa.score,
-        feedback: sa.feedback || '',
-        submittedDate: sa.submittedDate ? new Date(sa.submittedDate) : null,
-        gradedDate: sa.gradedDate ? new Date(sa.gradedDate) : null,
-        isModified: false,
-        isValid: true,
-        isSaving: false,
-      }));
+    if (studentAssessments && students) {
+      const mappedRows = studentAssessments.map(sa => {
+        // Find the student information from the students array using studentId
+        const student = students.find(s => s.id === sa.studentId) || { 
+          id: sa.studentId, 
+          name: 'Unknown Student', 
+          registration: 'N/A' 
+        };
+        
+        return {
+          id: sa.id,
+          student: student,
+          score: sa.score,
+          feedback: sa.feedback || '',
+          submittedDate: sa.submittedDate ? new Date(sa.submittedDate) : null,
+          gradedDate: sa.gradedDate ? new Date(sa.gradedDate) : null,
+          isModified: false,
+          isValid: true,
+          isSaving: false,
+        };
+      });
       setRows(mappedRows);
     }
-  }, [studentAssessments]);
+  }, [studentAssessments, students]);
 
   const handleScoreChange = (id: ID, value: string) => {
     const score = value === '' ? null : Number(value);
