@@ -121,13 +121,31 @@ const mapToCamelCaseEvent = (data: any): CalendarEvent => {
   };
 };
 
-// Prepare data for database operations - Fixed by using explicit type
-const prepareEventData = (eventData: Partial<CalendarEvent>): Record<string, any> => {
-  const updateData: Record<string, any> = {};
+// Fixed: Explicit type definition for database fields
+interface CalendarEventDatabaseFields {
+  title?: string;
+  description?: string;
+  type?: EventType;
+  start_date?: string;
+  end_date?: string;
+  all_day?: boolean;
+  subject_id?: string;
+  lesson_plan_id?: string;
+  assessment_id?: string;
+  teaching_plan_id?: string;
+  location?: string;
+  color?: string;
+  source_type?: EventSourceType;
+  source_id?: string;
+}
+
+// Prepare data for database operations - Fixed by using explicit types
+const prepareEventData = (eventData: Partial<CalendarEvent>): CalendarEventDatabaseFields => {
+  const updateData: CalendarEventDatabaseFields = {};
 
   if (eventData.title !== undefined) updateData.title = eventData.title;
   if (eventData.description !== undefined) updateData.description = eventData.description;
-  if (eventData.type !== undefined) updateData.type = eventData.type as EventType;
+  if (eventData.type !== undefined) updateData.type = eventData.type;
   if (eventData.startDate !== undefined) updateData.start_date = normalizeToISO(eventData.startDate);
   if (eventData.endDate !== undefined) updateData.end_date = normalizeToISO(eventData.endDate);
   if (eventData.allDay !== undefined) updateData.all_day = eventData.allDay;
@@ -137,7 +155,7 @@ const prepareEventData = (eventData: Partial<CalendarEvent>): Record<string, any
   if (eventData.teachingPlanId !== undefined) updateData.teaching_plan_id = eventData.teachingPlanId;
   if (eventData.location !== undefined) updateData.location = eventData.location;
   if (eventData.color !== undefined) updateData.color = eventData.color;
-  if (eventData.sourceType !== undefined) updateData.source_type = eventData.sourceType as EventSourceType;
+  if (eventData.sourceType !== undefined) updateData.source_type = eventData.sourceType;
   if (eventData.sourceId !== undefined) updateData.source_id = eventData.sourceId;
 
   return updateData;
@@ -147,10 +165,10 @@ const prepareEventData = (eventData: Partial<CalendarEvent>): Record<string, any
 const create = async (eventData: Omit<CalendarEvent, 'id' | 'created_at'>): Promise<CalendarEvent | null> => {
   try {
     // Create snake_case object for the database
-    const preparedData = {
+    const preparedData: CalendarEventDatabaseFields = {
       title: eventData.title,
       description: eventData.description,
-      type: eventData.type as EventType,
+      type: eventData.type,
       start_date: normalizeToISO(eventData.startDate) || '',
       end_date: normalizeToISO(eventData.endDate) || normalizeToISO(eventData.startDate) || '',
       all_day: eventData.allDay,
@@ -160,7 +178,7 @@ const create = async (eventData: Omit<CalendarEvent, 'id' | 'created_at'>): Prom
       teaching_plan_id: eventData.teachingPlanId,
       location: eventData.location,
       color: eventData.color,
-      source_type: eventData.sourceType as EventSourceType || 'manual',
+      source_type: eventData.sourceType || 'manual',
       source_id: eventData.sourceId
     };
 
@@ -207,17 +225,17 @@ const syncFromAssessment = async (assessment: Assessment): Promise<void> => {
     if (!assessment || !assessment.id) return;
 
     // Direct object with snake_case keys
-    const eventData = {
+    const eventData: CalendarEventDatabaseFields = {
       title: `Avaliação: ${assessment.title}`,
       description: assessment.description || '',
-      type: "exam" as EventType,
+      type: "exam",
       start_date: normalizeToISO(assessment.date) || '',
       end_date: normalizeToISO(assessment.dueDate || assessment.date) || '',
       all_day: true,
       subject_id: assessment.subjectId,
       assessment_id: assessment.id,
       color: '#e67c73',
-      source_type: 'assessment' as EventSourceType,
+      source_type: 'assessment',
       source_id: assessment.id
     };
 
@@ -248,17 +266,17 @@ const syncFromLessonPlan = async (lessonPlan: LessonPlan): Promise<void> => {
       endDate = normalizeToISO(date) || startDate;
     }
 
-    const eventData = {
+    const eventData: CalendarEventDatabaseFields = {
       title: `Aula: ${lessonPlan.title}`,
       description: lessonPlan.notes || '',
-      type: "class" as EventType,
+      type: "class",
       start_date: startDate,
       end_date: endDate,
       all_day: false,
       teaching_plan_id: lessonPlan.teachingPlanId,
       lesson_plan_id: lessonPlan.id,
       color: '#9b87f5',
-      source_type: 'lesson_plan' as EventSourceType,
+      source_type: 'lesson_plan',
       source_id: lessonPlan.id
     };
 
@@ -279,17 +297,17 @@ const syncFromTeachingPlan = async (teachingPlan: TeachingPlan): Promise<void> =
   try {
     if (!teachingPlan || !teachingPlan.startDate || !teachingPlan.id) return;
 
-    const eventData = {
+    const eventData: CalendarEventDatabaseFields = {
       title: `Plano de Ensino: ${teachingPlan.title}`,
       description: teachingPlan.description || '',
-      type: "class" as EventType,
+      type: "class",
       start_date: normalizeToISO(teachingPlan.startDate) || '',
       end_date: normalizeToISO(teachingPlan.endDate) || '',
       all_day: true,
       subject_id: teachingPlan.subjectId,
       teaching_plan_id: teachingPlan.id,
       color: '#7E69AB',
-      source_type: 'teaching_plan' as EventSourceType,
+      source_type: 'teaching_plan',
       source_id: teachingPlan.id
     };
 
@@ -310,16 +328,16 @@ const syncFromStudentAssessment = async (studentAssessment: StudentAssessment): 
   try {
     if (!studentAssessment || !studentAssessment.id) return;
     
-    const eventData = {
+    const eventData: CalendarEventDatabaseFields = {
       title: `Prova Individual: ${studentAssessment.assessmentId}`,
       description: studentAssessment.feedback || '',
-      type: "exam" as EventType,
+      type: "exam",
       start_date: normalizeToISO(studentAssessment.submittedDate) || '',
       end_date: normalizeToISO(studentAssessment.gradedDate || studentAssessment.submittedDate) || '',
       all_day: true,
       assessment_id: studentAssessment.assessmentId,
       color: '#e67c73',
-      source_type: 'student_assessment' as EventSourceType,
+      source_type: 'student_assessment',
       source_id: studentAssessment.id
     };
 

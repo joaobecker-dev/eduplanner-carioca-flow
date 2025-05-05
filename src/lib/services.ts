@@ -1,3 +1,4 @@
+
 import { 
   AcademicPeriod, 
   Subject, 
@@ -13,6 +14,10 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { mapToCamelCase } from '@/lib/utils/caseConverters';
+import { calendarEventService as importedCalendarEventService } from './services/calendarEventService';
+
+// Re-export the calendar event service
+export const calendarEventService = importedCalendarEventService;
 
 // Helper function for error handling
 const handleError = (error: any, operation: string): void => {
@@ -394,5 +399,6 @@ export const services = {
   assessment: assessmentService,
   student: studentService,
   studentAssessment: studentAssessmentService,
-  material: materialService
+  material: materialService,
+  calendarEvent: calendarEventService
 };
