@@ -2,7 +2,6 @@
 import { Student, ID } from '@/types';
 import { createService, handleError } from './baseService';
 import { supabase } from "@/integrations/supabase/client";
-import { mapToCamelCase } from '@/integrations/supabase/supabaseAdapter';
 
 /**
  * Get students by subject ID
@@ -19,15 +18,12 @@ async function getBySubject(subjectId: ID): Promise<Student[]> {
     
     if (error) throw error;
     
-    // Use mapToCamelCase directly without type recursion
-    return data ? data.map(item => {
-      const student: Student = {
-        id: item.id,
-        name: item.name,
-        registration: item.registration
-      };
-      return student;
-    }) : [];
+    // Use direct object construction to avoid type recursion
+    return data ? data.map(item => ({
+      id: item.id,
+      name: item.name,
+      registration: item.registration
+    })) : [];
   } catch (error) {
     handleError(error, 'buscar alunos por disciplina');
     return [];

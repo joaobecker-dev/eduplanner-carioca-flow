@@ -150,6 +150,103 @@ export async function getAssessmentAverage(assessmentId: ID): Promise<number> {
   }
 }
 
+// New method to get performance summary by students
+export async function getSummaryByStudent(subjectId?: ID): Promise<StudentPerformanceSummary[]> {
+  try {
+    // Join student_assessments with students
+    let query = supabase
+      .from('student_assessments')
+      .select(`
+        id,
+        score,
+        graded_date,
+        student_id,
+        assessment_id,
+        assessments(subject_id),
+        students(id, name, registration)
+      `);
+    
+    // Apply subject filter if provided
+    if (subjectId) {
+      query = query.eq('assessments.subject_id', subjectId);
+    }
+
+    const { data, error } = await query;
+    if (error) throw error;
+
+    if (!data || data.length === 0) return [];
+    
+    // Aggregate data by student_id
+    const studentMap = new Map<string, {
+      id: string;
+      name: string;
+      registration: string;
+      assessments: { id: string, score: number, gradedDate?: string }[];
+    }>();
+
+    data.forEach(item => {
+      if (!item.students) return;
+      
+      const studentId = item.student_id;
+      const studentEntry = studentMap.get(studentId) || {
+        id: studentId,
+        name: item.students.name,
+        registration: item.students.registration,
+        assessments: []
+      };
+      
+      studentEntry.assessments.push({
+        id: item.id,
+        score: Number(item.score),
+        gradedDate: item.graded_date
+      });
+      
+      studentMap.set(studentId, studentEntry);
+    });
+    
+    // Calculate performance metrics
+    return Array.from(studentMap.values()).map(student => {
+      // Calculate average score
+      const totalScore = student.assessments.reduce((sum, assessment) => sum + assessment.score, 0);
+      const averageScore = student.assessments.length > 0 ? 
+        parseFloat((totalScore / student.assessments.length).toFixed(2)) : 
+        0;
+      
+      // Find last graded date
+      let lastGradedDate: string | undefined;
+      student.assessments.forEach(assessment => {
+        if (assessment.gradedDate) {
+          if (!lastGradedDate || new Date(assessment.gradedDate) > new Date(lastGradedDate)) {
+            lastGradedDate = assessment.gradedDate;
+          }
+        }
+      });
+      
+      return {
+        id: student.id,
+        name: student.name,
+        registration: student.registration,
+        totalAssessments: student.assessments.length,
+        averageScore,
+        lastGradedDate
+      };
+    });
+  } catch (error) {
+    handleError(error, 'calcular resumo de desempenho dos alunos');
+    return [];
+  }
+}
+
+// Define the type for student performance summary
+export interface StudentPerformanceSummary {
+  id: string;
+  name: string;
+  registration: string;
+  totalAssessments: number;
+  averageScore: number;
+  lastGradedDate?: string;
+}
+
 export const studentAssessmentService = {
   getAll,
   getByStudent,
@@ -158,5 +255,6 @@ export const studentAssessmentService = {
   create,
   update,
   delete: deleteStudentAssessment,
-  getAssessmentAverage
+  getAssessmentAverage,
+  getSummaryByStudent
 };

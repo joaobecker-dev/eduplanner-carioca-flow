@@ -1,7 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { CalendarEvent, ID } from '@/types';
-import { mapToCamelCase, mapToSnakeCase, normalizeToISO } from "@/integrations/supabase/supabaseAdapter";
+import { ID } from '@/types';
 import { handleError } from "../baseService";
 
 // This is a wrapper function that can be used by basicOperations.ts
