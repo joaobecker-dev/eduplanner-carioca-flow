@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { TeachingPlan } from "@/types";
 import { mapToCamelCase, normalizeToISO } from "@/integrations/supabase/supabaseAdapter";
@@ -51,7 +52,8 @@ export async function create(teachingPlanForm: Partial<TeachingPlanFormValues>):
   if (error) throw error;
 
   const createdTeachingPlan = mapToCamelCase<TeachingPlan>(data);
-  await calendarEventService.syncFromTeachingPlan(createdTeachingPlan);
+  // Now we pass the id to the sync function instead of the object
+  await calendarEventService.syncFromTeachingPlan(createdTeachingPlan.id);
 
   return createdTeachingPlan;
 }
@@ -93,7 +95,8 @@ export async function update(id: string, teachingPlanForm: Partial<TeachingPlanF
   if (error) throw error;
 
   const updatedTeachingPlan = mapToCamelCase<TeachingPlan>(data);
-  await calendarEventService.syncFromTeachingPlan(updatedTeachingPlan);
+  // Now we pass the id to the sync function instead of the object
+  await calendarEventService.syncFromTeachingPlan(updatedTeachingPlan.id);
 
   return updatedTeachingPlan;
 }
@@ -109,9 +112,7 @@ export async function deleteTeachingPlan(id: string): Promise<void> {
 
 export const syncWithCalendar = async (teachingPlanId: string): Promise<void> => {
   try {
-    const teachingPlan = await getById(teachingPlanId);
-    if (!teachingPlan) return;
-    
+    // We pass the teachingPlanId directly to the syncFromTeachingPlan function
     await calendarEventService.syncFromTeachingPlan(teachingPlanId);
   } catch (error) {
     console.error('Error syncing teaching plan with calendar:', error);
@@ -124,4 +125,5 @@ export const teachingPlanService = {
   create,
   update,
   delete: deleteTeachingPlan,
+  syncWithCalendar
 };

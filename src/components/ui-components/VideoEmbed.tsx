@@ -21,6 +21,7 @@ const VideoEmbed: React.FC<VideoEmbedProps> = ({
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
         allowFullScreen
         loading="lazy"
+        referrerPolicy="no-referrer"
       />
     </div>
   );

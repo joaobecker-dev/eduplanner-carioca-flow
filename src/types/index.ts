@@ -1,3 +1,4 @@
+
 // Type definitions for the application
 
 // Basic types
@@ -35,6 +36,7 @@ export interface Subject {
   description?: string;
   academicPeriodId: ID;
   created_at: DateTimeString;
+  grade: string; // Added grade field
 }
 
 // Teaching plan types
@@ -42,16 +44,19 @@ export interface TeachingPlan {
   id: ID;
   title: string;
   description?: string;
-  objectives?: string;
+  objectives?: string[];
+  bnccReferences?: string[];
+  contents?: string[];
   methodology?: string;
   evaluation?: string;
-  resources?: string;
-  bibliography?: string;
+  resources?: string[];
   subjectId: ID;
+  annualPlanId: ID;
   startDate: DateString;
   endDate: DateString;
-  status: 'draft' | 'published' | 'archived';
+  status?: 'draft' | 'published' | 'archived';
   created_at: DateTimeString;
+  updated_at?: DateTimeString;
 }
 
 // Lesson plan types
@@ -60,15 +65,18 @@ export interface LessonPlan {
   title: string;
   date: DateTimeString;
   duration?: number;
-  objectives?: string;
+  objectives?: string[];
   content?: string;
-  activities?: string;
-  resources?: string;
+  activities?: string[];
+  resources?: string[];
   assessment?: string;
   notes?: string;
+  evaluation?: string;
+  homework?: string;
   teachingPlanId: ID;
-  status: 'draft' | 'published' | 'archived';
+  status?: 'draft' | 'published' | 'archived';
   created_at: DateTimeString;
+  updated_at?: DateTimeString;
 }
 
 // Assessment types
@@ -79,12 +87,14 @@ export interface Assessment {
   type: 'exam' | 'assignment' | 'project' | 'quiz' | 'other';
   weight?: number;
   maxScore?: number;
+  totalPoints?: number;
   date: DateString;
   dueDate?: DateString;
   subjectId: ID;
   teachingPlanId?: ID;
-  status: 'draft' | 'published' | 'archived';
+  status?: 'draft' | 'published' | 'archived';
   created_at: DateTimeString;
+  updated_at?: DateTimeString;
 }
 
 // Student types
@@ -92,7 +102,7 @@ export interface Student {
   id: ID;
   name: string;
   email?: string;
-  enrollmentId?: string;
+  registration: string;
   dateOfBirth?: DateString;
   phoneNumber?: string;
   address?: string;
@@ -118,12 +128,16 @@ export interface AnnualPlan {
   id: ID;
   title: string;
   description?: string;
-  year: number;
-  objectives?: string;
-  strategies?: string;
+  year?: number;
+  objectives?: string[];
+  methodology?: string;
+  generalContent?: string;
   evaluation?: string;
+  referencesMaterials?: string[];
   academicPeriodId: ID;
+  subjectId: ID;
   created_at: DateTimeString;
+  updated_at?: DateTimeString;
 }
 
 // Material types

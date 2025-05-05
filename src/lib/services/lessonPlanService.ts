@@ -1,3 +1,4 @@
+
 import { LessonPlan, ID } from '@/types';
 import { createService } from './baseService';
 import { calendarEventService } from './calendar';
@@ -9,10 +10,9 @@ export const lessonPlanService = {
   // Add the syncWithCalendar method
   syncWithCalendar: async (lessonPlanId: string): Promise<void> => {
     try {
-      const lessonPlan = await lessonPlanService.getById(lessonPlanId);
-      if (!lessonPlan) return;
-      
-      await calendarEventService.syncFromLessonPlan(lessonPlan);
+      // We pass the lessonPlanId directly to the syncFromLessonPlan function
+      // which now accepts either an ID or a LessonPlan object
+      await calendarEventService.syncFromLessonPlan(lessonPlanId);
     } catch (error) {
       console.error('Error syncing lesson plan with calendar:', error);
     }

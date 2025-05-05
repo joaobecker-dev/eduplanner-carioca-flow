@@ -3,6 +3,7 @@ import { createService, handleError } from '../baseService';
 import { supabase } from "@/integrations/supabase/client";
 import { mapToCamelCase, normalizeToISO } from '@/integrations/supabase/supabaseAdapter';
 import { deleteBySourceEvent } from './wrapperOperations';
+import { syncFromAssessment, syncFromLessonPlan, syncFromTeachingPlan, syncFromStudentAssessment } from './syncOperations';
 
 const tableName = "calendar_events";
 
@@ -147,41 +148,6 @@ const queryOperations = {
   }
 };
 
-// Synchronization operations
-const syncOperations = {
-  syncFromAssessment: async (assessmentId: string): Promise<boolean> => {
-    // Logic to sync calendar events from assessment
-    // This is a placeholder, implement the actual logic
-    console.log(`Syncing calendar events from assessment ${assessmentId}`);
-    return true;
-  },
-
-  syncFromLessonPlan: async (lessonPlanId: string): Promise<boolean> => {
-    // Logic to sync calendar events from lesson plan
-    // This is a placeholder, implement the actual logic
-    console.log(`Syncing calendar events from lesson plan ${lessonPlanId}`);
-    return true;
-  },
-
-  syncFromTeachingPlan: async (teachingPlanId: string): Promise<boolean> => {
-    // Logic to sync calendar events from teaching plan
-    // This is a placeholder, implement the actual logic
-    console.log(`Syncing calendar events from teaching plan ${teachingPlanId}`);
-    return true;
-  },
-
-  syncFromStudentAssessment: async (studentAssessment: any): Promise<boolean> => {
-    // Logic to sync/create calendar events from student assessment
-    // This is a placeholder, implement the actual logic
-    console.log(`Syncing calendar events from student assessment ${studentAssessment.id}`);
-    return true;
-  },
-
-  deleteBySource: async (sourceType: string, sourceId: string): Promise<boolean> => {
-    return await deleteBySourceEvent(sourceType, sourceId);
-  }
-};
-
 // Export the calendar event service
 export const calendarEventService = {
   // Regular CRUD operations
@@ -191,7 +157,11 @@ export const calendarEventService = {
   ...queryOperations,
   
   // Synchronization operations
-  ...syncOperations,
+  syncFromAssessment,
+  syncFromLessonPlan,
+  syncFromTeachingPlan,
+  syncFromStudentAssessment,
+  deleteBySource: deleteBySourceEvent,
   
   // Add proper delete event function that was expected by other components
   deleteEvent: async (id: string) => {
