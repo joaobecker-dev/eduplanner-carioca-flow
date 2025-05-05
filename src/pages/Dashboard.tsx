@@ -6,7 +6,8 @@ import DashboardSummary from '@/components/ui-components/DashboardSummary';
 import DashboardCard from '@/components/ui-components/DashboardCard';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { calendarEventService, subjectService, studentService } from '@/lib/services';
+import { subjectService, studentService } from '@/lib/services';
+import { calendarEventService } from '@/lib/services';
 
 // Simple dashboard without charts for now
 const Dashboard = () => {
@@ -34,7 +35,7 @@ const Dashboard = () => {
   nextWeek.setDate(now.getDate() + 7);
   
   const upcomingExams = calendarEvents
-    .filter(event => 
+    .filter((event: any) => 
       event.type === 'exam' && 
       new Date(event.startDate) >= now && 
       new Date(event.startDate) <= nextWeek
@@ -50,8 +51,8 @@ const Dashboard = () => {
       <DashboardSummary 
         stats={[
           { label: "Disciplinas", value: subjects.length },
-          { label: "Avaliações", value: calendarEvents.filter(e => e.type === 'exam').length },
-          { label: "Aulas", value: calendarEvents.filter(e => e.type === 'class').length },
+          { label: "Avaliações", value: calendarEvents.filter((e: any) => e.type === 'exam').length },
+          { label: "Aulas", value: calendarEvents.filter((e: any) => e.type === 'class').length },
           { label: "Alunos", value: students.length }
         ]}
       />
@@ -67,7 +68,7 @@ const Dashboard = () => {
               <p className="text-gray-500 text-sm italic">Nenhuma avaliação nos próximos 7 dias</p>
             )}
             
-            {upcomingExams.slice(0, 3).map(exam => (
+            {upcomingExams.slice(0, 3).map((exam: any) => (
               <div key={exam.id} className="p-3 bg-gray-50 rounded-lg">
                 <h4 className="font-medium">{exam.title}</h4>
                 <p className="text-sm text-gray-500">

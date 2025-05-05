@@ -14,8 +14,10 @@ import { lessonPlanService } from './lessonPlanService';
 import { assessmentService } from './assessmentService';
 import { studentService } from './studentService';
 import { studentAssessmentService } from './studentAssessmentService';
-import { calendarEventService } from './calendarEventService';
 import { materialService } from './materialService';
+import * as calendarEventServiceModule from './calendarEventService';
+
+export const calendarEventService = calendarEventServiceModule.calendarEventService;
 
 // Export all services individually for direct imports
 export {
@@ -27,7 +29,6 @@ export {
   assessmentService,
   studentService,
   studentAssessmentService,
-  calendarEventService,
   materialService
 };
 
