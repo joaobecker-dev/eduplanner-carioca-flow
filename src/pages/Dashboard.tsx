@@ -1,88 +1,128 @@
 
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import SectionHeader from '@/components/ui-components/SectionHeader';
+import { format } from 'date-fns';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import DashboardSummary from '@/components/ui-components/DashboardSummary';
 import DashboardCard from '@/components/ui-components/DashboardCard';
-import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { subjectService, studentService } from '@/lib/services';
-import { calendarEventService } from '@/lib/services';
+import { subjectService, studentService, calendarEventService } from '@/lib/services';
 
 // Simple dashboard without charts for now
-const Dashboard = () => {
-  // Fetch calendar events for upcoming items
-  const { data: calendarEvents = [] } = useQuery({
-    queryKey: ['calendarEvents'],
-    queryFn: calendarEventService.getAll,
-  });
-
-  // Fetch subjects
+const Dashboard: React.FC = () => {
+  const now = new Date();
+  const today = format(now, 'yyyy-MM-dd');
+  
+  // Fetch data
   const { data: subjects = [] } = useQuery({
     queryKey: ['subjects'],
-    queryFn: subjectService.getAll,
+    queryFn: subjectService.getAll
   });
 
-  // Fetch students
   const { data: students = [] } = useQuery({
     queryKey: ['students'],
-    queryFn: studentService.getAll,
+    queryFn: studentService.getAll
   });
 
-  // Get upcoming exams (next 7 days)
-  const now = new Date();
+  const { data: events = [] } = useQuery({
+    queryKey: ['calendar-events'],
+    queryFn: calendarEventService.getAll
+  });
+
+  // Stats for the summary cards
+  const subjectsCount = subjects.length;
+  const studentsCount = students.length;
+  const classesCount = events.filter((event: any) => event.type === 'class').length;
+  const examsCount = events.filter((event: any) => event.type === 'exam').length;
+
+  // Get today's events
+  const todayEvents = events.filter((event: any) => {
+    const eventDate = format(new Date(event.startDate), 'yyyy-MM-dd');
+    return eventDate === today;
+  });
+
+  // Get upcoming events (next 7 days)
   const nextWeek = new Date();
-  nextWeek.setDate(now.getDate() + 7);
+  nextWeek.setDate(nextWeek.getDate() + 7);
   
-  const upcomingExams = calendarEvents
-    .filter((event: any) => 
-      event.type === 'exam' && 
-      new Date(event.startDate) >= now && 
-      new Date(event.startDate) <= nextWeek
-    );
+  const upcomingEvents = events.filter((event: any) => {
+    const eventDate = new Date(event.startDate);
+    return eventDate > now && eventDate <= nextWeek;
+  }).slice(0, 5);  // Get only the first 5 events
 
   return (
-    <div className="container mx-auto p-4">
-      <SectionHeader 
-        title="Dashboard" 
-        description="Visão geral das principais informações"
-      />
+    <div className="container mx-auto p-4 space-y-6">
+      <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
       
-      <DashboardSummary 
-        stats={[
-          { label: "Disciplinas", value: subjects.length },
-          { label: "Avaliações", value: calendarEvents.filter((e: any) => e.type === 'exam').length },
-          { label: "Aulas", value: calendarEvents.filter((e: any) => e.type === 'class').length },
-          { label: "Alunos", value: students.length }
-        ]}
-      />
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
-        <DashboardCard
-          title="Próximas Avaliações"
-          description={`${upcomingExams.length} avaliações nos próximos 7 dias`}
-          className="col-span-1"
-        >
-          <div className="space-y-4">
-            {upcomingExams.length === 0 && (
-              <p className="text-gray-500 text-sm italic">Nenhuma avaliação nos próximos 7 dias</p>
-            )}
-            
-            {upcomingExams.slice(0, 3).map((exam: any) => (
-              <div key={exam.id} className="p-3 bg-gray-50 rounded-lg">
-                <h4 className="font-medium">{exam.title}</h4>
-                <p className="text-sm text-gray-500">
-                  {new Date(exam.startDate).toLocaleDateString()}
-                </p>
-              </div>
-            ))}
-            
-            {upcomingExams.length > 0 && (
-              <Button variant="link" asChild>
-                <Link to="/calendar">Ver todas</Link>
+      <DashboardSummary stats={[
+        { label: 'Disciplinas', value: subjectsCount },
+        { label: 'Estudantes', value: studentsCount },
+        { label: 'Aulas', value: classesCount },
+        { label: 'Avaliações', value: examsCount }
+      ]} />
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <DashboardCard title="Eventos de Hoje" description={`${todayEvents.length} eventos agendados`} className="min-h-[350px]">
+          {todayEvents.length > 0 ? (
+            <div className="space-y-2">
+              {todayEvents.map((event: any) => (
+                <Card key={event.id} className="bg-muted/50">
+                  <CardContent className="p-4">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h4 className="font-medium">{event.title}</h4>
+                        <p className="text-sm text-muted-foreground">{format(new Date(event.startDate), 'HH:mm')}</p>
+                      </div>
+                      <div className="text-xs font-medium px-2 py-1 rounded-full" 
+                           style={{ backgroundColor: event.color ? `${event.color}33` : '#e2e8f0', 
+                                    color: event.color || '#1f2937' }}>
+                        {event.type}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center h-full space-y-4 py-8">
+              <p className="text-muted-foreground">Nenhum evento agendado para hoje</p>
+              <Button asChild variant="outline">
+                <Link to="/calendar">Ir para Calendário</Link>
               </Button>
-            )}
-          </div>
+            </div>
+          )}
+        </DashboardCard>
+        
+        <DashboardCard title="Próximos Eventos" description="Nos próximos 7 dias" className="min-h-[350px]">
+          {upcomingEvents.length > 0 ? (
+            <div className="space-y-2">
+              {upcomingEvents.map((event: any) => (
+                <Card key={event.id} className="bg-muted/50">
+                  <CardContent className="p-4">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h4 className="font-medium">{event.title}</h4>
+                        <p className="text-sm text-muted-foreground">{format(new Date(event.startDate), 'dd/MM - HH:mm')}</p>
+                      </div>
+                      <div className="text-xs font-medium px-2 py-1 rounded-full" 
+                           style={{ backgroundColor: event.color ? `${event.color}33` : '#e2e8f0', 
+                                    color: event.color || '#1f2937' }}>
+                        {event.type}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center h-full space-y-4 py-8">
+              <p className="text-muted-foreground">Nenhum evento nos próximos dias</p>
+              <Button asChild variant="outline">
+                <Link to="/calendar">Ir para Calendário</Link>
+              </Button>
+            </div>
+          )}
         </DashboardCard>
       </div>
     </div>

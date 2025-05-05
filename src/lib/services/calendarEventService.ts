@@ -99,8 +99,8 @@ const getBySubject = async (subjectId: ID): Promise<CalendarEvent[]> => {
   }
 };
 
-// Data mapping helper
-const mapToCamelCaseEvent = (data: any): CalendarEvent => {
+// Data mapping helper - Fixed by removing any nested type recursion
+const mapToCamelCaseEvent = (data: Record<string, any>): CalendarEvent => {
   return {
     id: data.id,
     title: data.title,
@@ -121,7 +121,7 @@ const mapToCamelCaseEvent = (data: any): CalendarEvent => {
   };
 };
 
-// Prepare data for database operations
+// Prepare data for database operations - Fixed by using explicit type with no recursion
 const prepareEventData = (eventData: Partial<CalendarEvent>): Record<string, any> => {
   const updateData: Record<string, any> = {};
 
@@ -336,7 +336,7 @@ const syncFromStudentAssessment = async (studentAssessment: StudentAssessment): 
   }
 };
 
-// Export all services explicitly to avoid the spread operator that was causing type issues
+// Export all services directly
 export const calendarEventService = {
   getAll,
   getById,

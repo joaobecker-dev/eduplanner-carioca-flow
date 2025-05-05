@@ -1,8 +1,7 @@
 
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { subjectService } from '@/lib/services';
-import { calendarEventService } from '@/lib/services';
+import { subjectService, calendarEventService } from '@/lib/services';
 
 export const useCalendarEvents = () => {
   // State for filters
@@ -14,9 +13,9 @@ export const useCalendarEvents = () => {
     other: true,
     deadline: true
   });
-  const [dateRange, setDateRange] = useState<{ start: Date | null; end: Date | null }>({ 
-    start: null, 
-    end: null 
+  const [dateRange, setDateRange] = useState<{ from: Date | null; to: Date | null }>({ 
+    from: null, 
+    to: null 
   });
   
   // Fetch all subjects (for filtering)
@@ -53,12 +52,12 @@ export const useCalendarEvents = () => {
       }
       
       // Filter by date range
-      if (dateRange.start && new Date(event.startDate) < dateRange.start) {
+      if (dateRange.from && new Date(event.startDate) < dateRange.from) {
         return false;
       }
       
-      if (dateRange.end) {
-        const endDate = new Date(dateRange.end);
+      if (dateRange.to) {
+        const endDate = new Date(dateRange.to);
         endDate.setHours(23, 59, 59, 999);
         if (new Date(event.startDate) > endDate) {
           return false;

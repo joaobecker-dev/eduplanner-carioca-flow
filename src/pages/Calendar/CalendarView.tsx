@@ -59,8 +59,14 @@ const CalendarView: React.FC = () => {
         setSelectedSubjectId={filters.setSelectedSubjectId}
         selectedEventTypes={filters.selectedEventTypes}
         handleCheckboxChange={filters.handleCheckboxChange}
-        dateRange={filters.dateRange}
-        setDateRange={filters.setDateRange}
+        dateRange={{
+          start: filters.dateRange.from,
+          end: filters.dateRange.to
+        }}
+        setDateRange={(range) => filters.setDateRange({
+          from: range.start, 
+          to: range.end
+        })}
       />
 
       {/* Calendar */}
