@@ -3,6 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { LucideIcon } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 interface DashboardCardProps {
   title: string;
@@ -15,6 +16,7 @@ interface DashboardCardProps {
   children?: React.ReactNode;
   description?: string;
   className?: string;
+  linkPath?: string; // Added linkPath prop
 }
 
 const DashboardCard: React.FC<DashboardCardProps> = ({
@@ -27,7 +29,8 @@ const DashboardCard: React.FC<DashboardCardProps> = ({
   items = [],
   children,
   description,
-  className = ''
+  className = '',
+  linkPath // Added linkPath param
 }) => {
   const getHeaderColors = () => {
     switch (color) {
@@ -71,7 +74,8 @@ const DashboardCard: React.FC<DashboardCardProps> = ({
     }
   };
 
-  return (
+  // Create card content
+  const cardContent = (
     <Card className={`overflow-hidden card-hover border-t-4 border-t-edu-blue-500 ${className}`}>
       <CardHeader className={`${getHeaderColors()} pb-2`}>
         <div className="flex justify-between items-center">
@@ -115,6 +119,13 @@ const DashboardCard: React.FC<DashboardCardProps> = ({
       )}
     </Card>
   );
+
+  // Either wrap in Link or return directly
+  if (linkPath) {
+    return <Link to={linkPath} className="block">{cardContent}</Link>;
+  }
+  
+  return cardContent;
 };
 
 export default DashboardCard;

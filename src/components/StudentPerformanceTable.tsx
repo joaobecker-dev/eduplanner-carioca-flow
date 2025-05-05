@@ -37,12 +37,14 @@ export const StudentPerformanceTable: React.FC<StudentPerformanceTableProps> = (
   const { data: subjects, isLoading: isLoadingSubjects } = useQuery({
     queryKey: ["subjects"],
     queryFn: () => subjectService.getAll(),
-    onError: (error: Error) => {
-      toast({
-        title: "Erro ao carregar disciplinas",
-        description: error.message,
-        variant: "destructive"
-      });
+    meta: {
+      onError: (error: Error) => {
+        toast({
+          title: "Erro ao carregar disciplinas",
+          description: error.message,
+          variant: "destructive"
+        });
+      }
     }
   });
 
@@ -55,12 +57,14 @@ export const StudentPerformanceTable: React.FC<StudentPerformanceTableProps> = (
   } = useQuery({
     queryKey: ["studentPerformance", selectedSubjectId],
     queryFn: () => studentAssessmentService.getSummaryByStudent(selectedSubjectId),
-    onError: (error: Error) => {
-      toast({
-        title: "Erro ao carregar dados de desempenho",
-        description: error.message,
-        variant: "destructive"
-      });
+    meta: {
+      onError: (error: Error) => {
+        toast({
+          title: "Erro ao carregar dados de desempenho",
+          description: error.message,
+          variant: "destructive"
+        });
+      }
     }
   });
 
