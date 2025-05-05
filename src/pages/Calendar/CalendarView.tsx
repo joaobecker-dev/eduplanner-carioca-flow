@@ -6,7 +6,6 @@ import interactionPlugin from '@fullcalendar/interaction';
 import FullCalendar from '@fullcalendar/react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { CalendarIcon, X } from 'lucide-react';
@@ -15,7 +14,7 @@ import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { Calendar as CalendarUI } from "@/components/ui/calendar";
 import { useCalendarEvents } from './hooks/useCalendarEvents';
-import { EventForm } from './CalendarForm';
+import CalendarForm from './CalendarForm';
 import { EventDetail } from './CalendarDetail';
 
 const eventTypeOptions = [
@@ -128,8 +127,11 @@ const CalendarView: React.FC = () => {
                       <CalendarUI
                         mode="range"
                         defaultMonth={dateRange?.from ? dateRange.from : new Date()}
-                        selected={dateRange as any}
-                        onSelect={handleDateRangeChange as any}
+                        selected={{
+                          from: dateRange?.from || undefined,
+                          to: dateRange?.to || undefined
+                        }}
+                        onSelect={handleDateRangeChange}
                         numberOfMonths={2}
                       />
                     </PopoverContent>
@@ -174,7 +176,7 @@ const CalendarView: React.FC = () => {
       )}
 
       {/* Event Form Modal */}
-      <EventForm isOpen={isEventFormOpen} onClose={handleCloseEventForm} />
+      <CalendarForm isOpen={isEventFormOpen} onClose={handleCloseEventForm} />
     </div>
   );
 };

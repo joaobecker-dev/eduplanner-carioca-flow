@@ -99,8 +99,8 @@ const getBySubject = async (subjectId: ID): Promise<CalendarEvent[]> => {
   }
 };
 
-// Data mapping helper - Fixed by removing any nested type recursion
-const mapToCamelCaseEvent = (data: Record<string, any>): CalendarEvent => {
+// Data mapping helper - Fixed by using explicit typing
+const mapToCamelCaseEvent = (data: any): CalendarEvent => {
   return {
     id: data.id,
     title: data.title,
@@ -121,7 +121,7 @@ const mapToCamelCaseEvent = (data: Record<string, any>): CalendarEvent => {
   };
 };
 
-// Prepare data for database operations - Fixed by using explicit type with no recursion
+// Prepare data for database operations - Fixed by using explicit type
 const prepareEventData = (eventData: Partial<CalendarEvent>): Record<string, any> => {
   const updateData: Record<string, any> = {};
 
@@ -151,8 +151,8 @@ const create = async (eventData: Omit<CalendarEvent, 'id' | 'created_at'>): Prom
       title: eventData.title,
       description: eventData.description,
       type: eventData.type as EventType,
-      start_date: normalizeToISO(eventData.startDate),
-      end_date: normalizeToISO(eventData.endDate),
+      start_date: normalizeToISO(eventData.startDate) || '',
+      end_date: normalizeToISO(eventData.endDate) || normalizeToISO(eventData.startDate) || '',
       all_day: eventData.allDay,
       subject_id: eventData.subjectId,
       lesson_plan_id: eventData.lessonPlanId,

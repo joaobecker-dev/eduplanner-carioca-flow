@@ -7,7 +7,8 @@ import { Button } from '@/components/ui/button';
 import DashboardSummary from '@/components/ui-components/DashboardSummary';
 import DashboardCard from '@/components/ui-components/DashboardCard';
 import { Link } from 'react-router-dom';
-import { subjectService, studentService, calendarEventService } from '@/lib/services';
+import { subjectService, studentService } from '@/lib/services';
+import { calendarEventService } from '@/lib/services';
 
 // Simple dashboard without charts for now
 const Dashboard: React.FC = () => {

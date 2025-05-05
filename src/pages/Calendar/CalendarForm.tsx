@@ -5,13 +5,13 @@ import { CalendarEvent } from '@/types';
 import { EventFormValues } from '@/schemas/eventSchema';
 import EventForm from './components/EventForm';
 
-interface EventFormModalProps {
+interface CalendarFormProps {
   isOpen: boolean;
   onClose: () => void;
   eventToEdit?: CalendarEvent | null;
 }
 
-export const EventForm: React.FC<EventFormModalProps> = ({ isOpen, onClose, eventToEdit }) => {
+const CalendarForm: React.FC<CalendarFormProps> = ({ isOpen, onClose, eventToEdit }) => {
   const handleSubmit = async (values: EventFormValues) => {
     // This will be handled by parent components
     console.log("Form submitted with values:", values);
@@ -36,4 +36,4 @@ export const EventForm: React.FC<EventFormModalProps> = ({ isOpen, onClose, even
   );
 };
 
-export default EventForm;
+export default CalendarForm;
