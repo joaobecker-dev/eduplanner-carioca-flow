@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { CalendarEvent, ID } from '@/types';
 import { mapToCamelCase } from "@/integrations/supabase/supabaseAdapter";
@@ -94,6 +95,25 @@ export async function deleteEvent(id: ID): Promise<boolean> {
     return true;
   } catch (error) {
     handleError(error, 'excluir evento');
+    return false;
+  }
+}
+
+/**
+ * Delete calendar events by source
+ */
+export async function deleteBySource(sourceType: string, sourceId: ID): Promise<boolean> {
+  try {
+    const { error } = await supabase
+      .from(tableName)
+      .delete()
+      .eq('source_type', sourceType)
+      .eq('source_id', sourceId);
+    
+    if (error) throw error;
+    return true;
+  } catch (error) {
+    handleError(error, 'excluir eventos por origem');
     return false;
   }
 }

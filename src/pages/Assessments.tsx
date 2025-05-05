@@ -1,11 +1,48 @@
-import React from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { AssessmentsModals } from './Assessments/AssessmentsModals';
 import { StudentAssessmentModals } from './Assessments/StudentAssessmentModals';
+import { useQuery } from '@tanstack/react-query';
+import { subjectService, assessmentService, studentService } from '@/lib/services';
 
 const Assessments: React.FC = () => {
+  const [refreshCounter, setRefreshCounter] = useState(0);
+  
+  // Fetch subjects
+  const { data: subjects = [] } = useQuery({
+    queryKey: ['subjects'],
+    queryFn: subjectService.getAll,
+  });
+
+  // Fetch teaching plans
+  const { data: teachingPlans = [] } = useQuery({
+    queryKey: ['teachingPlans'],
+    queryFn: async () => {
+      // This is a simplification - if needed, implement proper filtering
+      return await Promise.resolve([]);
+    },
+  });
+
+  // Fetch assessments
+  const { data: assessments = [], refetch: refetchAssessments } = useQuery({
+    queryKey: ['assessments', refreshCounter],
+    queryFn: assessmentService.getAll,
+  });
+
+  // Fetch students
+  const { data: students = [] } = useQuery({
+    queryKey: ['students'],
+    queryFn: studentService.getAll,
+  });
+
+  const refreshData = () => {
+    setRefreshCounter(prev => prev + 1);
+    refetchAssessments();
+  };
+
   return (
     <div className="container mx-auto py-6">
       <div className="flex items-center justify-between mb-6">
@@ -21,8 +58,16 @@ const Assessments: React.FC = () => {
       </div>
 
       {/* Assessment modals and other content */}
-      <AssessmentsModals />
-      <StudentAssessmentModals />
+      <AssessmentsModals 
+        subjects={subjects}
+        teachingPlans={teachingPlans}
+        refreshData={refreshData}
+      />
+      <StudentAssessmentModals 
+        students={students}
+        assessments={assessments}
+        refreshData={refreshData}
+      />
       
       {/* Rest of the Assessments page content */}
       <div>
