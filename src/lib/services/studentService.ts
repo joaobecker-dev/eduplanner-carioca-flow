@@ -19,7 +19,7 @@ async function getBySubject(subjectId: ID): Promise<Student[]> {
       .eq('subject_id', subjectId);
     
     if (error) throw error;
-    return data ? data.map(item => mapToCamelCase<Student>(item as any)) : [];
+    return data ? data.map(item => mapToCamelCase<Student>(item)) : [];
   } catch (error) {
     handleError(error, 'buscar alunos por disciplina');
     return [];

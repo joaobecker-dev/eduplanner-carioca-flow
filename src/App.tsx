@@ -24,6 +24,7 @@ import AssessmentEdit from "./pages/assessments/[id]/edit";
 
 // Import the new AssignAssessmentPage
 import AssignAssessmentPage from "./pages/avaliacoes/AssignAssessmentPage";
+import StudentAssessmentGradingPage from "./pages/avaliacoes/StudentAssessmentGradingPage";
 
 const queryClient = new QueryClient();
 
@@ -39,6 +40,7 @@ const App = () => (
             <Route path="/planejamento" element={<Planning />} />
             <Route path="/avaliacoes" element={<Assessments />} />
             <Route path="/avaliacoes/atribuir" element={<AssignAssessmentPage />} />
+            <Route path="/avaliacoes/correcao/:assessmentId" element={<StudentAssessmentGradingPage />} />
             <Route path="/materiais" element={<Materials />} />
             <Route path="/calendario" element={<Calendar />} />
             

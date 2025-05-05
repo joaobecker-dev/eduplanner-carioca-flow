@@ -2,43 +2,26 @@
 import { supabase } from "@/integrations/supabase/client";
 import { CalendarEvent, ID } from '@/types';
 import { mapToCamelCase } from "@/integrations/supabase/supabaseAdapter";
-import { handleError } from "../baseService";
+import { mapToSnakeCase, handleError } from "../baseService";
 
+// Set the table name for calendar events
 const tableName = 'calendar_events';
 
 /**
- * Create a calendar event
+ * Create a new calendar event
  */
-export async function create(event: Omit<CalendarEvent, "id">): Promise<CalendarEvent | null> {
+export async function create(event: Omit<CalendarEvent, 'id'>): Promise<CalendarEvent | null> {
   try {
-    // Manually create a properly typed object instead of using mapToSnakeCase
-    const eventData = {
-      title: event.title,
-      description: event.description,
-      start_date: event.startDate,
-      end_date: event.endDate,
-      all_day: event.allDay,
-      type: event.type,
-      location: event.location,
-      color: event.color,
-      subject_id: event.subjectId,
-      lesson_plan_id: event.lessonPlanId,
-      assessment_id: event.assessmentId,
-      teaching_plan_id: event.teachingPlanId,
-      source_type: event.sourceType,
-      source_id: event.sourceId
-    };
-
     const { data, error } = await supabase
       .from(tableName)
-      .insert(eventData)
+      .insert(mapToSnakeCase(event))
       .select()
       .single();
     
     if (error) throw error;
-    return data ? mapToCamelCase<CalendarEvent>(data) : null;
+    return mapToCamelCase<CalendarEvent>(data);
   } catch (error) {
-    handleError(error, 'criar evento');
+    handleError(error, 'criar evento de calendário');
     return null;
   }
 }
@@ -48,35 +31,17 @@ export async function create(event: Omit<CalendarEvent, "id">): Promise<Calendar
  */
 export async function update(id: ID, event: Partial<CalendarEvent>): Promise<CalendarEvent | null> {
   try {
-    // Create a properly typed update object
-    const updateData: Record<string, any> = {};
-    
-    if (event.title !== undefined) updateData.title = event.title;
-    if (event.description !== undefined) updateData.description = event.description;
-    if (event.startDate !== undefined) updateData.start_date = event.startDate;
-    if (event.endDate !== undefined) updateData.end_date = event.endDate;
-    if (event.allDay !== undefined) updateData.all_day = event.allDay;
-    if (event.type !== undefined) updateData.type = event.type;
-    if (event.location !== undefined) updateData.location = event.location;
-    if (event.color !== undefined) updateData.color = event.color;
-    if (event.subjectId !== undefined) updateData.subject_id = event.subjectId;
-    if (event.lessonPlanId !== undefined) updateData.lesson_plan_id = event.lessonPlanId;
-    if (event.assessmentId !== undefined) updateData.assessment_id = event.assessmentId;
-    if (event.teachingPlanId !== undefined) updateData.teaching_plan_id = event.teachingPlanId;
-    if (event.sourceType !== undefined) updateData.source_type = event.sourceType;
-    if (event.sourceId !== undefined) updateData.source_id = event.sourceId;
-
     const { data, error } = await supabase
       .from(tableName)
-      .update(updateData)
+      .update(mapToSnakeCase(event))
       .eq('id', id)
       .select()
       .single();
-    
+
     if (error) throw error;
-    return data ? mapToCamelCase<CalendarEvent>(data) : null;
+    return mapToCamelCase<CalendarEvent>(data);
   } catch (error) {
-    handleError(error, 'atualizar evento');
+    handleError(error, 'atualizar evento de calendário');
     return null;
   }
 }
@@ -90,12 +55,31 @@ export async function deleteEvent(id: ID): Promise<boolean> {
       .from(tableName)
       .delete()
       .eq('id', id);
-    
+
     if (error) throw error;
     return true;
   } catch (error) {
-    handleError(error, 'excluir evento');
+    handleError(error, 'excluir evento de calendário');
     return false;
+  }
+}
+
+/**
+ * Get a calendar event by ID
+ */
+export async function getById(id: ID): Promise<CalendarEvent | null> {
+  try {
+    const { data, error } = await supabase
+      .from(tableName)
+      .select('*')
+      .eq('id', id)
+      .maybeSingle();
+
+    if (error) throw error;
+    return data ? mapToCamelCase<CalendarEvent>(data) : null;
+  } catch (error) {
+    handleError(error, 'buscar evento de calendário por ID');
+    return null;
   }
 }
 
@@ -130,26 +114,7 @@ export async function getAll(): Promise<CalendarEvent[]> {
     if (error) throw error;
     return data ? data.map(item => mapToCamelCase<CalendarEvent>(item)) : [];
   } catch (error) {
-    handleError(error, 'buscar todos os eventos');
+    handleError(error, 'buscar todos os eventos de calendário');
     return [];
-  }
-}
-
-/**
- * Get a calendar event by id
- */
-export async function getById(id: ID): Promise<CalendarEvent | null> {
-  try {
-    const { data, error } = await supabase
-      .from(tableName)
-      .select('*')
-      .eq('id', id)
-      .single();
-    
-    if (error) throw error;
-    return data ? mapToCamelCase<CalendarEvent>(data) : null;
-  } catch (error) {
-    handleError(error, 'buscar evento por ID');
-    return null;
   }
 }
