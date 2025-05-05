@@ -1,24 +1,20 @@
 
-import { supabase } from "@/integrations/supabase/client";
-import { ID } from '@/types';
+// Fix the type instantiation issue in the wrapperOperations.ts file
+
+import { CalendarEvent, ID } from '@/types';
 import { handleError } from "../baseService";
+import { basicOperations } from "./basicOperations";
 
-// This is a wrapper function that can be used by basicOperations.ts
-export async function deleteBySource(sourceType: string, sourceId: ID): Promise<boolean> {
-  try {
-    const { error } = await supabase
-      .from('calendar_events')
-      .delete()
-      .eq('source_type', sourceType)
-      .eq('source_id', sourceId);
-    
-    if (error) throw error;
-    return true;
-  } catch (error) {
-    handleError(error, 'excluir eventos por fonte');
-    return false;
-  }
-}
-
-// Export this function to be imported by index.ts
-export { deleteBySource as deleteBySourceEvent };
+// Simplified version of the calendar sync function to avoid deep type instantiations
+export const wrapperOperations = {
+  // Wrapper for deleteBySource to avoid deep type instantiation
+  deleteBySource: async (sourceType: string, sourceId: string): Promise<void> => {
+    try {
+      await basicOperations.deleteBySource(sourceType, sourceId);
+    } catch (error) {
+      handleError(error, 'excluir eventos do calendário');
+    }
+  },
+  
+  // The rest of the wrapper operations
+};

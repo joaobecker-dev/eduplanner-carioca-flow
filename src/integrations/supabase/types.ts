@@ -291,6 +291,7 @@ export type Database = {
           id: string
           subject_id: string | null
           tags: string[]
+          thumbnail_url: string | null
           title: string
           type: Database["public"]["Enums"]["material_type"]
           updated_at: string
@@ -304,6 +305,7 @@ export type Database = {
           id?: string
           subject_id?: string | null
           tags?: string[]
+          thumbnail_url?: string | null
           title: string
           type: Database["public"]["Enums"]["material_type"]
           updated_at?: string
@@ -317,6 +319,7 @@ export type Database = {
           id?: string
           subject_id?: string | null
           tags?: string[]
+          thumbnail_url?: string | null
           title?: string
           type?: Database["public"]["Enums"]["material_type"]
           updated_at?: string

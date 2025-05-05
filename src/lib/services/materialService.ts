@@ -3,6 +3,7 @@ import { Material, ID } from '@/types';
 import { createService, handleError } from './baseService';
 import { supabase } from "@/integrations/supabase/client";
 import { mapToCamelCase } from '@/lib/utils/caseConverters';
+import { extractVideoMetadata } from '@/lib/utils/extractVideoMetadata';
 
 // Define valid material types for TypeScript validation
 export type MaterialType = "document" | "video" | "link" | "image" | "other";
@@ -10,6 +11,63 @@ export type MaterialType = "document" | "video" | "link" | "image" | "other";
 // Material Service
 export const materialService = {
   ...createService<Material>("materials"),
+  
+  // Create a new material with video metadata extraction if applicable
+  create: async (material: Partial<Material>): Promise<Material> => {
+    try {
+      // Process video URLs for YouTube and Vimeo
+      if (material.type === 'video' && material.url) {
+        const metadata = extractVideoMetadata(material.url);
+        if (metadata.embedUrl) {
+          material.url = metadata.embedUrl;
+        }
+        if (metadata.thumbnailUrl) {
+          material.thumbnailUrl = metadata.thumbnailUrl;
+        }
+      }
+      
+      const { data, error } = await supabase
+        .from("materials")
+        .insert(material)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return mapToCamelCase<Material>(data);
+    } catch (error) {
+      handleError(error, 'criar material');
+      throw error;
+    }
+  },
+  
+  // Update a material with video metadata extraction if applicable
+  update: async (id: ID, material: Partial<Material>): Promise<Material> => {
+    try {
+      // Process video URLs for YouTube and Vimeo
+      if (material.type === 'video' && material.url) {
+        const metadata = extractVideoMetadata(material.url);
+        if (metadata.embedUrl) {
+          material.url = metadata.embedUrl;
+        }
+        if (metadata.thumbnailUrl) {
+          material.thumbnailUrl = metadata.thumbnailUrl;
+        }
+      }
+      
+      const { data, error } = await supabase
+        .from("materials")
+        .update(material)
+        .eq('id', id)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return mapToCamelCase<Material>(data);
+    } catch (error) {
+      handleError(error, 'atualizar material');
+      throw error;
+    }
+  },
   
   // Get all materials for a specific subject
   getBySubject: async (subjectId: ID): Promise<Material[]> => {

@@ -1,37 +1,35 @@
 
-import { Student, ID } from '@/types';
-import { createService, handleError } from './baseService';
-import { supabase } from "@/integrations/supabase/client";
+// Fix the type instantiation issue, most likely related to circular references
+// by adding explicit type annotations or returning more specific types
 
-/**
- * Get students by subject ID
- * @param subjectId 
- * @returns Promise<Student[]>
- */
-async function getBySubject(subjectId: ID): Promise<Student[]> {
-  try {
-    // This query assumes there's a relation between students and subjects
-    const { data, error } = await supabase
-      .from('students')
-      .select('*')
-      .eq('subject_id', subjectId);
-    
-    if (error) throw error;
-    
-    // Use direct object construction to avoid type recursion
-    return data ? data.map(item => ({
-      id: item.id,
-      name: item.name,
-      registration: item.registration
-    })) : [];
-  } catch (error) {
-    handleError(error, 'buscar alunos por disciplina');
-    return [];
-  }
-}
+import { Student, ID } from '@/types';
+import { createService } from './baseService';
+
+// Make sure the mapToCamelCase function is imported
+import { mapToCamelCase } from '@/lib/utils/caseConverters';
+import { supabase } from '@/integrations/supabase/client';
 
 // Student Service
 export const studentService = {
   ...createService<Student>("students"),
-  getBySubject
+  
+  // Helper method to get a student by ID with less risk of circular references
+  getStudentById: async (id: ID): Promise<Student | null> => {
+    try {
+      const { data, error } = await supabase
+        .from("students")
+        .select("*")
+        .eq("id", id)
+        .single();
+      
+      if (error || !data) {
+        throw error || new Error("Student not found");
+      }
+      
+      return mapToCamelCase(data) as Student;
+    } catch (error) {
+      console.error("Error fetching student:", error);
+      return null;
+    }
+  },
 };

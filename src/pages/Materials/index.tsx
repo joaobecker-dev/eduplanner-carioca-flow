@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   FolderOpen, 
@@ -8,7 +9,8 @@ import {
   Video, 
   Link as LinkIcon, 
   Image, 
-  File 
+  File,
+  Play 
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -32,6 +34,14 @@ import { services } from '@/lib/services';
 import { toast } from '@/hooks/use-toast';
 import { MaterialsModals } from './MaterialsModals';
 import AdvancedFilter, { FilterGroup } from '@/components/ui-components/AdvancedFilter';
+import VideoThumbnail from '@/components/ui-components/VideoThumbnail';
+import VideoEmbed from '@/components/ui-components/VideoEmbed';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 const Materials: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -43,6 +53,10 @@ const Materials: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>('all');
   const [selectedSubject, setSelectedSubject] = useState<string>('all');
   const [selectedDateRange, setSelectedDateRange] = useState<string>('all');
+
+  // Video preview modal state
+  const [videoPreviewOpen, setVideoPreviewOpen] = useState(false);
+  const [selectedVideo, setSelectedVideo] = useState<Material | null>(null);
 
   // Reference to the Materials modals component
   const materialsModalsRef = useRef<any>(null);
@@ -166,6 +180,14 @@ const Materials: React.FC = () => {
   };
   
   const handleOpenMaterial = (material: Material) => {
+    // For videos with thumbnails, open the video preview modal
+    if (material.type === 'video' && material.url) {
+      setSelectedVideo(material);
+      setVideoPreviewOpen(true);
+      return;
+    }
+
+    // For other materials, open the URL if available
     if (material.url) {
       window.open(material.url, '_blank');
     } else {
@@ -218,6 +240,27 @@ const Materials: React.FC = () => {
     if (materialsModalsRef.current) {
       materialsModalsRef.current.handleCreateMaterial();
     }
+  };
+
+  // Render the material card content based on type
+  const renderMaterialContent = (material: Material) => {
+    if (material.type === 'video' && material.thumbnailUrl) {
+      return (
+        <VideoThumbnail 
+          thumbnailUrl={material.thumbnailUrl}
+          title={material.title}
+          onClick={() => handleOpenMaterial(material)}
+          className="mb-3"
+        />
+      );
+    }
+
+    // For non-video materials or videos without thumbnails, show description
+    return material.description ? (
+      <p className="text-sm text-edu-gray-600 mb-3 line-clamp-2">
+        {material.description}
+      </p>
+    ) : null;
   };
 
   return (
@@ -323,11 +366,7 @@ const Materials: React.FC = () => {
                   </CardHeader>
                   
                   <CardContent>
-                    {material.description && (
-                      <p className="text-sm text-edu-gray-600 mb-3 line-clamp-2">
-                        {material.description}
-                      </p>
-                    )}
+                    {renderMaterialContent(material)}
                     
                     <div className="flex flex-wrap gap-1 mb-3">
                       {material.tags.slice(0, 4).map((tag, i) => (
@@ -390,11 +429,41 @@ const Materials: React.FC = () => {
         </TabsContent>
       </Tabs>
 
+      {/* Video Preview Modal */}
+      <Dialog open={videoPreviewOpen} onOpenChange={setVideoPreviewOpen}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>{selectedVideo?.title}</DialogTitle>
+          </DialogHeader>
+          {selectedVideo && selectedVideo.url && (
+            <div className="space-y-4">
+              <VideoEmbed url={selectedVideo.url} title={selectedVideo.title} />
+              
+              {selectedVideo.description && (
+                <div className="text-sm text-gray-700">
+                  {selectedVideo.description}
+                </div>
+              )}
+              
+              {selectedVideo.tags && selectedVideo.tags.length > 0 && (
+                <div className="flex flex-wrap gap-1">
+                  {selectedVideo.tags.map((tag, i) => (
+                    <Badge key={i} variant="outline" className="bg-edu-blue-50">
+                      {tag}
+                    </Badge>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
       {/* Modals */}
       <MaterialsModals
+        ref={materialsModalsRef}
         subjects={subjects} 
         refreshData={fetchData} 
-        // Using forwardRef instead of ref prop
       />
     </div>
   );

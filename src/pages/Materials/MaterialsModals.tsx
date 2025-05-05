@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, forwardRef, useImperativeHandle } from 'react';
 import { toast } from '@/hooks/use-toast';
 import { services } from '@/lib/services';
 import { Material, Subject } from '@/types';
@@ -12,31 +12,37 @@ interface MaterialsModalsProps {
   refreshData: () => void;
 }
 
-const MaterialsModals: React.FC<MaterialsModalsProps> = ({
+interface MaterialsModalsRef {
+  handleCreateMaterial: () => void;
+  handleEditMaterial: (material: Material) => void;
+  handleDeleteMaterial: (material: Material) => void;
+}
+
+const MaterialsModals = forwardRef<MaterialsModalsRef, MaterialsModalsProps>(({
   subjects,
   refreshData
-}) => {
+}, ref) => {
   // Modal states
   const [isMaterialModalOpen, setIsMaterialModalOpen] = useState(false);
   const [isMaterialDeleteOpen, setIsMaterialDeleteOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedMaterial, setSelectedMaterial] = useState<Partial<Material> | null>(null);
 
-  // Material handlers
-  const handleCreateMaterial = () => {
-    setSelectedMaterial(null);
-    setIsMaterialModalOpen(true);
-  };
-
-  const handleEditMaterial = (material: Material) => {
-    setSelectedMaterial(material);
-    setIsMaterialModalOpen(true);
-  };
-
-  const handleDeleteMaterial = (material: Material) => {
-    setSelectedMaterial(material);
-    setIsMaterialDeleteOpen(true);
-  };
+  // Expose methods to parent component via ref
+  useImperativeHandle(ref, () => ({
+    handleCreateMaterial: () => {
+      setSelectedMaterial(null);
+      setIsMaterialModalOpen(true);
+    },
+    handleEditMaterial: (material: Material) => {
+      setSelectedMaterial(material);
+      setIsMaterialModalOpen(true);
+    },
+    handleDeleteMaterial: (material: Material) => {
+      setSelectedMaterial(material);
+      setIsMaterialDeleteOpen(true);
+    }
+  }));
 
   const handleMaterialSubmit = async (data: any) => {
     setIsSubmitting(true);
@@ -125,7 +131,9 @@ const MaterialsModals: React.FC<MaterialsModalsProps> = ({
       />
     </>
   );
-};
+});
+
+MaterialsModals.displayName = 'MaterialsModals';
 
 export { 
   MaterialsModals,
