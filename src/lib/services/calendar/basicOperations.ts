@@ -1,142 +1,104 @@
-import { supabase } from "@/integrations/supabase/client";
-import { CalendarEvent, ID } from '@/types';
-import { mapToCamelCase, normalizeToISO, mapToSnakeCase } from "@/integrations/supabase/supabaseAdapter";
-import { handleError } from "../baseService";
 
-// Set the table name for calendar events
-const tableName = "calendar_events";
+import { supabase } from '@/integrations/supabase/client';
+import { CalendarEvent } from '@/types';
+import { mapToCamelCase, mapToSnakeCase } from '@/integrations/supabase/supabaseAdapter';
 
-export async function getAll(): Promise<CalendarEvent[]> {
+export async function getAllEvents(): Promise<CalendarEvent[]> {
   try {
     const { data, error } = await supabase
-      .from(tableName)
+      .from('calendar_events')
       .select('*');
-    
+
     if (error) throw error;
-    
-    return data ? data.map(item => mapToCamelCase<CalendarEvent>(item)) : [];
+
+    return data?.map(event => mapToCamelCase(event) as CalendarEvent) || [];
   } catch (error) {
-    handleError(error, 'buscar todos os eventos do calendário');
-    return [];
+    console.error('Error fetching calendar events', error);
+    throw error;
   }
 }
 
-export async function getById(id: ID): Promise<CalendarEvent | null> {
+export async function getById(id: string): Promise<CalendarEvent | null> {
   try {
     const { data, error } = await supabase
-      .from(tableName)
+      .from('calendar_events')
       .select('*')
       .eq('id', id)
-      .maybeSingle();
-    
+      .single();
+
     if (error) throw error;
     
-    return data ? mapToCamelCase<CalendarEvent>(data) : null;
+    return data ? mapToCamelCase(data) as CalendarEvent : null;
   } catch (error) {
-    handleError(error, 'buscar evento do calendário por ID');
-    return null;
+    console.error('Error fetching calendar event by id', error);
+    throw error;
   }
 }
 
-export async function create(event: Omit<CalendarEvent, "id">): Promise<CalendarEvent | null> {
+export async function create(event: Omit<CalendarEvent, 'id'>): Promise<CalendarEvent | null> {
   try {
-    // Convert to snake_case format
-    const eventData = {
-      title: event.title,
-      description: event.description,
-      start_date: normalizeToISO(event.startDate),
-      end_date: event.endDate ? normalizeToISO(event.endDate) : null,
-      all_day: event.allDay,
-      type: event.type,
-      subject_id: event.subjectId,
-      lesson_plan_id: event.lessonPlanId,
-      assessment_id: event.assessmentId,
-      teaching_plan_id: event.teachingPlanId,
-      location: event.location,
-      color: event.color,
-      source_type: event.sourceType,
-      source_id: event.sourceId
-    };
+    const eventData = mapToSnakeCase(event);
     
     const { data, error } = await supabase
-      .from(tableName)
+      .from('calendar_events')
       .insert(eventData)
       .select()
       .single();
-    
+      
     if (error) throw error;
     
-    return mapToCamelCase<CalendarEvent>(data);
+    return data ? mapToCamelCase(data) as CalendarEvent : null;
   } catch (error) {
-    handleError(error, 'criar evento do calendário');
-    return null;
+    console.error('Error creating calendar event', error);
+    throw error;
   }
 }
 
-export async function update(id: ID, event: Partial<CalendarEvent>): Promise<CalendarEvent | null> {
+export async function update(id: string, updates: Partial<CalendarEvent>): Promise<CalendarEvent | null> {
   try {
-    // Create a properly typed update object
-    const updateData: Record<string, any> = {};
-    
-    if (event.title !== undefined) updateData.title = event.title;
-    if (event.description !== undefined) updateData.description = event.description;
-    if (event.startDate !== undefined) updateData.start_date = normalizeToISO(event.startDate);
-    if (event.endDate !== undefined) updateData.end_date = normalizeToISO(event.endDate);
-    if (event.allDay !== undefined) updateData.all_day = event.allDay;
-    if (event.type !== undefined) updateData.type = event.type;
-    if (event.subjectId !== undefined) updateData.subject_id = event.subjectId;
-    if (event.lessonPlanId !== undefined) updateData.lesson_plan_id = event.lessonPlanId;
-    if (event.assessmentId !== undefined) updateData.assessment_id = event.assessmentId;
-    if (event.teachingPlanId !== undefined) updateData.teaching_plan_id = event.teachingPlanId;
-    if (event.location !== undefined) updateData.location = event.location;
-    if (event.color !== undefined) updateData.color = event.color;
+    const updateData = mapToSnakeCase(updates);
     
     const { data, error } = await supabase
-      .from(tableName)
+      .from('calendar_events')
       .update(updateData)
       .eq('id', id)
       .select()
       .single();
-    
+      
     if (error) throw error;
     
-    return mapToCamelCase<CalendarEvent>(data);
+    return data ? mapToCamelCase(data) as CalendarEvent : null;
   } catch (error) {
-    handleError(error, 'atualizar evento do calendário');
-    return null;
+    console.error('Error updating calendar event', error);
+    throw error;
   }
 }
 
-export async function deleteEvent(id: ID): Promise<boolean> {
+export async function remove(id: string): Promise<void> {
   try {
     const { error } = await supabase
-      .from(tableName)
+      .from('calendar_events')
       .delete()
       .eq('id', id);
-    
+      
     if (error) throw error;
-    
-    return true;
   } catch (error) {
-    handleError(error, 'excluir evento do calendário');
-    return false;
+    console.error('Error deleting calendar event', error);
+    throw error;
   }
 }
 
-// Add the missing deleteBySource function
-export async function deleteBySource(sourceType: string, sourceId: string): Promise<boolean> {
+// Function to delete calendar events by source type and ID
+export async function deleteBySource(sourceType: string, sourceId: string): Promise<void> {
   try {
     const { error } = await supabase
-      .from(tableName)
+      .from('calendar_events')
       .delete()
-      .eq('source_type', sourceType)
-      .eq('source_id', sourceId);
-    
+      .eq(sourceType + '_id', sourceId);
+
     if (error) throw error;
-    
-    return true;
   } catch (error) {
-    handleError(error, 'excluir eventos do calendário por fonte');
-    return false;
+    console.error(`Error deleting calendar events for ${sourceType}:${sourceId}`, error);
+    throw error;
   }
 }
