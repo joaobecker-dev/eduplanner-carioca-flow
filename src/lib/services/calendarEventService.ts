@@ -3,7 +3,6 @@ import { CalendarEvent, ID, Assessment, StudentAssessment, LessonPlan, TeachingP
 import { createService, handleError } from './baseService';
 import { supabase } from "@/integrations/supabase/client";
 import { normalizeToISO } from '@/integrations/supabase/supabaseAdapter';
-import { mapToCamelCase } from '@/lib/utils/caseConverters';
 
 // Create base service with fully exposed implementation
 const baseService = createService<CalendarEvent>("calendar_events");
