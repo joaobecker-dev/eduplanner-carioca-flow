@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -9,7 +8,7 @@ import CrudModal from '@/components/ui-components/CrudModal';
 import DeleteConfirmationDialog from '@/components/ui-components/DeleteConfirmationDialog';
 import EventForm from './components/EventForm';
 import EventDetailsModal from './components/EventDetailsModal';
-import { calendarEventService } from '@/lib/services';
+import { calendarEventService } from '@/lib/services/calendarEventService';
 
 interface EventModalsProps {
   selectedEvent: CalendarEvent | null;

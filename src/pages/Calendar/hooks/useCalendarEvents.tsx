@@ -1,8 +1,7 @@
-
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { subjectService } from '@/lib/services';
-import { calendarEventService } from '@/lib/services';
+import { subjectService } from '@/lib/services/subjectService';
+import { calendarEventService } from '@/lib/services/calendarEventService';
 
 interface DateRange {
   from: Date | null;

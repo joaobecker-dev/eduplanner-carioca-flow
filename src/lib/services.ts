@@ -13,6 +13,19 @@ export { assessmentService } from './services/assessmentService';
 export { studentService } from './services/studentService';
 export { studentAssessmentService } from './services/studentAssessmentService';
 export { materialService } from './services/materialService';
-export { calendarEventService } from './services/calendar';
+export { calendarEventService } from './services/calendarEventService';
 
-// No legacy exports - simplified structure
+// Legacy services object for backward compatibility
+// Will be kept until all direct references are updated
+export const services = {
+  academicPeriod: academicPeriodService,
+  subject: subjectService,
+  annualPlan: annualPlanService,
+  teachingPlan: teachingPlanService,
+  lessonPlan: lessonPlanService,
+  assessment: assessmentService,
+  student: studentService,
+  studentAssessment: studentAssessmentService,
+  material: materialService,
+  calendarEvent: calendarEventService
+};

@@ -1,116 +1,164 @@
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
+import { toast } from 'sonner';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { TeachingPlanFormValues, teachingPlanSchema } from '@/components/forms/TeachingPlanForm';
+import TeachingPlanForm from '@/components/forms/TeachingPlanForm';
+import { teachingPlanService } from '@/lib/services/teachingPlanService';
+import { AnnualPlan, Subject, TeachingPlan } from '@/types';
+import { annualPlanService } from '@/lib/services/annualPlanService';
+import { subjectService } from '@/lib/services/subjectService';
+import CrudModal from '@/components/ui-components/CrudModal';
 
-import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { toast } from "sonner";
-import { teachingPlanService, subjectService, annualPlanService } from '@/lib/services';
-import { TeachingPlan, Subject, AnnualPlan } from "@/types";
-import { normalizeToISO } from "@/integrations/supabase/supabaseAdapter";
-
-// Define TeachingPlanFormData type locally since we can't find the import
-interface TeachingPlanFormData {
-  title: string;
-  description?: string;
-  subjectId: string;
-  annualPlanId: string;
-  contents: string[];
-  methodology: string;
-  resources: string[];
-  evaluation: string;
-  startDate?: Date;
-  endDate?: Date;
-  objectives: string[];
-  bnccReferences?: string[];
+interface EditTeachingPlanPageProps {
+  // You can define props here if needed
 }
 
-export default function TeachingPlanEdit() {
-  const { id } = useParams();
-  const navigate = useNavigate();
-  const teachingPlanId = id as string;
+const EditTeachingPlanPage: React.FC<EditTeachingPlanPageProps> = () => {
+  const router = useRouter();
+  const { id } = router.query;
+  const teachingPlanId = Array.isArray(id) ? id[0] : id;
 
-  const [initialData, setInitialData] = useState<TeachingPlanFormData | null>(null);
+  const [teachingPlan, setTeachingPlan] = useState<TeachingPlan | null>(null);
+  const [isFetching, setIsFetching] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+  const [annualPlans, setAnnualPlans] = useState<AnnualPlan[]>([]);
+  const [subjects, setSubjects] = useState<Subject[]>([]);
 
-  const { data: subjects = [] } = useQuery<Subject[]>({
-    queryKey: ["subjects"],
-    queryFn: subjectService.getAll,
-  });
-
-  const { data: annualPlans = [] } = useQuery<AnnualPlan[]>({
-    queryKey: ["annualPlans"],
-    queryFn: annualPlanService.getAll,
-  });
-
-  const { data: teachingPlan, isLoading } = useQuery({
-    queryKey: ["teachingPlans", teachingPlanId],
-    queryFn: () => teachingPlanService.getById(teachingPlanId),
-    enabled: !!teachingPlanId,
+  const form = useForm<TeachingPlanFormValues>({
+    resolver: zodResolver(teachingPlanSchema),
+    defaultValues: {
+      title: '',
+      description: '',
+      annualPlanId: '',
+      subjectId: '',
+      startDate: undefined,
+      endDate: undefined,
+      objectives: [],
+      bnccReferences: [],
+      contents: [],
+      methodology: '',
+      resources: [],
+      evaluation: '',
+    },
+    mode: 'onChange',
   });
 
   useEffect(() => {
-    if (teachingPlan) {
-      setInitialData({
-        title: teachingPlan.title,
-        description: teachingPlan.description || "",
-        subjectId: teachingPlan.subjectId,
-        annualPlanId: teachingPlan.annualPlanId,
-        contents: teachingPlan.contents,
-        methodology: teachingPlan.methodology,
-        resources: teachingPlan.resources,
-        evaluation: teachingPlan.evaluation,
-        startDate: teachingPlan.startDate ? new Date(teachingPlan.startDate) : undefined,
-        endDate: teachingPlan.endDate ? new Date(teachingPlan.endDate) : undefined,
-        objectives: teachingPlan.objectives,
-        bnccReferences: teachingPlan.bnccReferences,
-      });
+    const fetchData = async () => {
+      if (teachingPlanId) {
+        setIsFetching(true);
+        try {
+          const plan = await teachingPlanService.getById(teachingPlanId);
+          setTeachingPlan(plan);
+
+          // Set default values for the form
+          form.reset({
+            title: plan.title,
+            description: plan.description || '',
+            annualPlanId: plan.annualPlanId,
+            subjectId: plan.subjectId,
+            startDate: plan.startDate ? new Date(plan.startDate) : undefined,
+            endDate: plan.endDate ? new Date(plan.endDate) : undefined,
+            objectives: plan.objectives || [],
+            bnccReferences: plan.bnccReferences || [],
+            contents: plan.contents || [],
+            methodology: plan.methodology || '',
+            resources: plan.resources || [],
+            evaluation: plan.evaluation || '',
+          });
+        } catch (error) {
+          console.error('Error fetching teaching plan:', error);
+          toast.error('Erro ao buscar plano de ensino');
+        } finally {
+          setIsFetching(false);
+        }
+      }
+    };
+
+    fetchData();
+  }, [teachingPlanId, form]);
+
+  useEffect(() => {
+    const fetchDependencies = async () => {
+      try {
+        const [annualPlanData, subjectData] = await Promise.all([
+          annualPlanService.getAll(),
+          subjectService.getAll(),
+        ]);
+        setAnnualPlans(annualPlanData);
+        setSubjects(subjectData);
+      } catch (error) {
+        console.error('Error fetching dependencies:', error);
+        toast.error('Erro ao buscar dependências');
+      }
+    };
+
+    fetchDependencies();
+  }, []);
+
+  const handleOpenModal = () => {
+    setShowModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+  };
+
+  const processFormValues = (values: TeachingPlanFormValues): TeachingPlanFormValues => {
+    return {
+      ...values,
+      // Convert string dates to Date objects if needed
+      startDate: values.startDate ? new Date(values.startDate) : undefined,
+      endDate: values.endDate ? new Date(values.endDate) : undefined
+    };
+  };
+
+  const handleUpdateTeachingPlan = async (values: TeachingPlanFormValues) => {
+    try {
+      const processedValues = processFormValues(values);
+      if (teachingPlanId) {
+        await teachingPlanService.update(teachingPlanId, processedValues);
+        toast.success('Plano de ensino atualizado com sucesso!');
+        router.push('/planejamento');
+      } else {
+        toast.error('ID do plano de ensino não encontrado.');
+      }
+    } catch (error) {
+      console.error('Error updating teaching plan:', error);
+      toast.error('Erro ao atualizar plano de ensino');
     }
-  }, [teachingPlan]);
+  };
 
-  const mutation = useMutation({
-    mutationFn: async (data: TeachingPlanFormData) => {
-      if (!teachingPlanId) return;
-      return teachingPlanService.update(teachingPlanId, {
-        ...data,
-        startDate: data.startDate ? normalizeToISO(data.startDate) : undefined,
-        endDate: data.endDate ? normalizeToISO(data.endDate) : undefined,
-      });
-    },
-    onSuccess: () => {
-      toast.success("Plano de ensino atualizado com sucesso!");
-      navigate("/planejamento");
-    },
-    onError: (error) => {
-      console.error(error);
-      toast.error("Erro ao atualizar plano de ensino");
-    },
-  });
-
-  if (isLoading) {
+  if (isFetching) {
     return <div>Carregando...</div>;
   }
 
-  // Since we can't find the TeachingPlanForm component, let's create a placeholder
-  // This would need to be replaced with the actual implementation
-  const handleSubmit = (data: TeachingPlanFormData) => {
-    mutation.mutate(data);
-  };
+  if (!teachingPlan) {
+    return <div>Plano de ensino não encontrado.</div>;
+  }
 
   return (
-    <div className="container py-10">
-      {initialData && (
-        <div>
-          <h1 className="text-2xl font-bold mb-6">Editar Plano de Ensino</h1>
-          <p>Formulário do plano de ensino seria renderizado aqui</p>
-          {/* Actual form would be implemented here, but since we can't find the component,
-              we'll just show placeholder content */}
-          <pre>{JSON.stringify(initialData, null, 2)}</pre>
-          <button 
-            className="mt-4 bg-blue-500 text-white px-4 py-2 rounded"
-            onClick={() => navigate("/planejamento")}
-          >
-            Voltar
-          </button>
-        </div>
-      )}
-    </div>
+    <CrudModal
+      title="Editar Plano de Ensino"
+      description="Atualize os detalhes do plano de ensino"
+      isOpen={true}
+      onClose={() => router.push('/planejamento')}
+      onSubmit={(e) => {
+        e.preventDefault();
+        form.handleSubmit(handleUpdateTeachingPlan)();
+      }}
+      isLoading={false}
+    >
+      <TeachingPlanForm
+        form={form}
+        annualPlans={annualPlans}
+        subjects={subjects}
+        onSubmit={handleUpdateTeachingPlan}
+      />
+    </CrudModal>
   );
-}
+};
+
+export default EditTeachingPlanPage;

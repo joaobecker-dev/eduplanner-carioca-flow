@@ -1,10 +1,9 @@
-
 import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { CalendarEvent } from '@/types';
 import { DateSelectArg, EventClickArg } from '@fullcalendar/core';
-import { calendarEventService } from '@/lib/services';
+import { calendarEventService } from '@/lib/services/calendarEventService';
 
 export const useCalendarActions = () => {
   const queryClient = useQueryClient();

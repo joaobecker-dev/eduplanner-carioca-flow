@@ -1,155 +1,134 @@
-
 import React, { useState } from 'react';
-import { toast } from '@/hooks/use-toast';
-import { teachingPlanService } from '@/lib/services';
-import { AnnualPlan, Subject, TeachingPlan } from '@/types';
+import { useQueryClient, useMutation } from '@tanstack/react-query';
+import { toast } from 'sonner';
+import { TeachingPlanFormValues } from '@/components/forms/TeachingPlanForm';
+import { teachingPlanService } from '@/lib/services/teachingPlanService';
 import CrudModal from '@/components/ui-components/CrudModal';
 import DeleteConfirmationDialog from '@/components/ui-components/DeleteConfirmationDialog';
-import TeachingPlanForm, { TeachingPlanFormValues } from '@/components/forms/TeachingPlanForm';
 
 interface TeachingPlanModalsProps {
-  subjects: Subject[];
-  annualPlans: AnnualPlan[];
-  refreshPlans: () => void;
+  showCreateModal: boolean;
+  setShowCreateModal: (show: boolean) => void;
+  showDeleteModal: boolean;
+  setShowDeleteModal: (show: boolean) => void;
+  teachingPlanIdToDelete: string | null;
+  setTeachingPlanIdToDelete: (id: string | null) => void;
 }
 
 const TeachingPlanModals: React.FC<TeachingPlanModalsProps> = ({
-  subjects,
-  annualPlans,
-  refreshPlans,
+  showCreateModal,
+  setShowCreateModal,
+  showDeleteModal,
+  teachingPlanIdToDelete,
+  setTeachingPlanIdToDelete,
 }) => {
-  // Modal states
-  const [isTeachingPlanModalOpen, setIsTeachingPlanModalOpen] = useState(false);
-  const [isTeachingPlanDeleteOpen, setIsTeachingPlanDeleteOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedTeachingPlan, setSelectedTeachingPlan] = useState<Partial<TeachingPlan> | null>(null);
+  const queryClient = useQueryClient();
+  const [isCreatingPlan, setIsCreatingPlan] = useState(false);
+  const [isDeletingPlan, setIsDeletingPlan] = useState(false);
 
-  // Teaching Plan handlers
-  const handleCreateTeachingPlan = () => {
-    setSelectedTeachingPlan(null);
-    setIsTeachingPlanModalOpen(true);
-  };
-
-  const handleEditTeachingPlan = (teachingPlan: TeachingPlan) => {
-    setSelectedTeachingPlan({
-      ...teachingPlan,
-      // Convert string dates to Date objects for the form
-      startDate: new Date(teachingPlan.startDate),
-      endDate: new Date(teachingPlan.endDate)
-    });
-    setIsTeachingPlanModalOpen(true);
-  };
-
-  const handleDeleteTeachingPlan = (teachingPlan: TeachingPlan) => {
-    setSelectedTeachingPlan(teachingPlan);
-    setIsTeachingPlanDeleteOpen(true);
-  };
-
-  const handleTeachingPlanSubmit = async (data: TeachingPlanFormValues) => {
-    setIsSubmitting(true);
-    
-    // Ensure required fields are present for create operation
-    if (!selectedTeachingPlan?.id && (!data.title || !data.subjectId || !data.annualPlanId)) {
-      toast({
-        title: "Campos obrigatórios",
-        description: "Todos os campos obrigatórios devem ser preenchidos.",
-        variant: "destructive",
-      });
-      setIsSubmitting(false);
-      return;
+  const createTeachingPlanMutation = useMutation(
+    (values: TeachingPlanFormValues) => teachingPlanService.create(values),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['teachingPlans'] });
+        toast.success('Plano de ensino criado com sucesso!');
+        setShowCreateModal(false);
+      },
+      onError: (error) => {
+        console.error('Error creating teaching plan:', error);
+        toast.error('Erro ao criar plano de ensino');
+      },
+      onSettled: () => {
+        setIsCreatingPlan(false);
+      },
     }
+  );
 
+  const deleteTeachingPlanMutation = useMutation(
+    (id: string) => teachingPlanService.delete(id),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['teachingPlans'] });
+        toast.success('Plano de ensino excluído com sucesso!');
+        setShowDeleteModal(false);
+        setTeachingPlanIdToDelete(null);
+      },
+      onError: (error) => {
+        console.error('Error deleting teaching plan:', error);
+        toast.error('Erro ao excluir plano de ensino');
+      },
+      onSettled: () => {
+        setIsDeletingPlan(false);
+      },
+    }
+  );
+
+  const handleCreateTeachingPlan = async (values: TeachingPlanFormValues) => {
     try {
-      // Pass the form data directly - the service handles date conversion
-      if (selectedTeachingPlan?.id) {
-        // Update existing teaching plan
-        await teachingPlanService.update(selectedTeachingPlan.id, data);
-        toast({
-          title: "Plano de ensino atualizado",
-          description: "O plano de ensino foi atualizado com sucesso.",
-        });
-      } else {
-        // Create new teaching plan with required fields guaranteed
-        await teachingPlanService.create(data);
-        toast({
-          title: "Plano de ensino criado",
-          description: "O plano de ensino foi criado com sucesso.",
-        });
-      }
-      setIsTeachingPlanModalOpen(false);
-      refreshPlans();
+      setIsCreatingPlan(true);
+      
+      const formattedValues = {
+        ...values,
+        startDate: values.startDate ? new Date(values.startDate) : undefined,
+        endDate: values.endDate ? new Date(values.endDate) : undefined
+      };
+      
+      await teachingPlanService.create(formattedValues);
+      queryClient.invalidateQueries({ queryKey: ['teachingPlans'] });
+      toast.success('Plano de ensino criado com sucesso!');
+      setShowCreateModal(false);
     } catch (error) {
-      console.error('Error saving teaching plan:', error);
-      toast({
-        title: "Erro ao salvar",
-        description: "Ocorreu um erro ao salvar o plano de ensino.",
-        variant: "destructive",
-      });
+      console.error('Error creating teaching plan:', error);
+      toast.error('Erro ao criar plano de ensino');
     } finally {
-      setIsSubmitting(false);
+      setIsCreatingPlan(false);
     }
   };
 
-  const handleTeachingPlanDelete = async () => {
-    if (!selectedTeachingPlan?.id) return;
-
-    setIsSubmitting(true);
+  const handleDeleteTeachingPlan = async () => {
+    if (!teachingPlanIdToDelete) return;
     try {
-      await teachingPlanService.delete(selectedTeachingPlan.id);
-      toast({
-        title: "Plano de ensino excluído",
-        description: "O plano de ensino foi excluído com sucesso.",
-      });
-      setIsTeachingPlanDeleteOpen(false);
-      refreshPlans();
+      setIsDeletingPlan(true);
+      await teachingPlanService.delete(teachingPlanIdToDelete);
+      queryClient.invalidateQueries({ queryKey: ['teachingPlans'] });
+      toast.success('Plano de ensino excluído com sucesso!');
+      setShowDeleteModal(false);
+      setTeachingPlanIdToDelete(null);
     } catch (error) {
       console.error('Error deleting teaching plan:', error);
-      toast({
-        title: "Erro ao excluir",
-        description: "Ocorreu um erro ao excluir o plano de ensino.",
-        variant: "destructive",
-      });
+      toast.error('Erro ao excluir plano de ensino');
     } finally {
-      setIsSubmitting(false);
+      setIsDeletingPlan(false);
     }
   };
 
   return (
     <>
-      {/* Teaching Plan Modal */}
       <CrudModal
-        title={selectedTeachingPlan?.id ? "Editar Plano de Ensino" : "Novo Plano de Ensino"}
-        description="Preencha os campos para criar ou editar um plano de ensino."
-        isOpen={isTeachingPlanModalOpen}
-        isLoading={isSubmitting}
-        onClose={() => setIsTeachingPlanModalOpen(false)}
-        onSubmit={() => {}} // We're handling submission in the form
-        submitLabel={selectedTeachingPlan?.id ? "Atualizar" : "Criar"}
-        size="lg"
+        title="Novo Plano de Ensino"
+        description="Preencha os detalhes do plano de ensino"
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        onSubmit={(e) => {
+          e.preventDefault();
+        }}
+        isLoading={isCreatingPlan}
       >
-        <TeachingPlanForm
-          onSubmit={handleTeachingPlanSubmit}
-          initialData={selectedTeachingPlan || {}}
-          subjects={subjects}
-          annualPlans={annualPlans}
-          isSubmitting={isSubmitting}
-        />
+        {/* Your form for creating a teaching plan goes here */}
+        {/* You can use a component like TeachingPlanForm here */}
+        <div>Formulário de criação de plano de ensino</div>
       </CrudModal>
 
-      {/* Teaching Plan Delete Confirmation */}
       <DeleteConfirmationDialog
-        isOpen={isTeachingPlanDeleteOpen}
-        isLoading={isSubmitting}
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={handleDeleteTeachingPlan}
         title="Excluir Plano de Ensino"
-        description={`Tem certeza que deseja excluir o plano de ensino "${selectedTeachingPlan?.title}"? Esta ação não pode ser desfeita.`}
-        onClose={() => setIsTeachingPlanDeleteOpen(false)}
-        onConfirm={handleTeachingPlanDelete}
+        description="Tem certeza que deseja excluir este plano de ensino? Esta ação não pode ser desfeita."
+        isLoading={isDeletingPlan}
       />
     </>
   );
 };
 
-export { 
-  TeachingPlanModals,
-  type TeachingPlanModalsProps
-};
+export default TeachingPlanModals;

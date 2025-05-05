@@ -3,7 +3,6 @@ import { CalendarEvent, ID } from '@/types';
 import { handleError } from '../baseService';
 import { supabase } from "@/integrations/supabase/client";
 import { mapToCamelCaseEvent, prepareEventData } from './utils';
-import { CalendarEventDatabaseFields } from './types';
 
 // Basic CRUD operations
 export const getAll = async (): Promise<CalendarEvent[]> => {
@@ -68,19 +67,39 @@ export const deleteBySource = async (sourceType: string, sourceId: ID): Promise<
   }
 };
 
-// Fixed create operation with proper typing to avoid excessive type instantiation
+// Fixed create operation with proper typing
 export const create = async (eventData: Partial<CalendarEvent>): Promise<CalendarEvent | null> => {
   try {
-    // Use the utility function with explicit typing
+    // Prepare data for database insertion
     const preparedData = prepareEventData(eventData);
 
+    // Validate required fields
     if (!preparedData.title || !preparedData.type || !preparedData.start_date) {
       throw new Error("Missing required fields for calendar event");
     }
 
+    // Explicitly set the insert data with required fields to satisfy TypeScript
+    const insertData = {
+      title: preparedData.title,
+      type: preparedData.type,
+      start_date: preparedData.start_date,
+      // Optional fields
+      description: preparedData.description,
+      end_date: preparedData.end_date,
+      all_day: preparedData.all_day,
+      subject_id: preparedData.subject_id,
+      lesson_plan_id: preparedData.lesson_plan_id,
+      assessment_id: preparedData.assessment_id,
+      teaching_plan_id: preparedData.teaching_plan_id,
+      location: preparedData.location,
+      color: preparedData.color,
+      source_type: preparedData.source_type,
+      source_id: preparedData.source_id
+    };
+
     const { data, error } = await supabase
       .from("calendar_events")
-      .insert(preparedData)
+      .insert(insertData)
       .select()
       .single();
 
@@ -95,7 +114,7 @@ export const create = async (eventData: Partial<CalendarEvent>): Promise<Calenda
 // Fixed update operation with proper typing
 export const update = async (id: ID, eventData: Partial<CalendarEvent>): Promise<CalendarEvent | null> => {
   try {
-    // Use the utility function with explicit typing
+    // Prepare data for database update
     const updateData = prepareEventData(eventData);
 
     const { data, error } = await supabase

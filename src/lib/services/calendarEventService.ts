@@ -1,6 +1,6 @@
 
-// This file is maintained for backward compatibility.
-// It re-exports all methods from the modular calendar services.
+// Re-export calendar service from the modular structure
+// This file is maintained for backward compatibility
 
 import { calendarEventService } from './calendar';
 
