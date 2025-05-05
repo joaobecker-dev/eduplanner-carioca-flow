@@ -12,7 +12,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { CalendarEvent } from '@/types';
 // Import services from the index file
-import { calendarEventService, subjectService } from '@/lib/services/index';
+import { calendarEventService, subjectService } from '@/lib/services';
 import { DateSelectArg, EventClickArg } from '@fullcalendar/core';
 import SectionHeader from '@/components/ui-components/SectionHeader';
 import { toast } from 'sonner';

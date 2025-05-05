@@ -17,8 +17,6 @@ export default defineConfig(({ mode }) => ({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
-      // This alias should not override the src/lib/services/index.ts path
-      // "@/lib/services": path.resolve(__dirname, "./src/lib/services/index"),
     },
   },
 }));
