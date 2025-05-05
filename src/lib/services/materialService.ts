@@ -9,41 +9,6 @@ import { extractVideoMetadata } from '@/lib/utils/extractVideoMetadata';
 export const materialService = {
   ...createService<Material>('materials'),
 
-  // Get material by ID
-  getMaterialById: async (id: string): Promise<Material | null> => {
-    try {
-      const { data, error } = await supabase
-        .from('materials')
-        .select('*')
-        .eq('id', id)
-        .single();
-
-      if (error) throw error;
-      return data ? mapToCamelCase<Material>(data) : null;
-    } catch (error) {
-      console.error('Error fetching material:', error);
-      return null;
-    }
-  },
-
-  // Update material notes
-  updateMaterialNotes: async (id: string, notes: string): Promise<Material | null> => {
-    try {
-      const { data, error } = await supabase
-        .from('materials')
-        .update({ notes })
-        .eq('id', id)
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data ? mapToCamelCase<Material>(data) : null;
-    } catch (error) {
-      console.error('Error updating material notes:', error);
-      return null;
-    }
-  },
-
   // Override create to handle video thumbnails
   create: async (material: Omit<Material, 'id'>): Promise<Material | null> => {
     try {

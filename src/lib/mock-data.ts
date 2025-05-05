@@ -1,4 +1,3 @@
-
 import { 
   AcademicPeriod, 
   Subject, 
@@ -18,17 +17,13 @@ export const academicPeriods: AcademicPeriod[] = [
     id: "ap1", 
     name: "Ano Letivo 2023", 
     startDate: "2023-02-01", 
-    endDate: "2023-12-15",
-    isActive: true,
-    created_at: "2023-01-01T00:00:00Z"
+    endDate: "2023-12-15" 
   },
   { 
     id: "ap2", 
     name: "Ano Letivo 2024", 
     startDate: "2024-02-01", 
-    endDate: "2024-12-15",
-    isActive: true,
-    created_at: "2024-01-01T00:00:00Z"
+    endDate: "2024-12-15" 
   },
 ];
 
@@ -38,29 +33,25 @@ export const subjects: Subject[] = [
     id: "sub1", 
     name: "Matemática", 
     grade: "6º Ano", 
-    academicPeriodId: "ap2",
-    created_at: "2024-01-05T00:00:00Z"
+    academicPeriodId: "ap2" 
   },
   { 
     id: "sub2", 
     name: "Ciências", 
     grade: "6º Ano", 
-    academicPeriodId: "ap2",
-    created_at: "2024-01-05T00:00:00Z"
+    academicPeriodId: "ap2" 
   },
   { 
     id: "sub3", 
     name: "História", 
     grade: "7º Ano", 
-    academicPeriodId: "ap2",
-    created_at: "2024-01-05T00:00:00Z"
+    academicPeriodId: "ap2" 
   },
   { 
     id: "sub4", 
     name: "Português", 
     grade: "7º Ano", 
-    academicPeriodId: "ap2",
-    created_at: "2024-01-05T00:00:00Z"
+    academicPeriodId: "ap2" 
   },
 ];
 
@@ -80,12 +71,12 @@ export const annualPlans: AnnualPlan[] = [
     generalContent: "Números inteiros, frações, decimais, geometria básica, introdução à álgebra",
     methodology: "Aulas expositivas, resolução de problemas em grupo, jogos matemáticos, projetos interdisciplinares",
     evaluation: "Avaliações bimestrais, trabalhos em grupo, participação em sala",
-    referencesMaterials: [
+    reference_materials: [
       "DANTE, Luiz Roberto. Matemática: Contexto e Aplicações. São Paulo: Ática, 2020.",
       "IEZZI, Gelson et al. Matemática: Ciência e Aplicações. São Paulo: Saraiva, 2019."
     ],
-    created_at: "2024-01-10T10:30:00Z",
-    updated_at: "2024-01-10T10:30:00Z"
+    createdAt: "2024-01-10T10:30:00Z",
+    updatedAt: "2024-01-10T10:30:00Z"
   },
   {
     id: "ap2",
@@ -101,12 +92,12 @@ export const annualPlans: AnnualPlan[] = [
     generalContent: "Meio ambiente, seres vivos, corpo humano, matéria e energia",
     methodology: "Aulas práticas em laboratório, experimentos demonstrativos, pesquisas, trabalho de campo",
     evaluation: "Relatórios de experiências, provas teóricas e práticas, trabalhos em grupo",
-    referencesMaterials: [
+    reference_materials: [
       "GEWANDSZNAJDER, Fernando. Ciências: Planeta Terra. São Paulo: Ática, 2019.",
       "CANTO, Eduardo Leite do. Ciências Naturais: Aprendendo com o Cotidiano. São Paulo: Moderna, 2018."
     ],
-    created_at: "2024-01-15T14:20:00Z",
-    updated_at: "2024-01-15T14:20:00Z"
+    createdAt: "2024-01-15T14:20:00Z",
+    updatedAt: "2024-01-15T14:20:00Z"
   }
 ];
 
@@ -140,8 +131,8 @@ export const teachingPlans: TeachingPlan[] = [
       "Vídeos educativos"
     ],
     evaluation: "Exercícios avaliativos, participação em sala, avaliação escrita ao final da unidade",
-    created_at: "2024-01-20T09:15:00Z",
-    updated_at: "2024-01-20T09:15:00Z"
+    createdAt: "2024-01-20T09:15:00Z",
+    updatedAt: "2024-01-20T09:15:00Z"
   },
   {
     id: "tp2",
@@ -172,8 +163,8 @@ export const teachingPlans: TeachingPlan[] = [
       "Aplicativos digitais"
     ],
     evaluation: "Atividades práticas, trabalho em grupo, prova individual",
-    created_at: "2024-01-22T11:30:00Z",
-    updated_at: "2024-01-22T11:30:00Z"
+    createdAt: "2024-01-22T11:30:00Z",
+    updatedAt: "2024-01-22T11:30:00Z"
   }
 ];
 
@@ -189,7 +180,11 @@ export const lessonPlans: LessonPlan[] = [
       "Compreender o conceito de números positivos e negativos",
       "Identificar números inteiros em situações cotidianas"
     ],
-    content: "Conceito de números inteiros, Representação na reta numérica, Números inteiros no cotidiano",
+    contents: [
+      "Conceito de números inteiros",
+      "Representação na reta numérica",
+      "Números inteiros no cotidiano"
+    ],
     activities: [
       "Apresentação do conceito utilizando exemplos do cotidiano (temperatura, saldo bancário)",
       "Construção de uma reta numérica coletiva",
@@ -201,10 +196,8 @@ export const lessonPlans: LessonPlan[] = [
       "Material para construção da reta numérica"
     ],
     homework: "Exercícios do livro didático, páginas 23-24",
-    evaluation: "",
-    notes: "",
-    created_at: "2024-01-25T08:40:00Z",
-    updated_at: "2024-01-25T08:40:00Z"
+    createdAt: "2024-01-25T08:40:00Z",
+    updatedAt: "2024-01-25T08:40:00Z"
   },
   {
     id: "lp2",
@@ -216,7 +209,11 @@ export const lessonPlans: LessonPlan[] = [
       "Compreender as regras de adição de números inteiros",
       "Resolver operações de adição e subtração com números positivos e negativos"
     ],
-    content: "Adição de números inteiros, Subtração de números inteiros, Propriedades das operações",
+    contents: [
+      "Adição de números inteiros",
+      "Subtração de números inteiros",
+      "Propriedades das operações"
+    ],
     activities: [
       "Revisão da aula anterior",
       "Explicação das regras de adição com material visual",
@@ -230,9 +227,8 @@ export const lessonPlans: LessonPlan[] = [
     ],
     homework: "Lista de problemas envolvendo adição e subtração de números inteiros",
     evaluation: "Observação da participação e desempenho durante o jogo",
-    notes: "",
-    created_at: "2024-01-25T10:15:00Z",
-    updated_at: "2024-01-25T10:15:00Z"
+    createdAt: "2024-01-25T10:15:00Z",
+    updatedAt: "2024-01-25T10:15:00Z"
   }
 ];
 
@@ -246,8 +242,8 @@ export const assessments: Assessment[] = [
     type: "diagnostic",
     totalPoints: 10,
     date: "2024-02-08",
-    created_at: "2024-01-26T09:00:00Z",
-    updated_at: "2024-01-26T09:00:00Z"
+    createdAt: "2024-01-26T09:00:00Z",
+    updatedAt: "2024-01-26T09:00:00Z"
   },
   {
     id: "as2",
@@ -259,8 +255,8 @@ export const assessments: Assessment[] = [
     totalPoints: 10,
     date: "2024-03-15",
     dueDate: "2024-03-15",
-    created_at: "2024-02-20T14:30:00Z",
-    updated_at: "2024-02-20T14:30:00Z"
+    createdAt: "2024-02-20T14:30:00Z",
+    updatedAt: "2024-02-20T14:30:00Z"
   }
 ];
 
@@ -269,32 +265,27 @@ export const students: Student[] = [
   {
     id: "st1",
     name: "Ana Silva",
-    registration: "2024001",
-    created_at: "2024-01-15T00:00:00Z"
+    registration: "2024001"
   },
   {
     id: "st2",
     name: "Bruno Costa",
-    registration: "2024002",
-    created_at: "2024-01-15T00:00:00Z"
+    registration: "2024002"
   },
   {
     id: "st3",
     name: "Carolina Souza",
-    registration: "2024003",
-    created_at: "2024-01-15T00:00:00Z"
+    registration: "2024003"
   },
   {
     id: "st4",
     name: "Diego Oliveira",
-    registration: "2024004",
-    created_at: "2024-01-15T00:00:00Z"
+    registration: "2024004"
   },
   {
     id: "st5",
     name: "Elena Santos",
-    registration: "2024005",
-    created_at: "2024-01-15T00:00:00Z"
+    registration: "2024005"
   }
 ];
 
@@ -306,9 +297,7 @@ export const studentAssessments: StudentAssessment[] = [
     assessmentId: "as1",
     score: 8.5,
     feedback: "Bom domínio dos conceitos básicos de aritmética",
-    gradedDate: "2024-02-10T10:20:00Z",
-    status: "graded",
-    created_at: "2024-02-08T10:00:00Z"
+    gradedDate: "2024-02-10T10:20:00Z"
   },
   {
     id: "sa2",
@@ -316,9 +305,7 @@ export const studentAssessments: StudentAssessment[] = [
     assessmentId: "as1",
     score: 7.0,
     feedback: "Precisa revisar operações com frações",
-    gradedDate: "2024-02-10T10:25:00Z",
-    status: "graded",
-    created_at: "2024-02-08T10:00:00Z"
+    gradedDate: "2024-02-10T10:25:00Z"
   },
   {
     id: "sa3",
@@ -326,9 +313,7 @@ export const studentAssessments: StudentAssessment[] = [
     assessmentId: "as1",
     score: 9.0,
     feedback: "Excelente compreensão dos conceitos matemáticos",
-    gradedDate: "2024-02-10T10:30:00Z",
-    status: "graded",
-    created_at: "2024-02-08T10:00:00Z"
+    gradedDate: "2024-02-10T10:30:00Z"
   },
   {
     id: "sa4",
@@ -336,9 +321,7 @@ export const studentAssessments: StudentAssessment[] = [
     assessmentId: "as1",
     score: 6.5,
     feedback: "Dificuldades com problemas envolvendo decimais",
-    gradedDate: "2024-02-10T10:35:00Z",
-    status: "graded",
-    created_at: "2024-02-08T10:00:00Z"
+    gradedDate: "2024-02-10T10:35:00Z"
   },
   {
     id: "sa5",
@@ -346,9 +329,7 @@ export const studentAssessments: StudentAssessment[] = [
     assessmentId: "as1",
     score: 8.0,
     feedback: "Bom desempenho geral, com dificuldade em geometria",
-    gradedDate: "2024-02-10T10:40:00Z",
-    status: "graded",
-    created_at: "2024-02-08T10:00:00Z"
+    gradedDate: "2024-02-10T10:40:00Z"
   }
 ];
 
@@ -363,8 +344,7 @@ export const calendarEvents: CalendarEvent[] = [
     allDay: false,
     type: "class",
     subjectId: "sub1",
-    lessonPlanId: "lp1",
-    created_at: "2024-01-25T08:45:00Z"
+    lessonPlanId: "lp1"
   },
   {
     id: "ce2",
@@ -374,8 +354,7 @@ export const calendarEvents: CalendarEvent[] = [
     allDay: false,
     type: "class",
     subjectId: "sub1",
-    lessonPlanId: "lp2",
-    created_at: "2024-01-25T10:20:00Z"
+    lessonPlanId: "lp2"
   },
   {
     id: "ce3",
@@ -386,8 +365,7 @@ export const calendarEvents: CalendarEvent[] = [
     allDay: false,
     type: "exam",
     subjectId: "sub1",
-    assessmentId: "as1",
-    created_at: "2024-01-26T09:15:00Z"
+    assessmentId: "as1"
   },
   {
     id: "ce4",
@@ -397,8 +375,7 @@ export const calendarEvents: CalendarEvent[] = [
     endDate: "2024-02-09T16:00:00Z",
     allDay: false,
     type: "meeting",
-    location: "Sala de Reuniões",
-    created_at: "2024-01-30T11:00:00Z"
+    location: "Sala de Reuniões"
   },
   {
     id: "ce5",
@@ -406,8 +383,7 @@ export const calendarEvents: CalendarEvent[] = [
     description: "Prazo para entrega dos planos de aula do mês de março",
     startDate: "2024-02-25T23:59:00Z",
     allDay: true,
-    type: "deadline",
-    created_at: "2024-01-31T14:00:00Z"
+    type: "deadline"
   },
   {
     id: "ce6",
@@ -417,8 +393,7 @@ export const calendarEvents: CalendarEvent[] = [
     allDay: false,
     type: "exam",
     subjectId: "sub1",
-    assessmentId: "as2",
-    created_at: "2024-02-20T14:35:00Z"
+    assessmentId: "as2"
   }
 ];
 
@@ -432,7 +407,7 @@ export const materials: Material[] = [
     url: "/materiais/numeros_inteiros_slides.pdf",
     tags: ["números inteiros", "matemática", "6º ano"],
     subjectId: "sub1",
-    created_at: "2024-01-20T10:00:00Z",
+    createdAt: "2024-01-20T10:00:00Z",
     updatedAt: "2024-01-20T10:00:00Z"
   },
   {
@@ -443,7 +418,7 @@ export const materials: Material[] = [
     url: "/materiais/exercicios_numeros_inteiros.pdf",
     tags: ["números inteiros", "exercícios", "matemática", "6º ano"],
     subjectId: "sub1",
-    created_at: "2024-01-22T14:30:00Z",
+    createdAt: "2024-01-22T14:30:00Z",
     updatedAt: "2024-01-22T14:30:00Z"
   },
   {
@@ -454,7 +429,7 @@ export const materials: Material[] = [
     url: "https://www.youtube.com/watch?v=example",
     tags: ["números inteiros", "vídeo", "aplicações", "matemática"],
     subjectId: "sub1",
-    created_at: "2024-01-23T09:45:00Z",
+    createdAt: "2024-01-23T09:45:00Z",
     updatedAt: "2024-01-23T09:45:00Z"
   },
   {
@@ -465,7 +440,7 @@ export const materials: Material[] = [
     url: "/materiais/domino_numeros_inteiros.pdf",
     tags: ["jogo", "números inteiros", "dominó", "matemática"],
     subjectId: "sub1",
-    created_at: "2024-01-24T11:20:00Z",
+    createdAt: "2024-01-24T11:20:00Z",
     updatedAt: "2024-01-24T11:20:00Z"
   },
   {
@@ -476,7 +451,7 @@ export const materials: Material[] = [
     url: "https://pt.khanacademy.org/math/arithmetic/arith-review-negative-numbers",
     tags: ["khan academy", "números inteiros", "recurso online"],
     subjectId: "sub1",
-    created_at: "2024-01-25T16:15:00Z",
+    createdAt: "2024-01-25T16:15:00Z",
     updatedAt: "2024-01-25T16:15:00Z"
   }
 ];

@@ -1,7 +1,5 @@
 
 import React from 'react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle } from 'lucide-react';
 
 interface VideoEmbedProps {
   url: string;
@@ -14,34 +12,6 @@ const VideoEmbed: React.FC<VideoEmbedProps> = ({
   title,
   className = ''
 }) => {
-  // Validate URL before rendering to prevent security issues
-  const isValidUrl = React.useMemo(() => {
-    try {
-      // Basic validation for YouTube and Vimeo URLs
-      const urlObj = new URL(url);
-      return (
-        urlObj.protocol === 'https:' &&
-        (urlObj.hostname.includes('youtube.com') ||
-         urlObj.hostname.includes('youtu.be') ||
-         urlObj.hostname.includes('vimeo.com') ||
-         urlObj.hostname.includes('player.vimeo.com'))
-      );
-    } catch (e) {
-      return false;
-    }
-  }, [url]);
-
-  if (!url || !isValidUrl) {
-    return (
-      <Alert variant="destructive">
-        <AlertCircle className="h-4 w-4" />
-        <AlertDescription>
-          Invalid video URL. Please check the video source.
-        </AlertDescription>
-      </Alert>
-    );
-  }
-
   return (
     <div className={`aspect-video rounded-md overflow-hidden ${className}`}>
       <iframe 
@@ -52,7 +22,6 @@ const VideoEmbed: React.FC<VideoEmbedProps> = ({
         allowFullScreen
         loading="lazy"
         referrerPolicy="no-referrer"
-        aria-label={`Embedded video: ${title}`}
       />
     </div>
   );
