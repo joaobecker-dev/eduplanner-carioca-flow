@@ -84,7 +84,7 @@ export interface Assessment {
   id: ID;
   title: string;
   description?: string;
-  type: 'exam' | 'assignment' | 'project' | 'quiz' | 'other';
+  type: 'exam' | 'assignment' | 'project' | 'quiz' | 'other' | 'diagnostic' | 'formative' | 'summative';
   weight?: number;
   maxScore?: number;
   totalPoints?: number;

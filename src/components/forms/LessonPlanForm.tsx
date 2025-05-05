@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -34,7 +35,7 @@ const LessonPlanForm: React.FC<LessonPlanFormProps> = ({
       date: initialData?.date ? new Date(initialData.date) : new Date(),
       duration: initialData?.duration || 50,
       objectives: initialData?.objectives ? initialData.objectives.join('\n') : '',
-      contents: initialData?.contents ? initialData.contents.join('\n') : '',
+      content: initialData?.content || '',
       activities: initialData?.activities ? initialData.activities.join('\n') : '',
       resources: initialData?.resources ? initialData.resources.join('\n') : '',
       homework: initialData?.homework || '',
@@ -51,7 +52,7 @@ const LessonPlanForm: React.FC<LessonPlanFormProps> = ({
         date: initialData.date ? new Date(initialData.date) : new Date(),
         duration: initialData.duration || 50,
         objectives: initialData.objectives ? initialData.objectives.join('\n') : '',
-        contents: initialData.contents ? initialData.contents.join('\n') : '',
+        content: initialData.content || '',
         activities: initialData.activities ? initialData.activities.join('\n') : '',
         resources: initialData.resources ? initialData.resources.join('\n') : '',
         homework: initialData.homework || '',

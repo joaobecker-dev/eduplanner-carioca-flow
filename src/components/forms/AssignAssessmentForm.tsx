@@ -126,7 +126,9 @@ export function AssignAssessmentForm() {
           score: 0, // Initial score of 0
           submittedDate: null,
           gradedDate: null,
-          feedback: null
+          feedback: null,
+          status: 'pending', // Required status field
+          created_at: new Date().toISOString() // Required created_at field
         });
         results.push(result);
       }

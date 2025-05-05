@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { 
@@ -38,6 +39,14 @@ interface GradeRowData {
   isSaving: boolean;
 }
 
+// Define a minimal student type for unknown students
+interface MinimalStudent {
+  id: ID;
+  name: string;
+  registration: string;
+  created_at: string;
+}
+
 export function StudentAssessmentTable({ assessmentId }: StudentAssessmentTableProps) {
   const { toast } = useToast();
   const [rows, setRows] = useState<GradeRowData[]>([]);
@@ -73,18 +82,22 @@ export function StudentAssessmentTable({ assessmentId }: StudentAssessmentTableP
 
   useEffect(() => {
     if (studentAssessments && students) {
-      const mappedRows = studentAssessments.map(sa => {
+      const mappedRows: GradeRowData[] = studentAssessments.map(sa => {
         // Find the student information from the students array using studentId
-        const student = students.find(s => s.id === sa.studentId) || { 
-          id: sa.studentId, 
-          name: 'Unknown Student', 
-          registration: 'N/A' 
+        const student = students.find(s => s.id === sa.studentId);
+        
+        // Create a fallback minimal student if not found
+        const studentData: Student = student || {
+          id: sa.studentId,
+          name: 'Unknown Student',
+          registration: 'N/A',
+          created_at: new Date().toISOString()
         };
         
         return {
           id: sa.id,
-          student: student,
-          score: sa.score,
+          student: studentData,
+          score: sa.score !== undefined ? sa.score : null,
           feedback: sa.feedback || '',
           submittedDate: sa.submittedDate ? new Date(sa.submittedDate) : null,
           gradedDate: sa.gradedDate ? new Date(sa.gradedDate) : null,
