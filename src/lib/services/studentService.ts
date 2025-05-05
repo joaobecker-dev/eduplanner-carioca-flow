@@ -32,4 +32,23 @@ export const studentService = {
       return null;
     }
   },
+  
+  // Add the getBySubject method that's being used elsewhere
+  getBySubject: async (subjectId: ID): Promise<Student[]> => {
+    try {
+      const { data, error } = await supabase
+        .from("students")
+        .select("*")
+        .eq("subject_id", subjectId);
+      
+      if (error) {
+        throw error;
+      }
+      
+      return data ? data.map(item => mapToCamelCase(item)) as Student[] : [];
+    } catch (error) {
+      console.error("Error fetching students by subject:", error);
+      return [];
+    }
+  }
 };

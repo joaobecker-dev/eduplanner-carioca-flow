@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { TeachingPlan } from "@/types";
 import { mapToCamelCase, normalizeToISO } from "@/integrations/supabase/supabaseAdapter";
@@ -107,6 +106,17 @@ export async function deleteTeachingPlan(id: string): Promise<void> {
 
   if (error) throw error;
 }
+
+export const syncWithCalendar = async (teachingPlanId: string): Promise<void> => {
+  try {
+    const teachingPlan = await getById(teachingPlanId);
+    if (!teachingPlan) return;
+    
+    await calendarEventService.syncFromTeachingPlan(teachingPlanId);
+  } catch (error) {
+    console.error('Error syncing teaching plan with calendar:', error);
+  }
+};
 
 export const teachingPlanService = {
   getAll,

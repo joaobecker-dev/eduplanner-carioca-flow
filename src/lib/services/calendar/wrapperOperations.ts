@@ -3,14 +3,15 @@
 
 import { CalendarEvent, ID } from '@/types';
 import { handleError } from "../baseService";
-import { basicOperations } from "./basicOperations";
+import * as basicOps from "./basicOperations";
 
 // Simplified version of the calendar sync function to avoid deep type instantiations
 export const wrapperOperations = {
   // Wrapper for deleteBySource to avoid deep type instantiation
   deleteBySource: async (sourceType: string, sourceId: string): Promise<void> => {
     try {
-      await basicOperations.deleteBySource(sourceType, sourceId);
+      // Use the explicitly imported functions from basicOperations
+      await basicOps.deleteBySource(sourceType, sourceId);
     } catch (error) {
       handleError(error, 'excluir eventos do calendário');
     }
@@ -18,3 +19,6 @@ export const wrapperOperations = {
   
   // The rest of the wrapper operations
 };
+
+// Export a function that can be imported by index.ts
+export const deleteBySourceEvent = wrapperOperations.deleteBySource;

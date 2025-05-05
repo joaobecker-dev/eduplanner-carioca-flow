@@ -1,204 +1,194 @@
+// Type definitions for the application
 
-// Type definitions for EduPlanner
-
-// Base types
+// Basic types
 export type ID = string;
-export type DateISO = string;
+export type UUID = string;
+export type DateString = string;
+export type TimeString = string;
+export type DateTimeString = string;
 
-// User types (for future implementation)
+// User related types
 export interface User {
   id: ID;
-  name: string;
   email: string;
-  role: "professor" | "administrador";
+  name: string;
+  role: 'admin' | 'teacher' | 'student';
+  avatar?: string;
+  created_at: DateTimeString;
 }
 
-// Academic period
+// Academic period types
 export interface AcademicPeriod {
   id: ID;
   name: string;
-  startDate: DateISO;
-  endDate: DateISO;
-  created_at?: DateISO;
+  startDate: DateString;
+  endDate: DateString;
+  isActive: boolean;
+  created_at: DateTimeString;
 }
 
-// Subject/Class
+// Subject related types
 export interface Subject {
   id: ID;
   name: string;
-  grade: string;
-  academicPeriodId: ID;
-  academic_period_id?: ID; // For Supabase DB compatibility
-  created_at?: DateISO;
-}
-
-// Annual Plan
-export interface AnnualPlan {
-  id: ID;
-  title: string;
+  code?: string;
   description?: string;
-  subjectId: ID;
-  subject_id?: ID; // For Supabase DB compatibility
   academicPeriodId: ID;
-  academic_period_id?: ID; // For Supabase DB compatibility
-  objectives: string[];
-  generalContent: string;
-  general_content?: string; // For Supabase DB compatibility
-  methodology: string;
-  evaluation: string;
-  reference_materials: string[]; // Changed from 'references_materials' to 'reference_materials'
-  createdAt?: DateISO;
-  updatedAt?: DateISO;
-  created_at?: DateISO; // For Supabase DB compatibility
-  updated_at?: DateISO; // For Supabase DB compatibility
+  created_at: DateTimeString;
 }
 
-// Teaching Unit Plan
+// Teaching plan types
 export interface TeachingPlan {
   id: ID;
   title: string;
   description?: string;
-  annualPlanId: ID;
-  annual_plan_id?: ID; // For Supabase DB compatibility
+  objectives?: string;
+  methodology?: string;
+  evaluation?: string;
+  resources?: string;
+  bibliography?: string;
   subjectId: ID;
-  subject_id?: ID; // For Supabase DB compatibility
-  startDate: DateISO;
-  start_date?: DateISO; // For Supabase DB compatibility
-  endDate: DateISO;
-  end_date?: DateISO; // For Supabase DB compatibility
-  objectives: string[];
-  bnccReferences: string[];
-  bncc_references?: string[]; // For Supabase DB compatibility
-  contents: string[];
-  methodology: string;
-  resources: string[];
-  evaluation: string;
-  createdAt?: DateISO;
-  updatedAt?: DateISO;
-  created_at?: DateISO; // For Supabase DB compatibility
-  updated_at?: DateISO; // For Supabase DB compatibility
+  startDate: DateString;
+  endDate: DateString;
+  status: 'draft' | 'published' | 'archived';
+  created_at: DateTimeString;
 }
 
-// Lesson Plan
+// Lesson plan types
 export interface LessonPlan {
   id: ID;
   title: string;
-  teachingPlanId: ID;
-  teaching_plan_id?: ID; // For Supabase DB compatibility
-  date: DateISO;
-  duration: number; // minutes
-  objectives: string[];
-  contents: string[];
-  activities: string[];
-  resources: string[];
-  homework?: string;
-  evaluation?: string;
+  date: DateTimeString;
+  duration?: number;
+  objectives?: string;
+  content?: string;
+  activities?: string;
+  resources?: string;
+  assessment?: string;
   notes?: string;
-  materialIds?: ID[];
-  material_ids?: ID[]; // For Supabase DB compatibility
-  createdAt?: DateISO;
-  updatedAt?: DateISO;
-  created_at?: DateISO; // For Supabase DB compatibility
-  updated_at?: DateISO; // For Supabase DB compatibility
+  teachingPlanId: ID;
+  status: 'draft' | 'published' | 'archived';
+  created_at: DateTimeString;
 }
 
-// Assessment
+// Assessment types
 export interface Assessment {
   id: ID;
   title: string;
   description?: string;
+  type: 'exam' | 'assignment' | 'project' | 'quiz' | 'other';
+  weight?: number;
+  maxScore?: number;
+  date: DateString;
+  dueDate?: DateString;
   subjectId: ID;
-  subject_id?: ID; // For Supabase DB compatibility
   teachingPlanId?: ID;
-  teaching_plan_id?: ID; // For Supabase DB compatibility
-  type: "diagnostic" | "formative" | "summative";
-  totalPoints: number;
-  total_points?: number; // For Supabase DB compatibility
-  date: DateISO;
-  dueDate?: DateISO;
-  due_date?: DateISO; // For Supabase DB compatibility
-  createdAt?: DateISO;
-  updatedAt?: DateISO;
-  created_at?: DateISO; // For Supabase DB compatibility
-  updated_at?: DateISO; // For Supabase DB compatibility
+  status: 'draft' | 'published' | 'archived';
+  created_at: DateTimeString;
 }
 
-// Student (minimal implementation for assessment tracking)
+// Student types
 export interface Student {
   id: ID;
   name: string;
-  registration: string;
-  created_at?: DateISO; // For Supabase DB compatibility
+  email?: string;
+  enrollmentId?: string;
+  dateOfBirth?: DateString;
+  phoneNumber?: string;
+  address?: string;
+  notes?: string;
+  created_at: DateTimeString;
 }
 
-// Student Assessment
+// Student assessment types
 export interface StudentAssessment {
   id: ID;
   studentId: ID;
-  student_id?: ID; // For Supabase DB compatibility
   assessmentId: ID;
-  assessment_id?: ID; // For Supabase DB compatibility
-  score: number;
+  score?: number;
   feedback?: string;
-  submittedDate?: DateISO;
-  submitted_date?: DateISO; // For Supabase DB compatibility
-  gradedDate?: DateISO;
-  graded_date?: DateISO; // For Supabase DB compatibility
-  created_at?: DateISO; // For Supabase DB compatibility
+  submittedDate?: DateString;
+  gradedDate?: DateString;
+  status: 'pending' | 'submitted' | 'graded';
+  created_at: DateTimeString;
 }
 
-// Calendar Event Types
-export type EventType = "class" | "exam" | "meeting" | "other" | "deadline";
-export type EventSourceType = "assessment" | "lesson_plan" | "teaching_plan" | "manual" | "student_assessment";
-
-// Calendar Event
-export interface CalendarEvent {
+// Annual plan types
+export interface AnnualPlan {
   id: ID;
   title: string;
   description?: string;
-  startDate: DateISO;
-  start_date?: DateISO; // For Supabase DB compatibility
-  endDate?: DateISO;
-  end_date?: DateISO; // For Supabase DB compatibility
-  allDay: boolean;
-  all_day?: boolean; // For Supabase DB compatibility
-  type: EventType;
-  subjectId?: ID;
-  subject_id?: ID; // For Supabase DB compatibility
-  lessonPlanId?: ID;
-  lesson_plan_id?: ID; // For Supabase DB compatibility
-  assessmentId?: ID;
-  assessment_id?: ID; // For Supabase DB compatibility
-  teachingPlanId?: ID;
-  teaching_plan_id?: ID; // For Supabase DB compatibility
-  location?: string;
-  color?: string;
-  sourceType?: EventSourceType;
-  source_type?: EventSourceType; // For Supabase DB compatibility
-  sourceId?: ID;
-  source_id?: ID; // For Supabase DB compatibility
-  created_at?: DateISO; // For Supabase DB compatibility
+  year: number;
+  objectives?: string;
+  strategies?: string;
+  evaluation?: string;
+  academicPeriodId: ID;
+  created_at: DateTimeString;
 }
 
-// Educational Material
+// Material types
 export interface Material {
   id: ID;
   title: string;
   description?: string;
-  type: "document" | "video" | "link" | "image" | "other";
   url?: string;
   filePath?: string;
-  file_path?: string; // For Supabase DB compatibility
   fileSize?: number;
-  file_size?: number; // For Supabase DB compatibility
+  type: 'document' | 'video' | 'link' | 'image' | 'other';
   tags: string[];
   subjectId?: ID;
-  subject_id?: ID; // For Supabase DB compatibility
-  createdAt?: DateISO;
-  updatedAt?: DateISO;
-  created_at?: DateISO; // For Supabase DB compatibility
-  updated_at?: DateISO; // For Supabase DB compatibility
+  thumbnailUrl?: string;
+  created_at: string;
+  updatedAt: string;
 }
 
-// Remove these problematic functions that cause deep recursion
-// Instead, we use direct object construction throughout the codebase
+// Calendar event types
+export interface CalendarEvent {
+  id: ID;
+  title: string;
+  description?: string;
+  startDate: DateTimeString;
+  endDate?: DateTimeString;
+  allDay: boolean;
+  type: 'class' | 'exam' | 'meeting' | 'deadline' | 'other';
+  subjectId?: ID;
+  lessonPlanId?: ID;
+  assessmentId?: ID;
+  teachingPlanId?: ID;
+  location?: string;
+  color?: string;
+  sourceType?: string;
+  sourceId?: string | null;
+  created_at: DateTimeString;
+}
+
+// Form submission types
+export interface FormSubmission {
+  id: ID;
+  formId: ID;
+  userId: ID;
+  data: Record<string, any>;
+  submittedAt: DateTimeString;
+  created_at: DateTimeString;
+}
+
+// Notification types
+export interface Notification {
+  id: ID;
+  userId: ID;
+  title: string;
+  message: string;
+  type: 'info' | 'success' | 'warning' | 'error';
+  read: boolean;
+  created_at: DateTimeString;
+}
+
+// Settings types
+export interface Settings {
+  id: ID;
+  userId: ID;
+  theme: 'light' | 'dark' | 'system';
+  notifications: boolean;
+  language: string;
+  created_at: DateTimeString;
+}

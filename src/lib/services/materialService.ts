@@ -1,127 +1,85 @@
 
-import { Material, ID } from '@/types';
-import { createService, handleError } from './baseService';
-import { supabase } from "@/integrations/supabase/client";
-import { mapToCamelCase } from '@/lib/utils/caseConverters';
+import { Material } from '@/types';
+import { createService } from './baseService';
+import { supabase } from '@/integrations/supabase/client';
+import { mapToCamelCase, mapToSnakeCase } from '@/integrations/supabase/supabaseAdapter';
 import { extractVideoMetadata } from '@/lib/utils/extractVideoMetadata';
 
-// Define valid material types for TypeScript validation
-export type MaterialType = "document" | "video" | "link" | "image" | "other";
-
-// Material Service
+// Service for handling materials
 export const materialService = {
-  ...createService<Material>("materials"),
-  
-  // Create a new material with video metadata extraction if applicable
-  create: async (material: Partial<Material>): Promise<Material> => {
+  ...createService<Material>('materials'),
+
+  // Override create to handle video thumbnails
+  create: async (material: Omit<Material, 'id'>): Promise<Material | null> => {
     try {
-      // Process video URLs for YouTube and Vimeo
+      let materialToCreate = { ...material };
+
+      // Process video URLs to extract thumbnails if needed
       if (material.type === 'video' && material.url) {
         const metadata = extractVideoMetadata(material.url);
-        if (metadata.embedUrl) {
-          material.url = metadata.embedUrl;
-        }
         if (metadata.thumbnailUrl) {
-          material.thumbnailUrl = metadata.thumbnailUrl;
+          materialToCreate.thumbnailUrl = metadata.thumbnailUrl;
+        }
+        if (metadata.embedUrl) {
+          materialToCreate.url = metadata.embedUrl;
         }
       }
-      
+
+      // Convert to snake_case for database
+      const materialData = mapToSnakeCase(materialToCreate);
+
+      // Make sure the record has required fields
+      if (!materialData.title || !materialData.type) {
+        throw new Error("Material must have at least a title and type");
+      }
+
       const { data, error } = await supabase
-        .from("materials")
-        .insert(material)
+        .from('materials')
+        .insert(materialData)
         .select()
         .single();
-      
+
       if (error) throw error;
-      return mapToCamelCase<Material>(data);
+
+      return data ? mapToCamelCase<Material>(data) : null;
     } catch (error) {
-      handleError(error, 'criar material');
-      throw error;
+      console.error('Error creating material:', error);
+      return null;
     }
   },
-  
-  // Update a material with video metadata extraction if applicable
-  update: async (id: ID, material: Partial<Material>): Promise<Material> => {
+
+  // Override update to handle video thumbnails
+  update: async (id: string, updates: Partial<Material>): Promise<Material | null> => {
     try {
-      // Process video URLs for YouTube and Vimeo
-      if (material.type === 'video' && material.url) {
-        const metadata = extractVideoMetadata(material.url);
-        if (metadata.embedUrl) {
-          material.url = metadata.embedUrl;
-        }
+      let updatesToApply = { ...updates };
+
+      // Process video URLs to extract thumbnails if needed
+      if (updates.type === 'video' && updates.url) {
+        const metadata = extractVideoMetadata(updates.url);
         if (metadata.thumbnailUrl) {
-          material.thumbnailUrl = metadata.thumbnailUrl;
+          updatesToApply.thumbnailUrl = metadata.thumbnailUrl;
+        }
+        if (metadata.embedUrl) {
+          updatesToApply.url = metadata.embedUrl;
         }
       }
-      
+
+      // Convert to snake_case for database
+      const updateData = mapToSnakeCase(updatesToApply);
+
       const { data, error } = await supabase
-        .from("materials")
-        .update(material)
+        .from('materials')
+        .update(updateData)
         .eq('id', id)
         .select()
         .single();
-      
+
       if (error) throw error;
-      return mapToCamelCase<Material>(data);
+
+      return data ? mapToCamelCase<Material>(data) : null;
     } catch (error) {
-      handleError(error, 'atualizar material');
-      throw error;
-    }
-  },
-  
-  // Get all materials for a specific subject
-  getBySubject: async (subjectId: ID): Promise<Material[]> => {
-    try {
-      const { data, error } = await supabase
-        .from("materials")
-        .select('*')
-        .eq('subject_id', subjectId);
-      
-      if (error) throw error;
-      return data ? data.map(item => mapToCamelCase<Material>(item)) : [];
-    } catch (error) {
-      handleError(error, 'buscar materiais por disciplina');
-      return [];
-    }
-  },
-  
-  // Get all materials by type
-  getByType: async (type: MaterialType): Promise<Material[]> => {
-    try {
-      const { data, error } = await supabase
-        .from("materials")
-        .select('*')
-        .eq('type', type);
-      
-      if (error) throw error;
-      return data ? data.map(item => mapToCamelCase<Material>(item)) : [];
-    } catch (error) {
-      handleError(error, 'buscar materiais por tipo');
-      return [];
-    }
-  },
-  
-  // Search materials by query in title, description or tags
-  search: async (query: string): Promise<Material[]> => {
-    try {
-      const { data, error } = await supabase
-        .from("materials")
-        .select('*')
-        .or(`title.ilike.%${query}%,description.ilike.%${query}%`);
-      
-      if (error) throw error;
-      
-      // We need to filter manually for tags since it's an array column
-      const filteredData = data.filter(material => 
-        material.tags.some((tag: string) => 
-          tag.toLowerCase().includes(query.toLowerCase())
-        )
-      );
-      
-      return filteredData.map(item => mapToCamelCase<Material>(item));
-    } catch (error) {
-      handleError(error, 'buscar materiais');
-      return [];
+      console.error('Error updating material:', error);
+      return null;
     }
   }
 };
