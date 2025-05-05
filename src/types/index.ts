@@ -1,5 +1,11 @@
 
 // Type definitions for the application
+import { 
+  EventType as DbEventType,
+  AssessmentType as DbAssessmentType,
+  MaterialType as DbMaterialType,
+  EventSourceType
+} from './database';
 
 // Basic types
 export type ID = string;
@@ -7,6 +13,12 @@ export type UUID = string;
 export type DateString = string;
 export type TimeString = string;
 export type DateTimeString = string;
+
+// Re-export the database enum types
+export type EventType = DbEventType;
+export type AssessmentType = DbAssessmentType;
+export type MaterialType = DbMaterialType;
+export { EventSourceType };
 
 // User related types
 export interface User {
@@ -84,7 +96,7 @@ export interface Assessment {
   id: ID;
   title: string;
   description?: string;
-  type: 'exam' | 'assignment' | 'project' | 'quiz' | 'other' | 'diagnostic' | 'formative' | 'summative';
+  type: AssessmentType;
   weight?: number;
   maxScore?: number;
   totalPoints?: number;
@@ -133,7 +145,7 @@ export interface AnnualPlan {
   methodology?: string;
   generalContent?: string;
   evaluation?: string;
-  referencesMaterials?: string[];
+  referenceMaterials?: string[];
   academicPeriodId: ID;
   subjectId: ID;
   created_at: DateTimeString;
@@ -148,7 +160,7 @@ export interface Material {
   url?: string;
   filePath?: string;
   fileSize?: number;
-  type: 'document' | 'video' | 'link' | 'image' | 'other';
+  type: MaterialType;
   tags: string[];
   subjectId?: ID;
   thumbnailUrl?: string;
@@ -165,14 +177,14 @@ export interface CalendarEvent {
   startDate: DateTimeString;
   endDate?: DateTimeString;
   allDay: boolean;
-  type: 'class' | 'exam' | 'meeting' | 'deadline' | 'other';
+  type: EventType;
   subjectId?: ID;
   lessonPlanId?: ID;
   assessmentId?: ID;
   teachingPlanId?: ID;
   location?: string;
   color?: string;
-  sourceType?: string;
+  sourceType?: EventSourceType;
   sourceId?: string | null;
   created_at: DateTimeString;
 }
@@ -207,6 +219,3 @@ export interface Settings {
   language: string;
   created_at: DateTimeString;
 }
-
-// Add EventType definition for calendar
-export type EventType = 'class' | 'exam' | 'meeting' | 'deadline' | 'other';

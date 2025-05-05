@@ -1,159 +1,114 @@
-
-import React, { useState } from 'react';
-import { toast } from '@/hooks/use-toast';
-import { LessonPlan } from '@/types';
-import CrudModal from '@/components/ui-components/CrudModal';
-import DeleteConfirmationDialog from '@/components/ui-components/DeleteConfirmationDialog';
+import React, { useState, useCallback } from 'react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 import LessonPlanForm, { LessonPlanFormValues } from '@/components/forms/LessonPlanForm';
+import { toast } from "@/hooks/use-toast";
+import { LessonPlan, TeachingPlan } from '@/types';
 import { lessonPlanService } from '@/lib/services';
 
-interface LessonPlanModalsProps {
-  teachingPlans: any[];
-  refreshData: () => void;
+interface LessonPlanModalProps {
+  isOpen: boolean;
+  setIsOpen: (open: boolean) => void;
+  lessonPlan?: LessonPlan;
+  teachingPlans: TeachingPlan[];
+  onSuccess: () => void;
 }
 
-const LessonPlanModals: React.FC<LessonPlanModalsProps> = ({
+const LessonPlanModals: React.FC<LessonPlanModalProps> = ({
+  isOpen,
+  setIsOpen,
+  lessonPlan,
   teachingPlans,
-  refreshData
+  onSuccess
 }) => {
-  const [isLessonPlanModalOpen, setIsLessonPlanModalOpen] = useState(false);
-  const [isLessonPlanDeleteOpen, setIsLessonPlanDeleteOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedLessonPlan, setSelectedLessonPlan] = useState<Partial<LessonPlan> | null>(null);
+  const [isSubmitting, setSubmitting] = useState(false);
 
-  const handleCreateLessonPlan = () => {
-    setSelectedLessonPlan(null);
-    setIsLessonPlanModalOpen(true);
-  };
+  const handleClose = useCallback(() => {
+    setIsOpen(false);
+  }, [setIsOpen]);
 
-  const handleEditLessonPlan = (plan: LessonPlan) => {
-    // Create a new object for the form with a Date object for the date field
-    const planWithDateObject = {
-      ...plan,
-      // Store as dateObj for the form, but don't update the actual date property
-      dateObj: new Date(plan.date)
-    };
-    setSelectedLessonPlan(planWithDateObject);
-    setIsLessonPlanModalOpen(true);
-  };
-
-  const handleDeleteLessonPlan = (plan: LessonPlan) => {
-    setSelectedLessonPlan(plan);
-    setIsLessonPlanDeleteOpen(true);
-  };
-
-  const handleLessonPlanSubmit = async (data: LessonPlanFormValues) => {
-    setIsSubmitting(true);
+  const handleSubmit = async (values: LessonPlanFormValues) => {
+    setSubmitting(true);
     try {
-      // Format the data as expected by the LessonPlanFormValues type
-      const formattedData: Partial<LessonPlanFormValues> = {
-        title: data.title,
-        teachingPlanId: data.teachingPlanId,
-        date: data.date,
-        duration: data.duration,
-        objectives: data.objectives,
-        contents: data.contents,
-        activities: data.activities,
-        resources: data.resources,
-        homework: data.homework,
-        evaluation: data.evaluation,
-        notes: data.notes
+      // Process arrays from newline-separated strings
+      const processedValues: Omit<LessonPlan, "id" | "created_at" | "updated_at"> = {
+        title: values.title,
+        teachingPlanId: values.teachingPlanId,
+        date: values.date.toISOString(), // Convert Date to string
+        duration: values.duration,
+        objectives: values.objectives ? values.objectives.split('\n').filter(Boolean) : [],
+        contents: values.contents ? values.contents.split('\n').filter(Boolean) : [],
+        activities: values.activities ? values.activities.split('\n').filter(Boolean) : [],
+        resources: values.resources ? values.resources.split('\n').filter(Boolean) : [],
+        homework: values.homework || undefined,
+        evaluation: values.evaluation || undefined,
+        notes: values.notes || undefined
       };
 
-      if (selectedLessonPlan?.id) {
-        // Update existing plan
-        await lessonPlanService.update(selectedLessonPlan.id, formattedData);
+      if (lessonPlan) {
+        // Update existing lesson plan
+        await lessonPlanService.update(lessonPlan.id, processedValues);
         toast({
           title: "Plano de aula atualizado",
-          description: "O plano de aula foi atualizado com sucesso.",
+          description: `O plano ${values.title} foi atualizado com sucesso.`,
         });
       } else {
-        // Create new plan
-        await lessonPlanService.create(formattedData);
+        // Create new lesson plan
+        const created = await lessonPlanService.create({
+          ...processedValues,
+          status: 'draft',
+        });
+        
+        if (created && created.id) {
+          // Sync with calendar
+          await lessonPlanService.syncWithCalendar(created.id);
+        }
+        
         toast({
           title: "Plano de aula criado",
-          description: "O plano de aula foi criado com sucesso.",
+          description: `O plano ${values.title} foi criado com sucesso.`,
         });
       }
-      setIsLessonPlanModalOpen(false);
-      refreshData();
+      
+      onSuccess();
     } catch (error) {
-      console.error('Error saving lesson plan:', error);
+      console.error("Error saving lesson plan:", error);
       toast({
-        title: "Erro ao salvar",
-        description: "Ocorreu um erro ao salvar o plano de aula.",
+        title: "Erro ao salvar plano de aula",
+        description: "Ocorreu um erro ao salvar o plano de aula. Tente novamente.",
         variant: "destructive",
       });
     } finally {
-      setIsSubmitting(false);
+      setSubmitting(false);
     }
-  };
-
-  const handleLessonPlanDelete = async () => {
-    setIsSubmitting(true);
-    try {
-      if (selectedLessonPlan?.id) {
-        await lessonPlanService.delete(selectedLessonPlan.id);
-        toast({
-          title: "Plano de aula excluído",
-          description: "O plano de aula foi excluído com sucesso.",
-        });
-        setIsLessonPlanDeleteOpen(false);
-        refreshData();
-      }
-    } catch (error) {
-      console.error('Error deleting lesson plan:', error);
-      toast({
-        title: "Erro ao excluir",
-        description: "Ocorreu um erro ao excluir o plano de aula.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  // Wrapper function to handle form submission from CrudModal
-  const handleSubmitForm = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    // The actual submission happens in the LessonPlanForm's onSubmit prop
   };
 
   return (
-    <>
-      {/* Lesson Plan Modal */}
-      <CrudModal
-        title={selectedLessonPlan ? "Editar Plano de Aula" : "Novo Plano de Aula"}
-        description="Preencha os campos para criar ou editar um plano de aula."
-        isOpen={isLessonPlanModalOpen}
-        isLoading={isSubmitting}
-        onClose={() => setIsLessonPlanModalOpen(false)}
-        onSubmit={handleSubmitForm}
-        submitLabel={selectedLessonPlan ? "Atualizar" : "Criar"}
-        size="lg"
-      >
+    <Dialog open={isOpen} onOpenChange={handleClose}>
+      <DialogContent className="sm:max-w-[625px]">
+        <DialogHeader>
+          <DialogTitle>{lessonPlan ? "Editar Plano de Aula" : "Novo Plano de Aula"}</DialogTitle>
+        </DialogHeader>
         <LessonPlanForm
-          onSubmit={handleLessonPlanSubmit}
-          initialData={selectedLessonPlan || {}}
+          onSubmit={handleSubmit}
+          initialData={lessonPlan}
           teachingPlans={teachingPlans}
           isSubmitting={isSubmitting}
         />
-      </CrudModal>
-
-      {/* Lesson Plan Delete Confirmation */}
-      <DeleteConfirmationDialog
-        isOpen={isLessonPlanDeleteOpen}
-        isLoading={isSubmitting}
-        title="Excluir Plano de Aula"
-        description={`Tem certeza que deseja excluir o plano de aula "${selectedLessonPlan?.title}"? Esta ação não pode ser desfeita.`}
-        onClose={() => setIsLessonPlanDeleteOpen(false)}
-        onConfirm={handleLessonPlanDelete}
-      />
-    </>
+        <DialogFooter>
+          <Button type="button" variant="secondary" onClick={handleClose}>
+            Cancelar
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 };
 
-export { 
-  LessonPlanModals,
-  type LessonPlanModalsProps 
-};
+export default LessonPlanModals;

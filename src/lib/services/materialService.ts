@@ -2,8 +2,9 @@
 import { Material } from '@/types';
 import { createService } from './baseService';
 import { supabase } from '@/integrations/supabase/client';
-import { mapToCamelCase, mapToSnakeCase } from '@/integrations/supabase/supabaseAdapter';
+import { mapToSnakeCase } from '@/integrations/supabase/supabaseAdapter';
 import { extractVideoMetadata } from '@/lib/utils/extractVideoMetadata';
+import { mapMaterialFromDb, mapMaterialToDb } from '@/lib/utils/dataMappers';
 
 // Service for handling materials
 export const materialService = {
@@ -25,8 +26,8 @@ export const materialService = {
         }
       }
 
-      // Convert to snake_case for database
-      const materialData = mapToSnakeCase(materialToCreate);
+      // Convert to snake_case for database using our new mapper
+      const materialData = mapMaterialToDb(materialToCreate);
 
       // Make sure the record has required fields
       if (!materialData.title || !materialData.type) {
@@ -41,7 +42,7 @@ export const materialService = {
 
       if (error) throw error;
 
-      return data ? mapToCamelCase<Material>(data) : null;
+      return data ? mapMaterialFromDb(data) : null;
     } catch (error) {
       console.error('Error creating material:', error);
       return null;
@@ -64,8 +65,8 @@ export const materialService = {
         }
       }
 
-      // Convert to snake_case for database
-      const updateData = mapToSnakeCase(updatesToApply);
+      // Convert to snake_case for database using our new mapper
+      const updateData = mapMaterialToDb(updatesToApply);
 
       const { data, error } = await supabase
         .from('materials')
@@ -76,7 +77,7 @@ export const materialService = {
 
       if (error) throw error;
 
-      return data ? mapToCamelCase<Material>(data) : null;
+      return data ? mapMaterialFromDb(data) : null;
     } catch (error) {
       console.error('Error updating material:', error);
       return null;
@@ -94,7 +95,7 @@ export const materialService = {
       
       if (error) throw error;
       
-      return data ? mapToCamelCase<Material>(data) : null;
+      return data ? mapMaterialFromDb(data) : null;
     } catch (error) {
       console.error('Error getting material by id:', error);
       return null;

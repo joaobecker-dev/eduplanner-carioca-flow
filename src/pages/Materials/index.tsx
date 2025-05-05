@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   FolderOpen, 
@@ -112,22 +111,22 @@ const Materials: React.FC = () => {
       switch(selectedDateRange) {
         case 'today':
           startDate = new Date(now.setHours(0, 0, 0, 0));
-          filtered = filtered.filter(material => new Date(material.updatedAt) >= startDate);
+          filtered = filtered.filter(material => new Date(material.updated_at) >= startDate);
           break;
         case 'week':
           startDate = new Date(now);
           startDate.setDate(startDate.getDate() - 7);
-          filtered = filtered.filter(material => new Date(material.updatedAt) >= startDate);
+          filtered = filtered.filter(material => new Date(material.updated_at) >= startDate);
           break;
         case 'month':
           startDate = new Date(now);
           startDate.setMonth(startDate.getMonth() - 1);
-          filtered = filtered.filter(material => new Date(material.updatedAt) >= startDate);
+          filtered = filtered.filter(material => new Date(material.updated_at) >= startDate);
           break;
         case 'year':
           startDate = new Date(now);
           startDate.setFullYear(startDate.getFullYear() - 1);
-          filtered = filtered.filter(material => new Date(material.updatedAt) >= startDate);
+          filtered = filtered.filter(material => new Date(material.updated_at) >= startDate);
           break;
       }
     }
@@ -176,7 +175,7 @@ const Materials: React.FC = () => {
     }
   };
   
-  const formatDate = (dateString: string): string => {
+  const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('pt-BR');
   };
@@ -269,6 +268,60 @@ const Materials: React.FC = () => {
       </p>
     ) : null;
   };
+
+  const columns = [
+    {
+      accessorKey: "title",
+      header: "Título",
+    },
+    {
+      accessorKey: "subject",
+      header: "Disciplina",
+      cell: ({ row }) => getSubjectName(row.original.subjectId),
+    },
+    {
+      accessorKey: "type",
+      header: "Tipo",
+      cell: ({ row }) => getMaterialTypeIcon(row.original.type),
+    },
+    {
+      accessorKey: "updated_at",
+      header: "Última Atualização",
+      cell: ({ row }) => formatDate(row.original.updated_at),
+    },
+    {
+      accessorKey: "actions",
+      header: "Ações",
+      cell: ({ row }) => (
+        <div className="flex gap-2">
+          <Button
+            size="sm" 
+            variant="outline"
+            onClick={() => handleViewDetail(row.original)}
+            className="text-edu-blue-600 hover:text-edu-blue-700 hover:bg-edu-blue-50"
+          >
+            Detalhes
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            className="text-edu-blue-600 hover:text-edu-blue-700 hover:bg-edu-blue-50"
+            onClick={() => materialsModalsRef.current?.handleEditMaterial(row.original)}
+          >
+            Editar
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+            onClick={() => materialsModalsRef.current?.handleDeleteMaterial(row.original)}
+          >
+            Excluir
+          </Button>
+        </div>
+      ),
+    },
+  ];
 
   return (
     <div className="space-y-6 animate-fade-in pb-10">
@@ -391,7 +444,7 @@ const Materials: React.FC = () => {
                   
                   <CardFooter className="flex justify-between pt-2 border-t">
                     <div className="text-xs text-edu-gray-500">
-                      Atualizado em {formatDate(material.updatedAt)}
+                      Atualizado em {formatDate(material.updated_at)}
                     </div>
                     <div className="flex gap-2">
                       <Button

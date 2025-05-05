@@ -1,171 +1,164 @@
-
-import React, { useState } from 'react';
-import { toast } from '@/hooks/use-toast';
+import React, { useState, useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
+import { toast } from "@/hooks/use-toast"
+import { StudentAssessment, Student } from '@/types';
 import { services } from '@/lib/services';
-import { Assessment, Student, StudentAssessment } from '@/types';
-import CrudModal from '@/components/ui-components/CrudModal';
-import DeleteConfirmationDialog from '@/components/ui-components/DeleteConfirmationDialog';
-import StudentAssessmentForm, { StudentAssessmentFormValues } from '@/components/forms/StudentAssessmentForm';
+import { studentAssessmentSchema, StudentAssessmentFormValues } from '@/schemas/studentAssessmentSchema';
+import InputField from '@/components/forms/fields/InputField';
+import DatePickerField from '@/components/forms/fields/DatePickerField';
+import TextAreaField from '@/components/forms/fields/TextAreaField';
+import { SelectField } from '@/components/forms/fields/SelectField';
 
-interface StudentAssessmentModalsProps {
+interface StudentAssessmentModalProps {
+  isOpen: boolean;
+  setIsOpen: (open: boolean) => void;
+  studentAssessment?: StudentAssessment;
+  assessmentId: string;
   students: Student[];
-  assessments: Assessment[];
-  refreshData: () => void;
+  onSuccess: () => void;
 }
 
-const StudentAssessmentModals: React.FC<StudentAssessmentModalsProps> = ({
+const StudentAssessmentModals: React.FC<StudentAssessmentModalProps> = ({
+  isOpen,
+  setIsOpen,
+  studentAssessment,
+  assessmentId,
   students,
-  assessments,
-  refreshData
+  onSuccess
 }) => {
-  // Modal states
-  const [isStudentAssessmentModalOpen, setIsStudentAssessmentModalOpen] = useState(false);
-  const [isStudentAssessmentDeleteOpen, setIsStudentAssessmentDeleteOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedStudentAssessment, setSelectedStudentAssessment] = useState<Partial<StudentAssessment> | null>(null);
-  const [currentAssessmentId, setCurrentAssessmentId] = useState<string | null>(null);
+  const [isSubmitting, setSubmitting] = useState(false);
 
-  // Student Assessment handlers
-  const handleCreateStudentAssessment = (assessmentId?: string) => {
-    setSelectedStudentAssessment(assessmentId ? { assessmentId } : null);
-    setCurrentAssessmentId(assessmentId || null);
-    setIsStudentAssessmentModalOpen(true);
-  };
+  const form = useForm<StudentAssessmentFormValues>({
+    resolver: zodResolver(studentAssessmentSchema),
+    defaultValues: {
+      studentId: studentAssessment?.studentId || '',
+      assessmentId: assessmentId,
+      score: studentAssessment?.score || 0,
+      feedback: studentAssessment?.feedback || '',
+      submittedDate: studentAssessment?.submittedDate ? new Date(studentAssessment.submittedDate) : undefined,
+      gradedDate: studentAssessment?.gradedDate ? new Date(studentAssessment.gradedDate) : undefined,
+    },
+  });
 
-  const handleEditStudentAssessment = (studentAssessment: StudentAssessment) => {
-    setSelectedStudentAssessment(studentAssessment);
-    setCurrentAssessmentId(studentAssessment.assessmentId);
-    setIsStudentAssessmentModalOpen(true);
-  };
+  useEffect(() => {
+    if (studentAssessment) {
+      form.reset({
+        studentId: studentAssessment.studentId,
+        assessmentId: assessmentId,
+        score: studentAssessment.score || 0,
+        feedback: studentAssessment.feedback || '',
+        submittedDate: studentAssessment.submittedDate ? new Date(studentAssessment.submittedDate) : undefined,
+        gradedDate: studentAssessment.gradedDate ? new Date(studentAssessment.gradedDate) : undefined,
+      });
+    } else {
+      form.setValue("assessmentId", assessmentId);
+    }
+  }, [studentAssessment, assessmentId, form]);
 
-  const handleDeleteStudentAssessment = (studentAssessment: StudentAssessment) => {
-    setSelectedStudentAssessment(studentAssessment);
-    setIsStudentAssessmentDeleteOpen(true);
-  };
-
-  const handleStudentAssessmentSubmit = async (data: StudentAssessmentFormValues) => {
-    setIsSubmitting(true);
+  const handleSubmit = async (data: StudentAssessmentFormValues) => {
     try {
-      // Convert Date objects to ISO strings for API
-      const studentAssessmentData = {
-        ...data,
-        submittedDate: data.submittedDate ? data.submittedDate.toISOString() : undefined,
-        gradedDate: data.gradedDate ? data.gradedDate.toISOString() : undefined
+      setSubmitting(true);
+
+      const assessmentData = {
+        studentId: data.studentId,
+        assessmentId: data.assessmentId,
+        score: data.score,
+        feedback: data.feedback,
+        submittedDate: data.submittedDate,
+        gradedDate: data.gradedDate,
+        status: data.gradedDate ? 'graded' : (data.submittedDate ? 'submitted' : 'pending'),
+        created_at: new Date().toISOString()
       };
-      
-      if (selectedStudentAssessment?.id) {
-        // Update existing student assessment
-        await services.studentAssessment.update(selectedStudentAssessment.id, studentAssessmentData);
+
+      if (studentAssessment?.id) {
+        await services.studentAssessment.update(studentAssessment.id, assessmentData);
         toast({
-          title: "Nota atualizada",
-          description: "A nota do aluno foi atualizada com sucesso.",
+          title: "Avaliação atualizada",
+          description: "A avaliação do estudante foi atualizada com sucesso!",
         });
       } else {
-        // Create new student assessment
-        // Ensure required fields are present for create
-        if (!studentAssessmentData.studentId || !studentAssessmentData.assessmentId) {
-          toast({
-            title: "Erro ao salvar",
-            description: "Aluno e avaliação são campos obrigatórios.",
-            variant: "destructive",
-          });
-          setIsSubmitting(false);
-          return;
-        }
-        
-        const requiredFields: Omit<StudentAssessment, "id"> = {
-          studentId: studentAssessmentData.studentId,
-          assessmentId: studentAssessmentData.assessmentId,
-          score: studentAssessmentData.score || 0,
-          feedback: studentAssessmentData.feedback,
-          submittedDate: studentAssessmentData.submittedDate,
-          gradedDate: studentAssessmentData.gradedDate
-        };
-        
-        await services.studentAssessment.create(requiredFields);
+        await services.studentAssessment.create(assessmentData as Omit<StudentAssessment, "id">);
         toast({
-          title: "Nota registrada",
-          description: "A nota do aluno foi registrada com sucesso.",
+          title: "Avaliação criada",
+          description: "A avaliação do estudante foi criada com sucesso!",
         });
       }
-      setIsStudentAssessmentModalOpen(false);
-      refreshData();
+
+      onSuccess();
     } catch (error) {
-      console.error('Error saving student assessment:', error);
+      console.error(error);
       toast({
-        title: "Erro ao salvar",
-        description: "Ocorreu um erro ao salvar a nota do aluno.",
+        title: "Erro",
+        description: "Ocorreu um erro ao salvar a avaliação.",
         variant: "destructive",
       });
     } finally {
-      setIsSubmitting(false);
+      setSubmitting(false);
     }
   };
 
-  const handleStudentAssessmentDelete = async () => {
-    setIsSubmitting(true);
-    try {
-      if (selectedStudentAssessment?.id) {
-        await services.studentAssessment.delete(selectedStudentAssessment.id);
-        toast({
-          title: "Nota excluída",
-          description: "A nota do aluno foi excluída com sucesso.",
-        });
-        setIsStudentAssessmentDeleteOpen(false);
-        refreshData();
-      }
-    } catch (error) {
-      console.error('Error deleting student assessment:', error);
-      toast({
-        title: "Erro ao excluir",
-        description: "Ocorreu um erro ao excluir a nota do aluno.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  // Filter assessments if we're adding a grade for a specific assessment
-  const filteredAssessments = currentAssessmentId 
-    ? assessments.filter(a => a.id === currentAssessmentId) 
-    : assessments;
+  const studentOptions = students.map(student => ({
+    label: student.name,
+    value: student.id
+  }));
 
   return (
-    <>
-      {/* Student Assessment Modal */}
-      <CrudModal
-        title={selectedStudentAssessment?.id ? "Editar Nota do Aluno" : "Registrar Nova Nota"}
-        description="Preencha os campos para registrar ou editar a nota do aluno."
-        isOpen={isStudentAssessmentModalOpen}
-        isLoading={isSubmitting}
-        onClose={() => setIsStudentAssessmentModalOpen(false)}
-        onSubmit={() => {}} // This is intentionally empty as we handle submission in the form
-        submitLabel={selectedStudentAssessment?.id ? "Atualizar" : "Salvar"}
-      >
-        <StudentAssessmentForm
-          onSubmit={handleStudentAssessmentSubmit}
-          initialData={selectedStudentAssessment || undefined}
-          students={students}
-          assessments={filteredAssessments}
-          isSubmitting={isSubmitting}
-        />
-      </CrudModal>
-
-      {/* Student Assessment Delete Confirmation */}
-      <DeleteConfirmationDialog
-        isOpen={isStudentAssessmentDeleteOpen}
-        isLoading={isSubmitting}
-        title="Excluir Nota do Aluno"
-        description={`Tem certeza que deseja excluir esta nota? Esta ação não pode ser desfeita.`}
-        onClose={() => setIsStudentAssessmentDeleteOpen(false)}
-        onConfirm={handleStudentAssessmentDelete}
-      />
-    </>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>{studentAssessment ? "Editar Avaliação" : "Nova Avaliação"}</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="grid gap-4 py-4">
+          <SelectField
+            name="studentId"
+            label="Estudante"
+            placeholder="Selecione um estudante"
+            options={studentOptions}
+            control={form.control}
+          />
+          <InputField
+            label="Nota"
+            name="score"
+            type="number"
+            placeholder="0-10"
+            control={form.control}
+          />
+          <TextAreaField
+            label="Feedback"
+            name="feedback"
+            placeholder="Feedback para o estudante"
+            control={form.control}
+          />
+          <DatePickerField
+            label="Data de Entrega"
+            name="submittedDate"
+            placeholder="Data de entrega da avaliação"
+            control={form.control}
+          />
+          <DatePickerField
+            label="Data de Correção"
+            name="gradedDate"
+            placeholder="Data de correção da avaliação"
+            control={form.control}
+          />
+        </form>
+        <DialogFooter>
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? "Salvando..." : "Salvar"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 };
 
-export { 
-  StudentAssessmentModals,
-  type StudentAssessmentModalsProps 
-};
+export default StudentAssessmentModals;

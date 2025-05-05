@@ -1,132 +1,101 @@
-
 import { useState } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
+import { toast } from '@/hooks/use-toast';
 import { CalendarEvent } from '@/types';
-import { DateSelectArg, EventClickArg } from '@fullcalendar/core';
-import { calendarEventService } from '@/lib/services';
+import { services } from '@/lib/services';
+import { EventFormValues } from '@/schemas/eventSchema';
 
-export const useCalendarActions = () => {
-  const queryClient = useQueryClient();
-  
-  // State for event details modal
-  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
-  const [showEventModal, setShowEventModal] = useState(false);
-  
-  // State for new/edit event modal
-  const [showNewEventModal, setShowNewEventModal] = useState(false);
-  const [eventToEdit, setEventToEdit] = useState<CalendarEvent | null>(null);
-  
-  // State for delete confirmation
-  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
+const useCalendarActions = () => {
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Handle event click
-  const handleEventClick = (info: EventClickArg) => {
-    const event = info.event.extendedProps as CalendarEvent;
-    if (event) {
-      setSelectedEvent(event);
-      setShowEventModal(true);
-    } else {
-      toast.error('Evento não encontrado.');
-    }
-  };
-
-  // Handle date select for creating new events
-  const handleDateSelect = (arg: DateSelectArg) => {
-    if (!arg.start) {
-      toast.error('Data de início inválida.');
-      return;
-    }
-
-    // Create a new event with default values
-    setEventToEdit(null);
-    setShowNewEventModal(true);
-  };
-
-  // Handle edit button click in event details modal
-  const handleEditEvent = () => {
-    setEventToEdit(selectedEvent);
-    setShowEventModal(false);
-    setShowNewEventModal(true);
-  };
-
-  // Handle saving a new or edited event
-  const handleSaveEvent = async (eventData: Omit<CalendarEvent, 'id' | 'created_at'>) => {
+  const createEvent = async (data: EventFormValues) => {
     try {
-      if (eventToEdit) {
-        // Update existing event
-        await calendarEventService.update(eventToEdit.id, eventData);
-        toast.success('Evento atualizado com sucesso!');
-      } else {
-        // Create new event
-        await calendarEventService.create(eventData);
-        toast.success('Evento criado com sucesso!');
-      }
-      
-      // Refresh calendar events by invalidating the query
-      queryClient.invalidateQueries({ queryKey: ['calendarEvents'] });
-      
-      // Close the modal
-      setShowNewEventModal(false);
-    } catch (error) {
-      console.error('Error saving event:', error);
-      toast.error('Erro ao salvar evento. Tente novamente.');
+      // Create the event data
+      const eventData: Omit<CalendarEvent, "id"> = {
+        title: data.title,
+        description: data.description || undefined,
+        startDate: data.startDate.toISOString(),
+        endDate: data.endDate?.toISOString(),
+        allDay: data.allDay || false,
+        type: data.type,
+        subjectId: data.subjectId && data.subjectId !== "none" ? data.subjectId : undefined,
+        color: data.color || undefined,
+        location: data.location || undefined,
+        created_at: new Date().toISOString(), // Add created_at field
+      };
+
+      setIsLoading(true);
+      await services.calendarEvent.create(eventData);
+      toast({
+        title: "Evento criado",
+        description: "O evento foi criado com sucesso!",
+      });
+    } catch (error: any) {
+      console.error("Error creating event:", error);
+      toast({
+        variant: "destructive",
+        title: "Erro ao criar evento",
+        description: error.message || "Ocorreu um erro ao criar o evento.",
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  // Handle opening delete confirmation dialog
-  const handleDeleteConfirmOpen = () => {
-    setShowEventModal(false);
-    setShowDeleteConfirmation(true);
-  };
-
-  // Handle delete cancellation
-  const handleDeleteCancel = () => {
-    setShowDeleteConfirmation(false);
-    setIsDeleting(false);
-  };
-
-  // Handle event deletion
-  const handleDeleteConfirm = async () => {
-    if (!selectedEvent) return;
-    
+  const updateEvent = async (id: string, data: EventFormValues) => {
     try {
-      setIsDeleting(true);
-      
-      await calendarEventService.deleteEvent(selectedEvent.id);
-      
-      // Refresh calendar events by invalidating the query
-      queryClient.invalidateQueries({ queryKey: ['calendarEvents'] });
-      
-      toast.success('Evento excluído com sucesso!');
-      
-      // Close modals
-      setShowDeleteConfirmation(false);
-      setSelectedEvent(null);
-      setIsDeleting(false);
-    } catch (error) {
-      console.error('Error deleting event:', error);
-      toast.error('Erro ao excluir evento. Tente novamente.');
-      setIsDeleting(false);
+      // Create the event data
+      const eventData: Omit<CalendarEvent, "id"> = {
+        title: data.title,
+        description: data.description || undefined,
+        startDate: data.startDate.toISOString(),
+        endDate: data.endDate?.toISOString(),
+        allDay: data.allDay || false,
+        type: data.type,
+        subjectId: data.subjectId && data.subjectId !== "none" ? data.subjectId : undefined,
+        color: data.color || undefined,
+        location: data.location || undefined,
+        created_at: new Date().toISOString(), // Add created_at field
+      };
+
+      setIsLoading(true);
+      await services.calendarEvent.update(id, eventData);
+      toast({
+        title: "Evento atualizado",
+        description: "O evento foi atualizado com sucesso!",
+      });
+    } catch (error: any) {
+      console.error("Error updating event:", error);
+      toast({
+        variant: "destructive",
+        title: "Erro ao atualizar evento",
+        description: error.message || "Ocorreu um erro ao atualizar o evento.",
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  return {
-    selectedEvent,
-    showEventModal,
-    setShowEventModal,
-    showNewEventModal,
-    setShowNewEventModal,
-    eventToEdit,
-    showDeleteConfirmation,
-    isDeleting,
-    handleEventClick,
-    handleDateSelect,
-    handleEditEvent,
-    handleSaveEvent,
-    handleDeleteConfirmOpen,
-    handleDeleteCancel,
-    handleDeleteConfirm
+  const deleteEvent = async (id: string) => {
+    try {
+      setIsLoading(true);
+      await services.calendarEvent.delete(id);
+      toast({
+        title: "Evento excluído",
+        description: "O evento foi excluído com sucesso!",
+      });
+    } catch (error: any) {
+      console.error("Error deleting event:", error);
+      toast({
+        variant: "destructive",
+        title: "Erro ao excluir evento",
+        description: error.message || "Ocorreu um erro ao excluir o evento.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
+
+  return { createEvent, updateEvent, deleteEvent, isLoading };
 };
+
+export default useCalendarActions;

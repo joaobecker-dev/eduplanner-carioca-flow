@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -37,15 +36,27 @@ export default function AnnualPlanEdit() {
 
   useEffect(() => {
     if (annualPlan) {
+      const defaultValues = {
+        title: annualPlan?.title || '',
+        description: annualPlan?.description || '',
+        academicPeriodId: annualPlan?.academicPeriodId || '',
+        subjectId: annualPlan?.subjectId || '',
+        objectives: annualPlan?.objectives?.join('\n') || '',
+        generalContent: annualPlan?.generalContent || '',
+        methodology: annualPlan?.methodology || '',
+        evaluation: annualPlan?.evaluation || '',
+        referenceMaterials: annualPlan?.referenceMaterials?.join('\n') || ''
+      };
+
       setInitialData({
-        title: annualPlan.title,
-        description: annualPlan.description || "",
-        subjectId: annualPlan.subjectId,
-        generalContent: annualPlan.generalContent || annualPlan.general_content || "",
+        title: defaultValues.title,
+        description: defaultValues.description || "",
+        subjectId: defaultValues.subjectId,
+        generalContent: defaultValues.generalContent || annualPlan.generalContent || annualPlan.general_content || "",
         objectives: annualPlan.objectives || [],
         methodology: annualPlan.methodology,
         evaluation: annualPlan.evaluation,
-        referenceMaterials: annualPlan.reference_materials || []
+        referenceMaterials: annualPlan.referenceMaterials || []
       });
     }
   }, [annualPlan]);

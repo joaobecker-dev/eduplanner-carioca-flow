@@ -1,5 +1,6 @@
 
-import { ID, EventType, EventSourceType } from '@/types';
+import { ID, EventType } from '@/types';
+import { EventSourceType } from '@/types/database';
 
 // Database field mapping for calendar events
 export interface CalendarEventDatabaseFields {
