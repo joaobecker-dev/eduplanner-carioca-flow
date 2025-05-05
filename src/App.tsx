@@ -22,6 +22,9 @@ import TeachingPlanEdit from "./pages/teaching-plans/[id]/edit";
 import LessonPlanEdit from "./pages/lesson-plans/[id]/edit";
 import AssessmentEdit from "./pages/assessments/[id]/edit";
 
+// Import the new AssignAssessmentPage
+import AssignAssessmentPage from "./pages/avaliacoes/AssignAssessmentPage";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -35,6 +38,7 @@ const App = () => (
             <Route path="/" element={<Dashboard />} />
             <Route path="/planejamento" element={<Planning />} />
             <Route path="/avaliacoes" element={<Assessments />} />
+            <Route path="/avaliacoes/atribuir" element={<AssignAssessmentPage />} />
             <Route path="/materiais" element={<Materials />} />
             <Route path="/calendario" element={<Calendar />} />
             
