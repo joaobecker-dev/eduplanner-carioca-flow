@@ -15,7 +15,7 @@ import AnnualPlanDetail from "./pages/annual-plans/[id]";
 import TeachingPlanDetail from "./pages/teaching-plans/[id]";
 import LessonPlanDetail from "./pages/lesson-plans/[id]";
 import AssessmentDetail from "./pages/assessments/[id]";
-import MaterialDetail from "./pages/materials/[id]";
+import MaterialDetail from "./pages/Materials/[id]";
 
 // Import Edit pages
 import AnnualPlanEdit from "./pages/annual-plans/[id]/edit";
