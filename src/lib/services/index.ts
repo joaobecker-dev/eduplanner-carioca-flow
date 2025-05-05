@@ -44,6 +44,6 @@ export const services = {
   assessment: assessmentService,
   student: studentService,
   studentAssessment: studentAssessmentService,
-  calendarEvent: calendarEventService,
-  material: materialService
+  material: materialService,
+  calendarEvent: calendarEventService
 };

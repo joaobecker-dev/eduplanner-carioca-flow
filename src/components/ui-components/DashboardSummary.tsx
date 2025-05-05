@@ -35,20 +35,41 @@ interface DashboardSummaryProps {
   materials: Material[];
   upcomingEvents: CalendarEvent[];
   onRefresh?: () => void;
+  // Add compatibility with the older props structure
+  stats?: Array<{ label: string; value: number | string }>;
 }
 
 const DashboardSummary: React.FC<DashboardSummaryProps> = ({
   isLoading,
-  academicPeriods,
-  subjects,
-  annualPlans,
-  teachingPlans,
-  lessonPlans,
-  assessments,
-  materials,
-  upcomingEvents,
-  onRefresh
+  academicPeriods = [],
+  subjects = [],
+  annualPlans = [],
+  teachingPlans = [],
+  lessonPlans = [],
+  assessments = [],
+  materials = [],
+  upcomingEvents = [],
+  onRefresh,
+  stats
 }) => {
+  // If stats prop is provided (older usage), render using that
+  if (stats) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {stats.map((stat, index) => (
+          <StatsCard
+            key={index}
+            title={stat.label}
+            value={stat.value}
+            icon={index === 0 ? BookOpen : index === 1 ? Users : index === 2 ? PenTool : BarChart}
+            color={index === 0 ? 'blue' : index === 1 ? 'purple' : index === 2 ? 'green' : 'orange'}
+            isLoading={isLoading}
+          />
+        ))}
+      </div>
+    );
+  }
+
   // Count for upcoming week events
   const upcomingWeekEvents = upcomingEvents.filter(event => {
     const eventDate = new Date(event.startDate);

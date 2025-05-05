@@ -2,7 +2,7 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import DashboardSummary from '@/components/ui-components/DashboardSummary';
 import DashboardCard from '@/components/ui-components/DashboardCard';
@@ -33,37 +33,52 @@ const Dashboard: React.FC = () => {
   // Stats for the summary cards
   const subjectsCount = subjects.length;
   const studentsCount = students.length;
-  const classesCount = events.filter((event: any) => event.type === 'class').length;
-  const examsCount = events.filter((event: any) => event.type === 'exam').length;
+  const classesCount = events && Array.isArray(events) ? events.filter((event: any) => event.type === 'class').length : 0;
+  const examsCount = events && Array.isArray(events) ? events.filter((event: any) => event.type === 'exam').length : 0;
 
   // Get today's events
-  const todayEvents = events.filter((event: any) => {
+  const todayEvents = events && Array.isArray(events) ? events.filter((event: any) => {
     const eventDate = format(new Date(event.startDate), 'yyyy-MM-dd');
     return eventDate === today;
-  });
+  }) : [];
 
   // Get upcoming events (next 7 days)
   const nextWeek = new Date();
   nextWeek.setDate(nextWeek.getDate() + 7);
   
-  const upcomingEvents = events.filter((event: any) => {
+  const upcomingEvents = events && Array.isArray(events) ? events.filter((event: any) => {
     const eventDate = new Date(event.startDate);
     return eventDate > now && eventDate <= nextWeek;
-  }).slice(0, 5);  // Get only the first 5 events
+  }).slice(0, 5) : [];  // Get only the first 5 events
 
   return (
     <div className="container mx-auto p-4 space-y-6">
       <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
       
-      <DashboardSummary stats={[
-        { label: 'Disciplinas', value: subjectsCount },
-        { label: 'Estudantes', value: studentsCount },
-        { label: 'Aulas', value: classesCount },
-        { label: 'Avaliações', value: examsCount }
-      ]} />
+      <DashboardSummary 
+        isLoading={false}
+        academicPeriods={[]}
+        subjects={subjects}
+        annualPlans={[]}
+        teachingPlans={[]}
+        lessonPlans={[]}
+        assessments={[]}
+        materials={[]}
+        upcomingEvents={[]}
+        stats={[
+          { label: 'Disciplinas', value: subjectsCount },
+          { label: 'Estudantes', value: studentsCount },
+          { label: 'Aulas', value: classesCount },
+          { label: 'Avaliações', value: examsCount }
+        ]} 
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <DashboardCard title="Eventos de Hoje" description={`${todayEvents.length} eventos agendados`} className="min-h-[350px]">
+        <DashboardCard 
+          title="Eventos de Hoje" 
+          description={`${todayEvents.length} eventos agendados`} 
+          className="min-h-[350px]"
+        >
           {todayEvents.length > 0 ? (
             <div className="space-y-2">
               {todayEvents.map((event: any) => (
@@ -94,7 +109,11 @@ const Dashboard: React.FC = () => {
           )}
         </DashboardCard>
         
-        <DashboardCard title="Próximos Eventos" description="Nos próximos 7 dias" className="min-h-[350px]">
+        <DashboardCard 
+          title="Próximos Eventos" 
+          description="Nos próximos 7 dias" 
+          className="min-h-[350px]"
+        >
           {upcomingEvents.length > 0 ? (
             <div className="space-y-2">
               {upcomingEvents.map((event: any) => (
