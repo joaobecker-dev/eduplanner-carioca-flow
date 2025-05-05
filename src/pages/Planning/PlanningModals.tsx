@@ -37,7 +37,7 @@ const PlanningModals: React.FC<PlanningModalsProps> = ({
       <TeachingPlanModals
         subjects={subjects}
         annualPlans={annualPlans}
-        refreshPlans={refreshData} // We're passing refreshData to match the TeachingPlanModalsProps
+        refreshPlans={refreshData}
         showCreateModal={showCreateModal}
         setShowCreateModal={setShowCreateModal}
         showDeleteModal={showDeleteModal}

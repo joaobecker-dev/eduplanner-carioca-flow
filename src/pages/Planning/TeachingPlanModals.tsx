@@ -12,8 +12,10 @@ interface TeachingPlanModalsProps {
   setShowCreateModal: (show: boolean) => void;
   showDeleteModal: boolean;
   setShowDeleteModal: (show: boolean) => void;
-  teachingPlanIdToDelete: string | null;
-  setTeachingPlanIdToDelete: (id: string | null) => void;
+  selectedPlan: any | null;
+  setSelectedPlan: (plan: any | null) => void;
+  showEditModal: boolean;
+  setShowEditModal: (show: boolean) => void;
   subjects?: any[];
   annualPlans?: any[];
   refreshPlans?: () => void;
@@ -24,8 +26,13 @@ const TeachingPlanModals: React.FC<TeachingPlanModalsProps> = ({
   setShowCreateModal,
   showDeleteModal,
   setShowDeleteModal,
-  teachingPlanIdToDelete,
-  setTeachingPlanIdToDelete,
+  selectedPlan,
+  setSelectedPlan,
+  showEditModal,
+  setShowEditModal,
+  subjects,
+  annualPlans,
+  refreshPlans
 }) => {
   const queryClient = useQueryClient();
   const [isCreatingPlan, setIsCreatingPlan] = useState(false);
@@ -57,7 +64,7 @@ const TeachingPlanModals: React.FC<TeachingPlanModalsProps> = ({
       queryClient.invalidateQueries({ queryKey: ['teachingPlans'] });
       toast.success('Plano de ensino excluído com sucesso!');
       setShowDeleteModal(false);
-      setTeachingPlanIdToDelete(null);
+      setSelectedPlan(null);
     },
     onError: (error) => {
       console.error('Error deleting teaching plan:', error);
@@ -91,14 +98,14 @@ const TeachingPlanModals: React.FC<TeachingPlanModalsProps> = ({
   };
 
   const handleDeleteTeachingPlan = async () => {
-    if (!teachingPlanIdToDelete) return;
+    if (!selectedPlan?.id) return;
     try {
       setIsDeletingPlan(true);
-      await teachingPlanService.delete(teachingPlanIdToDelete);
+      await teachingPlanService.delete(selectedPlan.id);
       queryClient.invalidateQueries({ queryKey: ['teachingPlans'] });
       toast.success('Plano de ensino excluído com sucesso!');
       setShowDeleteModal(false);
-      setTeachingPlanIdToDelete(null);
+      setSelectedPlan(null);
     } catch (error) {
       console.error('Error deleting teaching plan:', error);
       toast.error('Erro ao excluir plano de ensino');
