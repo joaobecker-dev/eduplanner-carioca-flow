@@ -16,7 +16,7 @@ import { toast } from "@/hooks/use-toast";
 import { mapToCamelCase } from '@/lib/utils/caseConverters';
 
 // Import services directly from their modular files to avoid circular dependencies
-import { calendarEventService as calendarEventServiceImport } from './services/calendarEventService';
+import { calendarEventService as calendarEventServiceImport } from './services/calendar';
 
 // Re-export the calendar event service
 export const calendarEventService = calendarEventServiceImport;

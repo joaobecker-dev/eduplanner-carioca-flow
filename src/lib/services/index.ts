@@ -15,7 +15,7 @@ import { assessmentService } from './assessmentService';
 import { studentService } from './studentService';
 import { studentAssessmentService } from './studentAssessmentService';
 import { materialService } from './materialService';
-import { calendarEventService } from './calendarEventService';
+import { calendarEventService } from './calendar';
 
 // Export all services individually for direct imports
 export {
