@@ -44,3 +44,20 @@ export const updateCalendarEvent = async (id: string, eventData: Partial<Calenda
     return null;
   }
 };
+
+// Add a deleteBySource function that was missing
+export const deleteBySource = async (sourceType: EventSourceType, sourceId: string): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from('calendar_events')
+      .delete()
+      .eq('source_type', sourceType)
+      .eq('source_id', sourceId);
+
+    if (error) throw error;
+    return true;
+  } catch (error) {
+    handleError(error, `excluir eventos de origem (${sourceType})`);
+    return false;
+  }
+};

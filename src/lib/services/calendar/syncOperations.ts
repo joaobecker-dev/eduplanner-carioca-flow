@@ -4,7 +4,7 @@ import { EventSourceType } from '@/types/database';
 import { CalendarEventDatabaseFields } from './types';
 import { getCalendarEventsBySource, deleteCalendarEventsBySource } from './queryOperations';
 import { createCalendarEvent, updateCalendarEvent } from './basicOperations';
-import { mapAssessmentFromDb, mapLessonPlanFromDb, mapCalendarEventToDb } from '@/lib/utils/dataMappers';
+import { mapAssessmentFromDb, mapLessonPlanFromDb, mapTeachingPlanFromDb } from '@/lib/utils/dataMappers';
 import { supabase } from '@/integrations/supabase/client';
 
 // Helper to get the subject ID for a given teaching plan ID
@@ -136,8 +136,27 @@ export const syncFromLessonPlan = async (lessonPlanOrId: LessonPlan | string): P
 };
 
 // Sync calendar events from a teaching plan
-export const syncFromTeachingPlan = async (teachingPlan: TeachingPlan): Promise<void> => {
+export const syncFromTeachingPlan = async (teachingPlanOrId: TeachingPlan | string): Promise<void> => {
   try {
+    let teachingPlan: TeachingPlan | null = null;
+    
+    // If we have an ID, fetch the teaching plan
+    if (typeof teachingPlanOrId === 'string') {
+      const { data, error } = await supabase
+        .from('teaching_plans')
+        .select('*')
+        .eq('id', teachingPlanOrId)
+        .single();
+        
+      if (error) throw error;
+      if (!data) return;
+      
+      // Convert to our frontend type
+      teachingPlan = mapTeachingPlanFromDb(data);
+    } else {
+      teachingPlan = teachingPlanOrId;
+    }
+    
     // Get existing calendar events for this teaching plan
     const existingEvents = await getCalendarEventsBySource('teaching_plan', teachingPlan.id);
     

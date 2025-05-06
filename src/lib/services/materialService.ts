@@ -2,7 +2,6 @@
 import { Material } from '@/types';
 import { createService } from './baseService';
 import { supabase } from '@/integrations/supabase/client';
-import { mapToSnakeCase } from '@/integrations/supabase/supabaseAdapter';
 import { extractVideoMetadata } from '@/lib/utils/extractVideoMetadata';
 import { mapMaterialFromDb, mapMaterialToDb } from '@/lib/utils/dataMappers';
 
@@ -26,7 +25,7 @@ export const materialService = {
         }
       }
 
-      // Convert to snake_case for database using our new mapper
+      // Convert to snake_case for database using our mapper
       const materialData = mapMaterialToDb(materialToCreate);
 
       // Make sure the record has required fields
@@ -34,9 +33,22 @@ export const materialService = {
         throw new Error("Material must have at least a title and type");
       }
 
+      // Create an object with all required fields explicitly defined
+      const dbMaterial = {
+        title: materialData.title,
+        type: materialData.type,
+        description: materialData.description || null,
+        url: materialData.url || null,
+        file_path: materialData.file_path || null,
+        file_size: materialData.file_size || null,
+        thumbnail_url: materialData.thumbnail_url || null,
+        subject_id: materialData.subject_id || null,
+        tags: materialData.tags || []
+      };
+
       const { data, error } = await supabase
         .from('materials')
-        .insert(materialData)
+        .insert(dbMaterial)
         .select()
         .single();
 
@@ -65,12 +77,25 @@ export const materialService = {
         }
       }
 
-      // Convert to snake_case for database using our new mapper
+      // Convert to snake_case for database using our mapper
       const updateData = mapMaterialToDb(updatesToApply);
+
+      // Create an explicitly typed update object with only defined fields
+      const dbUpdateData: Record<string, any> = {};
+      
+      if (updateData.title !== undefined) dbUpdateData.title = updateData.title;
+      if (updateData.type !== undefined) dbUpdateData.type = updateData.type;
+      if (updateData.description !== undefined) dbUpdateData.description = updateData.description;
+      if (updateData.url !== undefined) dbUpdateData.url = updateData.url;
+      if (updateData.file_path !== undefined) dbUpdateData.file_path = updateData.file_path;
+      if (updateData.file_size !== undefined) dbUpdateData.file_size = updateData.file_size;
+      if (updateData.thumbnail_url !== undefined) dbUpdateData.thumbnail_url = updateData.thumbnail_url;
+      if (updateData.subject_id !== undefined) dbUpdateData.subject_id = updateData.subject_id;
+      if (updateData.tags !== undefined) dbUpdateData.tags = updateData.tags;
 
       const { data, error } = await supabase
         .from('materials')
-        .update(updateData)
+        .update(dbUpdateData)
         .eq('id', id)
         .select()
         .single();

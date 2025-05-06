@@ -52,8 +52,8 @@ export async function create(teachingPlanForm: Partial<TeachingPlanFormValues>):
   if (error) throw error;
 
   const createdTeachingPlan = mapToCamelCase<TeachingPlan>(data);
-  // Now we pass the id to the sync function instead of the object
-  await calendarEventService.syncFromTeachingPlan(createdTeachingPlan.id);
+  // Now we pass the created teaching plan to the sync function
+  await syncTeachingPlanWithCalendar(createdTeachingPlan);
 
   return createdTeachingPlan;
 }
@@ -95,8 +95,8 @@ export async function update(id: string, teachingPlanForm: Partial<TeachingPlanF
   if (error) throw error;
 
   const updatedTeachingPlan = mapToCamelCase<TeachingPlan>(data);
-  // Now we pass the id to the sync function instead of the object
-  await calendarEventService.syncFromTeachingPlan(updatedTeachingPlan.id);
+  // Now we pass the updated teaching plan to the sync function
+  await syncTeachingPlanWithCalendar(updatedTeachingPlan);
 
   return updatedTeachingPlan;
 }
@@ -110,10 +110,21 @@ export async function deleteTeachingPlan(id: string): Promise<void> {
   if (error) throw error;
 }
 
+// Helper function to handle the sync with calendar
+async function syncTeachingPlanWithCalendar(teachingPlan: TeachingPlan): Promise<void> {
+  try {
+    await calendarEventService.syncFromTeachingPlan(teachingPlan);
+  } catch (error) {
+    console.error('Error syncing teaching plan with calendar:', error);
+  }
+}
+
 export const syncWithCalendar = async (teachingPlanId: string): Promise<void> => {
   try {
-    // We pass the teachingPlanId directly to the syncFromTeachingPlan function
-    await calendarEventService.syncFromTeachingPlan(teachingPlanId);
+    // First get the teaching plan by ID
+    const teachingPlan = await getById(teachingPlanId);
+    // Then sync it with the calendar
+    await syncTeachingPlanWithCalendar(teachingPlan);
   } catch (error) {
     console.error('Error syncing teaching plan with calendar:', error);
   }

@@ -38,7 +38,10 @@ export const getBySubject = async (subjectId: ID): Promise<CalendarEvent[]> => {
 };
 
 // Add the missing functions needed by syncOperations.ts
-export const getCalendarEventsBySource = async (sourceType: EventSourceType, sourceId: string): Promise<CalendarEvent[]> => {
+export const getCalendarEventsBySource = async (
+  sourceType: EventSourceType,
+  sourceId: string
+): Promise<CalendarEvent[]> => {
   try {
     const { data, error } = await supabase
       .from("calendar_events")
@@ -47,14 +50,17 @@ export const getCalendarEventsBySource = async (sourceType: EventSourceType, sou
       .eq('source_id', sourceId);
 
     if (error) throw error;
-    return data ? data.map(mapToCamelCaseEvent) : [];
+    return data ? data.map(event => mapToCamelCaseEvent(event)) : [];
   } catch (error) {
     handleError(error, `buscar eventos por fonte (${sourceType})`);
     return [];
   }
 };
 
-export const deleteCalendarEventsBySource = async (sourceType: EventSourceType, sourceId: string): Promise<boolean> => {
+export const deleteCalendarEventsBySource = async (
+  sourceType: EventSourceType,
+  sourceId: string
+): Promise<boolean> => {
   try {
     const { error } = await supabase
       .from("calendar_events")

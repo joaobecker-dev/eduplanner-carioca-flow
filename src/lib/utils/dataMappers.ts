@@ -1,3 +1,4 @@
+
 import { 
   Assessment, 
   CalendarEvent, 
@@ -91,10 +92,11 @@ export const mapLessonPlanFromDb = (dbLessonPlan: LessonPlanRow): LessonPlan => 
   teachingPlanId: dbLessonPlan.teaching_plan_id,
   objectives: dbLessonPlan.objectives || [],
   contents: dbLessonPlan.contents || [],
-  methodology: safeNull(dbLessonPlan.methodology),
-  assessment: safeNull(dbLessonPlan.assessment),
+  activities: dbLessonPlan.activities || [],
+  evaluation: safeNull(dbLessonPlan.evaluation),
   resources: dbLessonPlan.resources || [],
   notes: safeNull(dbLessonPlan.notes),
+  homework: safeNull(dbLessonPlan.homework),
   created_at: dbLessonPlan.created_at,
   updated_at: dbLessonPlan.updated_at,
 });
@@ -109,10 +111,11 @@ export const mapLessonPlanToDb = (lessonPlan: Partial<LessonPlan>): Partial<Less
   if (lessonPlan.teachingPlanId !== undefined) result.teaching_plan_id = lessonPlan.teachingPlanId;
   if (lessonPlan.objectives !== undefined) result.objectives = lessonPlan.objectives;
   if (lessonPlan.contents !== undefined) result.contents = lessonPlan.contents;
-  if (lessonPlan.methodology !== undefined) result.methodology = lessonPlan.methodology;
-  if (lessonPlan.assessment !== undefined) result.assessment = lessonPlan.assessment;
+  if (lessonPlan.activities !== undefined) result.activities = lessonPlan.activities;
+  if (lessonPlan.evaluation !== undefined) result.evaluation = lessonPlan.evaluation;
   if (lessonPlan.resources !== undefined) result.resources = lessonPlan.resources;
   if (lessonPlan.notes !== undefined) result.notes = lessonPlan.notes;
+  if (lessonPlan.homework !== undefined) result.homework = lessonPlan.homework;
 
   return result;
 };
@@ -129,7 +132,7 @@ export const mapTeachingPlanFromDb = (dbTeachingPlan: TeachingPlanRow): Teaching
   objectives: dbTeachingPlan.objectives || [],
   contents: dbTeachingPlan.contents || [],
   methodology: safeNull(dbTeachingPlan.methodology),
-  assessment: safeNull(dbTeachingPlan.assessment),
+  evaluation: safeNull(dbTeachingPlan.evaluation),
   resources: dbTeachingPlan.resources || [],
   created_at: dbTeachingPlan.created_at,
   updated_at: dbTeachingPlan.updated_at,
@@ -148,7 +151,7 @@ export const mapTeachingPlanToDb = (teachingPlan: Partial<TeachingPlan>): Partia
   if (teachingPlan.objectives !== undefined) result.objectives = teachingPlan.objectives;
   if (teachingPlan.contents !== undefined) result.contents = teachingPlan.contents;
   if (teachingPlan.methodology !== undefined) result.methodology = teachingPlan.methodology;
-  if (teachingPlan.assessment !== undefined) result.assessment = teachingPlan.assessment;
+  if (teachingPlan.evaluation !== undefined) result.evaluation = teachingPlan.evaluation;
   if (teachingPlan.resources !== undefined) result.resources = teachingPlan.resources;
 
   return result;
@@ -159,10 +162,14 @@ export const mapStudentAssessmentFromDb = (dbStudentAssessment: StudentAssessmen
   id: dbStudentAssessment.id,
   studentId: dbStudentAssessment.student_id,
   assessmentId: dbStudentAssessment.assessment_id,
-  grade: safeNull(dbStudentAssessment.grade),
-  notes: safeNull(dbStudentAssessment.notes),
-  created_at: dbStudentAssessment.created_at,
-  updated_at: dbStudentAssessment.updated_at,
+  score: safeNull(dbStudentAssessment.score),
+  feedback: safeNull(dbStudentAssessment.feedback),
+  submittedDate: safeNull(dbStudentAssessment.submitted_date),
+  gradedDate: safeNull(dbStudentAssessment.graded_date),
+  // Since 'status' doesn't exist in the row but is needed in the interface,
+  // we default to 'pending' if no graded_date is present
+  status: dbStudentAssessment.graded_date ? 'graded' : (dbStudentAssessment.submitted_date ? 'submitted' : 'pending'),
+  created_at: dbStudentAssessment.created_at
 });
 
 export const mapStudentAssessmentToDb = (studentAssessment: Partial<StudentAssessment>): Partial<StudentAssessmentRow> => {
@@ -171,8 +178,10 @@ export const mapStudentAssessmentToDb = (studentAssessment: Partial<StudentAsses
   if (studentAssessment.id !== undefined) result.id = studentAssessment.id;
   if (studentAssessment.studentId !== undefined) result.student_id = studentAssessment.studentId;
   if (studentAssessment.assessmentId !== undefined) result.assessment_id = studentAssessment.assessmentId;
-  if (studentAssessment.grade !== undefined) result.grade = studentAssessment.grade;
-  if (studentAssessment.notes !== undefined) result.notes = studentAssessment.notes;
+  if (studentAssessment.score !== undefined) result.score = studentAssessment.score;
+  if (studentAssessment.feedback !== undefined) result.feedback = studentAssessment.feedback;
+  if (studentAssessment.submittedDate !== undefined) result.submitted_date = studentAssessment.submittedDate;
+  if (studentAssessment.gradedDate !== undefined) result.graded_date = studentAssessment.gradedDate;
 
   return result;
 };
