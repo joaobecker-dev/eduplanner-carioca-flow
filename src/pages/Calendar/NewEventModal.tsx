@@ -3,7 +3,7 @@ import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { CalendarEvent } from '@/types';
-import { EventFormValues, eventSchema, eventFormDefaults } from '@/schemas/eventSchema';
+import { EventFormValues, eventSchema } from '@/schemas/eventSchema';
 import { normalizeToISO } from '@/integrations/supabase/supabaseAdapter';
 import CrudModal from '@/components/ui-components/CrudModal';
 import EventForm from './components/EventForm';
@@ -36,7 +36,7 @@ const NewEventModal: React.FC<NewEventModalProps> = ({ isOpen, onClose, onSave, 
         lessonPlanId: eventToEdit?.lessonPlanId,
         teachingPlanId: eventToEdit?.teachingPlanId,
         // Preserve location if editing
-        location: eventToEdit?.location
+        location: values.location || eventToEdit?.location
       };
 
       await onSave(eventData);

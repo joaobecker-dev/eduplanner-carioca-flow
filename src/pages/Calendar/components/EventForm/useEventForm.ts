@@ -29,10 +29,13 @@ export const useEventForm = ({ eventToEdit }: Pick<EventFormProps, 'eventToEdit'
         description: eventToEdit.description || '',
         type: eventToEdit.type as any,
         startDate: new Date(eventToEdit.startDate),
-        endDate: eventToEdit.endDate ? new Date(eventToEdit.endDate) : null,
+        endDate: eventToEdit.endDate ? new Date(eventToEdit.endDate) : undefined,
         allDay: eventToEdit.allDay,
         color: eventToEdit.color || eventColors[eventToEdit.type] || eventColors.other,
-        subjectId: eventToEdit.subjectId || null,
+        subjectId: eventToEdit.subjectId || '',
+        location: eventToEdit.location || '',
+        sourceType: eventToEdit.sourceType || 'manual',
+        sourceId: eventToEdit.sourceId || '',
       });
     } else {
       form.reset(eventFormDefaults);
