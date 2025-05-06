@@ -1,26 +1,24 @@
 
 import { z } from 'zod';
 
-/**
- * Helper function for coercing values to Date objects
- * Accepts string, Date, or null and transforms to a valid Date or undefined
- */
-export const coerceToDate = (options?: { required?: boolean }) => {
-  const schema = z.union([z.string(), z.date(), z.null()])
-    .transform(value => {
-      if (!value) return undefined;
-      
-      try {
-        const date = new Date(value);
-        // Ensure it's a valid date
-        if (isNaN(date.getTime())) return undefined;
-        return date;
-      } catch (e) {
-        return undefined;
-      }
-    });
-    
-  return options?.required 
-    ? schema.refine(val => val !== undefined, { message: "Date is required" })
-    : schema;
+interface CoerceDateOptions {
+  required?: boolean;
+}
+
+// Helper function to convert various date formats to a Date object
+export const coerceToDate = (options?: CoerceDateOptions) => {
+  const baseSchema = z.union([
+    z.date(),
+    z.string().refine((value) => !isNaN(Date.parse(value)), {
+      message: 'Data inválida',
+    }).transform(value => new Date(value)),
+    z.number().transform(value => new Date(value)),
+  ]);
+  
+  // Handle null/undefined based on if the field is required
+  if (options?.required) {
+    return baseSchema;
+  } else {
+    return baseSchema.nullish().optional();
+  }
 };

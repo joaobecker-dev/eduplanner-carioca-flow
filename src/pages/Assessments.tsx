@@ -11,6 +11,8 @@ import { subjectService, assessmentService, studentService, studentAssessmentSer
 const Assessments: React.FC = () => {
   const [refreshCounter, setRefreshCounter] = useState(0);
   const [assessmentsWithStudents, setAssessmentsWithStudents] = useState<Record<string, boolean>>({});
+  const [selectedAssessmentId, setSelectedAssessmentId] = useState<string>('');
+  const [isStudentModalOpen, setIsStudentModalOpen] = useState(false);
   
   // Fetch subjects
   const { data: subjects = [] } = useQuery({
@@ -67,6 +69,11 @@ const Assessments: React.FC = () => {
     refetchAssessments();
   };
 
+  const handleAssignStudents = (assessmentId: string) => {
+    setSelectedAssessmentId(assessmentId);
+    setIsStudentModalOpen(true);
+  };
+
   return (
     <div className="container mx-auto py-6">
       <div className="flex items-center justify-between mb-6">
@@ -87,11 +94,17 @@ const Assessments: React.FC = () => {
         teachingPlans={teachingPlans}
         refreshData={refreshData}
       />
-      <StudentAssessmentModals 
-        students={students}
-        assessments={assessments}
-        refreshData={refreshData}
-      />
+      
+      {/* Student Assessment Modal - Only render when needed and with correct props */}
+      {selectedAssessmentId && (
+        <StudentAssessmentModals
+          isOpen={isStudentModalOpen}
+          setIsOpen={setIsStudentModalOpen}
+          assessmentId={selectedAssessmentId}
+          students={students}
+          onSuccess={refreshData}
+        />
+      )}
       
       {/* Display assessments with grading button */}
       <div className="grid gap-4 mt-6">
@@ -116,6 +129,10 @@ const Assessments: React.FC = () => {
                     </p>
                   </div>
                   <div className="flex gap-2">
+                    <Button variant="outline" onClick={() => handleAssignStudents(assessment.id)}>
+                      <Plus className="mr-1 h-4 w-4" />
+                      Adicionar Alunos
+                    </Button>
                     {assessmentsWithStudents[assessment.id] && (
                       <Button variant="outline" asChild>
                         <Link to={`/avaliacoes/correcao/${assessment.id}`}>

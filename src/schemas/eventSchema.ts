@@ -1,40 +1,24 @@
 
-import * as z from "zod";
+import * as z from 'zod';
+import { EventType } from '@/types';
 
-export const eventCategories = ["class", "exam", "meeting", "other", "deadline"] as const;
-export const eventCategoryLabels: Record<string, string> = {
-  class: "Aula",
-  exam: "Avaliação",
-  meeting: "Reunião", 
-  other: "Outro",
-  deadline: "Prazo"
-};
-
-export const eventSourceTypes = ["manual", "assessment", "lesson_plan", "teaching_plan"] as const;
-
+// Define the form validation schema using zod
 export const eventSchema = z.object({
-  title: z.string().min(1, "O título é obrigatório"),
+  title: z.string().min(1, { message: "Título é obrigatório" }),
   description: z.string().optional(),
-  type: z.enum(eventCategories),
-  startDate: z.coerce.date(),
-  endDate: z.coerce.date().nullable().optional(),
-  allDay: z.boolean().default(false),
+  type: z.enum(['class', 'exam', 'meeting', 'deadline', 'other'], {
+    required_error: "Tipo de evento é obrigatório",
+  }),
   color: z.string().optional(),
-  subjectId: z.string().uuid().optional().nullable(),
-  sourceType: z.enum(eventSourceTypes).optional().default("manual"),
-  sourceId: z.string().uuid().optional().nullable()
+  subjectId: z.string().optional(),
+  location: z.string().optional(),
+  startDate: z.date({
+    required_error: "Data de início é obrigatória",
+  }),
+  endDate: z.date().optional(),
+  allDay: z.boolean().default(false),
+  sourceType: z.enum(['assessment', 'lesson_plan', 'teaching_plan', 'manual']).optional(),
+  sourceId: z.string().optional(),
 });
 
 export type EventFormValues = z.infer<typeof eventSchema>;
-
-export const eventFormDefaults: Partial<EventFormValues> = {
-  title: '',
-  description: '',
-  type: "class",
-  startDate: new Date(),
-  endDate: new Date(),
-  allDay: true,
-  color: "#3b82f6", // blue
-  sourceType: "manual",
-  subjectId: null
-};

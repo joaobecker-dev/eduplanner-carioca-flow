@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -10,7 +11,7 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { toast } from "@/hooks/use-toast"
-import { StudentAssessment, Student } from '@/types';
+import { StudentAssessment, Student, Assessment } from '@/types';
 import { services } from '@/lib/services';
 import { studentAssessmentSchema, StudentAssessmentFormValues } from '@/schemas/studentAssessmentSchema';
 import InputField from '@/components/forms/fields/InputField';
@@ -73,8 +74,9 @@ const StudentAssessmentModals: React.FC<StudentAssessmentModalProps> = ({
         assessmentId: data.assessmentId,
         score: data.score,
         feedback: data.feedback,
-        submittedDate: data.submittedDate,
-        gradedDate: data.gradedDate,
+        // Convert Date objects to ISO strings
+        submittedDate: data.submittedDate ? data.submittedDate.toISOString() : undefined,
+        gradedDate: data.gradedDate ? data.gradedDate.toISOString() : undefined,
         status: data.gradedDate ? 'graded' as const : (data.submittedDate ? 'submitted' as const : 'pending' as const),
         created_at: new Date().toISOString()
       };

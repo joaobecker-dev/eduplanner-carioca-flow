@@ -48,27 +48,27 @@ export const createCalendarEvent = async (eventData: CalendarEventDatabaseFields
 
 export const updateCalendarEvent = async (id: string, eventData: Partial<CalendarEventDatabaseFields>): Promise<CalendarEvent | null> => {
   try {
-    // Create a new object with only the fields we want to update
-    // This avoids the deep instantiation issue
-    const dataToUpdate: Record<string, any> = {};
+    // Manually create the update object instead of using type mappings
+    // to avoid deep recursion in type instantiation
+    const updateData: Record<string, any> = {};
     
-    if (eventData.title !== undefined) dataToUpdate.title = eventData.title;
-    if (eventData.type !== undefined) dataToUpdate.type = eventData.type;
-    if (eventData.start_date !== undefined) dataToUpdate.start_date = eventData.start_date;
-    if (eventData.end_date !== undefined) dataToUpdate.end_date = eventData.end_date;
-    if (eventData.description !== undefined) dataToUpdate.description = eventData.description;
-    if (eventData.all_day !== undefined) dataToUpdate.all_day = eventData.all_day;
-    if (eventData.subject_id !== undefined) dataToUpdate.subject_id = eventData.subject_id;
-    if (eventData.lesson_plan_id !== undefined) dataToUpdate.lesson_plan_id = eventData.lesson_plan_id;
-    if (eventData.assessment_id !== undefined) dataToUpdate.assessment_id = eventData.assessment_id;
-    if (eventData.location !== undefined) dataToUpdate.location = eventData.location;
-    if (eventData.color !== undefined) dataToUpdate.color = eventData.color;
-    if (eventData.source_type !== undefined) dataToUpdate.source_type = eventData.source_type;
-    if (eventData.source_id !== undefined) dataToUpdate.source_id = eventData.source_id;
+    if (eventData.title !== undefined) updateData.title = eventData.title;
+    if (eventData.description !== undefined) updateData.description = eventData.description;
+    if (eventData.start_date !== undefined) updateData.start_date = eventData.start_date;
+    if (eventData.end_date !== undefined) updateData.end_date = eventData.end_date;
+    if (eventData.all_day !== undefined) updateData.all_day = eventData.all_day;
+    if (eventData.type !== undefined) updateData.type = eventData.type;
+    if (eventData.subject_id !== undefined) updateData.subject_id = eventData.subject_id;
+    if (eventData.lesson_plan_id !== undefined) updateData.lesson_plan_id = eventData.lesson_plan_id;
+    if (eventData.assessment_id !== undefined) updateData.assessment_id = eventData.assessment_id;
+    if (eventData.location !== undefined) updateData.location = eventData.location;
+    if (eventData.color !== undefined) updateData.color = eventData.color;
+    if (eventData.source_type !== undefined) updateData.source_type = eventData.source_type;
+    if (eventData.source_id !== undefined) updateData.source_id = eventData.source_id;
 
     const { data, error } = await supabase
       .from('calendar_events')
-      .update(dataToUpdate)
+      .update(updateData)
       .eq('id', id)
       .select()
       .single();

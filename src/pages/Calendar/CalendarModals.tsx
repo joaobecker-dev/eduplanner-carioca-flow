@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import {
   Dialog,
@@ -43,6 +44,8 @@ const CalendarModals: React.FC<EventModalsProps> = ({
         subjectId: data.subjectId && data.subjectId !== "none" ? data.subjectId : undefined,
         color: data.color || undefined,
         location: data.location || undefined,
+        sourceType: data.sourceType,
+        sourceId: data.sourceId,
         created_at: new Date().toISOString(), // Add created_at field
       };
       
