@@ -1,113 +1,238 @@
-import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
+
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import SectionHeader from '@/components/ui-components/SectionHeader';
 import { services } from '@/lib/services';
 import { Card, CardContent } from '@/components/ui/card';
-import { AnnualPlanModals } from './Planning/AnnualPlanModals';
-import { TeachingPlanModals } from './Planning/TeachingPlanModals';
-import { LessonPlanModals } from './Planning/LessonPlanModals';
-import { AssessmentModals } from './Planning/AssessmentModals';
+import { Button } from '@/components/ui/button';
+import { PlusCircle } from 'lucide-react';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import { Skeleton } from '@/components/ui/skeleton';
 
-const Planning = () => {
-  const [activeTab, setActiveTab] = useState('annual-plans');
+const PlanningPage: React.FC = () => {
+  const { data: annualPlans, isLoading: isLoadingAnnualPlans } = useQuery(
+    ['annualPlans'],
+    () => services.annualPlan.getAll()
+  );
 
-  // Fixed useQuery calls using proper options object
-  const { data: subjects = [] } = useQuery({
-    queryKey: ['subjects'],
-    queryFn: services.subject.getAll,
-  });
+  const { data: teachingPlans, isLoading: isLoadingTeachingPlans } = useQuery(
+    ['teachingPlans'],
+    () => services.teachingPlan.getAll()
+  );
 
-  const { data: annualPlans = [] } = useQuery({
-    queryKey: ['annual-plans'],
-    queryFn: services.annualPlan.getAll,
-  });
+  const { data: lessonPlans, isLoading: isLoadingLessonPlans } = useQuery(
+    ['lessonPlans'],
+    () => services.lessonPlan.getAll()
+  );
 
-  const { data: teachingPlans = [] } = useQuery({
-    queryKey: ['teaching-plans'],
-    queryFn: services.teachingPlan.getAll,
-  });
+  // Helper function to format dates
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('pt-BR');
+  };
 
-  const { data: lessonPlans = [] } = useQuery({
-    queryKey: ['lesson-plans'],
-    queryFn: services.lessonPlan.getAll,
-  });
-
-  const { data: assessments = [] } = useQuery({
-    queryKey: ['assessments'],
-    queryFn: services.assessment.getAll,
-  });
-  
   return (
-    <div className="w-full flex flex-col gap-4">
-      <SectionHeader title="Planejamento" description="Gerencie seu planejamento anual, planos de ensino, planos de aula e avaliações">
-        <Button asChild>
-          <Link to="/planning/new">
-            <Plus className="mr-2 h-4 w-4" />
-            Novo
-          </Link>
-        </Button>
-      </SectionHeader>
+    <div className="container mx-auto px-4 py-6 animate-fade-in">
+      <SectionHeader
+        title="Planejamento"
+        description="Visualize e organize seus planos anuais, planos de ensino e planos de aula."
+      />
 
-      <div className="w-full border-b border-gray-200 dark:border-gray-700">
-        <nav className="-mb-px flex space-x-8" aria-label="Tabs">
-          <button
-            onClick={() => setActiveTab('annual-plans')}
-            className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${activeTab === 'annual-plans'
-              ? 'border-blue-500 text-blue-600 dark:text-blue-500'
-              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
-              }`}
-          >
-            Planos Anuais
-          </button>
-          <button
-            onClick={() => setActiveTab('teaching-plans')}
-            className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${activeTab === 'teaching-plans'
-              ? 'border-blue-500 text-blue-600 dark:text-blue-500'
-              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
-              }`}
-          >
-            Planos de Ensino
-          </button>
-          <button
-            onClick={() => setActiveTab('lesson-plans')}
-            className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${activeTab === 'lesson-plans'
-              ? 'border-blue-500 text-blue-600 dark:text-blue-500'
-              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
-              }`}
-          >
-            Planos de Aula
-          </button>
-          <button
-            onClick={() => setActiveTab('assessments')}
-            className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${activeTab === 'assessments'
-              ? 'border-blue-500 text-blue-600 dark:text-blue-500'
-              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
-              }`}
-          >
-            Avaliações
-          </button>
-        </nav>
-      </div>
+      <Accordion type="single" collapsible className="w-full">
+        <AccordionItem value="annual-plans">
+          <AccordionTrigger>Planos Anuais</AccordionTrigger>
+          <AccordionContent>
+            <div className="mb-4 flex justify-end">
+              <Button asChild>
+                <Link to="/annual-plans/new">
+                  <PlusCircle className="mr-2 h-4 w-4" />
+                  Novo Plano Anual
+                </Link>
+              </Button>
+            </div>
+            {isLoadingAnnualPlans ? (
+              <div className="space-y-2">
+                <Skeleton className="h-8 w-3/4" />
+                <Skeleton className="h-4 w-1/4" />
+                <Skeleton className="h-10 w-full" />
+              </div>
+            ) : annualPlans && annualPlans.length > 0 ? (
+              <Table>
+                <TableCaption>Lista de planos anuais.</TableCaption>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[100px]">Título</TableHead>
+                    <TableHead>Descrição</TableHead>
+                    <TableHead>Criado em</TableHead>
+                    <TableHead className="text-right">Ações</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {annualPlans.map((annualPlan) => (
+                    <TableRow key={annualPlan.id}>
+                      <TableCell className="font-medium">{annualPlan.title}</TableCell>
+                      <TableCell>{annualPlan.description}</TableCell>
+                      <TableCell>
+                        <p className="text-sm text-muted-foreground">
+                          Criado em {formatDate(annualPlan.created_at)}
+                        </p>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button variant="ghost" size="sm" asChild>
+                          <Link to={`/annual-plans/${annualPlan.id}/edit`}>
+                            Editar
+                          </Link>
+                        </Button>
+                        <Button variant="ghost" size="sm" asChild>
+                          <Link to={`/annual-plans/${annualPlan.id}`}>
+                            Visualizar
+                          </Link>
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            ) : (
+              <Card>
+                <CardContent className="p-4">
+                  Nenhum plano anual encontrado.
+                </CardContent>
+              </Card>
+            )}
+          </AccordionContent>
+        </AccordionItem>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {activeTab === 'annual-plans' && (
-          <AnnualPlanModals annualPlans={annualPlans} subjects={subjects} />
-        )}
-        {activeTab === 'teaching-plans' && (
-          <TeachingPlanModals teachingPlans={teachingPlans} subjects={subjects} annualPlans={annualPlans} />
-        )}
-        {activeTab === 'lesson-plans' && (
-          <LessonPlanModals lessonPlans={lessonPlans} teachingPlans={teachingPlans} />
-        )}
-        {activeTab === 'assessments' && (
-          <AssessmentModals assessments={assessments} subjects={subjects} teachingPlans={teachingPlans} />
-        )}
-      </div>
+        <AccordionItem value="teaching-plans">
+          <AccordionTrigger>Planos de Ensino</AccordionTrigger>
+          <AccordionContent>
+            <div className="mb-4 flex justify-end">
+              <Button asChild>
+                <Link to="/planejamento/novo?type=teaching">
+                  <PlusCircle className="mr-2 h-4 w-4" />
+                  Novo Plano de Ensino
+                </Link>
+              </Button>
+            </div>
+            {isLoadingTeachingPlans ? (
+              <div className="space-y-2">
+                <Skeleton className="h-8 w-3/4" />
+                <Skeleton className="h-4 w-1/4" />
+                <Skeleton className="h-10 w-full" />
+              </div>
+            ) : teachingPlans && teachingPlans.length > 0 ? (
+              <Table>
+                <TableCaption>Lista de planos de ensino.</TableCaption>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[100px]">Título</TableHead>
+                    <TableHead>Descrição</TableHead>
+                    <TableHead>Criado em</TableHead>
+                    <TableHead className="text-right">Ações</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {teachingPlans.map((teachingPlan) => (
+                    <TableRow key={teachingPlan.id}>
+                      <TableCell className="font-medium">{teachingPlan.title}</TableCell>
+                      <TableCell>{teachingPlan.description}</TableCell>
+                      <TableCell>
+                        <p className="text-sm text-muted-foreground">
+                          Criado em {formatDate(teachingPlan.created_at)}
+                        </p>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button variant="ghost" size="sm" asChild>
+                          <Link to={`/planejamento?teaching=${teachingPlan.id}`}>
+                            Visualizar
+                          </Link>
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            ) : (
+              <Card>
+                <CardContent className="p-4">
+                  Nenhum plano de ensino encontrado.
+                </CardContent>
+              </Card>
+            )}
+          </AccordionContent>
+        </AccordionItem>
+
+        <AccordionItem value="lesson-plans">
+          <AccordionTrigger>Planos de Aula</AccordionTrigger>
+          <AccordionContent>
+            <div className="mb-4 flex justify-end">
+              <Button asChild>
+                <Link to="/planejamento/novo?type=lesson">
+                  <PlusCircle className="mr-2 h-4 w-4" />
+                  Novo Plano de Aula
+                </Link>
+              </Button>
+            </div>
+            {isLoadingLessonPlans ? (
+              <div className="space-y-2">
+                <Skeleton className="h-8 w-3/4" />
+                <Skeleton className="h-4 w-1/4" />
+                <Skeleton className="h-10 w-full" />
+              </div>
+            ) : lessonPlans && lessonPlans.length > 0 ? (
+              <Table>
+                <TableCaption>Lista de planos de aula.</TableCaption>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[100px]">Título</TableHead>
+                    <TableHead>Data</TableHead>
+                    <TableHead>Criado em</TableHead>
+                    <TableHead className="text-right">Ações</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {lessonPlans.map((lessonPlan) => (
+                    <TableRow key={lessonPlan.id}>
+                      <TableCell className="font-medium">{lessonPlan.title}</TableCell>
+                      <TableCell>{formatDate(lessonPlan.date)}</TableCell>
+                      <TableCell>
+                        <p className="text-sm text-muted-foreground">
+                          Criado em {formatDate(lessonPlan.created_at)}
+                        </p>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button variant="ghost" size="sm" asChild>
+                          <Link to={`/planejamento?lesson=${lessonPlan.id}`}>
+                            Visualizar
+                          </Link>
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            ) : (
+              <Card>
+                <CardContent className="p-4">
+                  Nenhum plano de aula encontrado.
+                </CardContent>
+              </Card>
+            )}
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
     </div>
   );
 };
 
-export default Planning;
+export default PlanningPage;

@@ -1,4 +1,3 @@
-
 import { 
   Assessment, 
   CalendarEvent, 
@@ -15,16 +14,6 @@ import {
   StudentAssessmentRow,
   CalendarEventRow
 } from '@/types/database';
-import { mapToCamelCase as caseConverterToCamel, mapToCamelCaseDeep } from './caseConverters';
-
-// Re-export the case converter functions
-export { 
-  mapToCamelCase,
-  mapToCamelCaseDeep,
-  mapArrayToCamelCase, 
-  mapTypedEntity,
-  mapToCamelCaseDeep as mapToSnakeCase  // Temporarily using this as a stand-in
-} from './caseConverters';
 
 // Helper function to safely convert null/undefined to undefined
 const safeNull = <T>(value: T | null): T | undefined => {

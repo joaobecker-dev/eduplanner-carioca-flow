@@ -19,7 +19,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { DataTable } from '@/components/ui/data-table';
 import { toast } from "@/hooks/use-toast"
 
-const Materials = () => {
+const MaterialsPage: React.FC = () => {
   const [isLoadingDelete, setIsLoadingDelete] = useState(false);
   const queryClient = useQueryClient();
   const { data: materials, isLoading, error } = useQuery({
@@ -33,28 +33,36 @@ const Materials = () => {
     return date.toLocaleDateString('pt-BR');
   };
 
-  const deleteMutation = useMutation({
-    mutationFn: (id: string) => services.material.delete(id),
-    onSuccess: () => {
-      // Invalidate and refetch
-      queryClient.invalidateQueries({ queryKey: ['materials'] });
-      toast({
-        title: "Material deletado",
-        description: "O material foi deletado com sucesso."
-      });
+  const deleteMaterialMutation = useMutation(
+    async (id: string) => {
+      setIsLoadingDelete(true);
+      return services.material.delete(id);
     },
-    onError: (error) => {
-      console.error("Error deleting material:", error);
-      toast({
-        variant: "destructive",
-        title: "Erro ao deletar",
-        description: "Ocorreu um erro ao tentar deletar o material."
-      });
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['materials']);
+        toast({
+          title: "Material excluído",
+          description: "O material foi excluído com sucesso!",
+        });
+      },
+      onError: (error: any) => {
+        toast({
+          title: "Erro",
+          description: "Ocorreu um erro ao excluir o material.",
+          variant: "destructive",
+        });
+      },
+      onSettled: () => {
+        setIsLoadingDelete(false);
+      },
     }
-  });
+  );
 
-  const handleDelete = (id: string) => {
-    deleteMutation.mutate(id);
+  const handleDelete = async (id: string) => {
+    if (window.confirm("Tem certeza que deseja excluir este material?")) {
+      await deleteMaterialMutation.mutateAsync(id);
+    }
   };
 
   // Define columns for the DataTable
@@ -134,4 +142,4 @@ const Materials = () => {
   );
 };
 
-export default Materials;
+export default MaterialsPage;
