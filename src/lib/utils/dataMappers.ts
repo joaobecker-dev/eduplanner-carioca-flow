@@ -1,178 +1,205 @@
-
-import {
-  AnnualPlan,
-  Assessment,
-  CalendarEvent,
-  LessonPlan,
-  Material,
-  Subject,
-  TeachingPlan,
-  StudentAssessment
+import { 
+  Assessment, 
+  CalendarEvent, 
+  LessonPlan, 
+  Material, 
+  StudentAssessment, 
+  TeachingPlan
 } from '@/types';
-
-import {
-  AnnualPlanRow,
-  AssessmentRow,
-  CalendarEventRow,
-  LessonPlanRow,
+import { 
   MaterialRow,
-  SubjectRow,
+  AssessmentRow,
+  LessonPlanRow,
   TeachingPlanRow,
-  StudentAssessmentRow
+  StudentAssessmentRow,
+  CalendarEventRow
 } from '@/types/database';
 
-/**
- * Maps snake_case database fields to camelCase frontend fields for LessonPlan
- */
-export function mapLessonPlanFromDb(row: LessonPlanRow): LessonPlan {
-  return {
-    id: row.id,
-    title: row.title,
-    date: row.date,
-    duration: row.duration,
-    objectives: row.objectives,
-    contents: row.contents,
-    activities: row.activities,
-    resources: row.resources,
-    notes: row.notes || undefined,
-    evaluation: row.evaluation || undefined,
-    homework: row.homework || undefined,
-    teachingPlanId: row.teaching_plan_id,
-    created_at: row.created_at,
-    updated_at: row.updated_at
-  };
-}
+// Helper function to safely convert null/undefined to undefined
+const safeNull = <T>(value: T | null): T | undefined => {
+  return value === null ? undefined : value;
+};
 
-/**
- * Maps camelCase frontend fields to snake_case database fields for LessonPlan
- */
-export function mapLessonPlanToDb(lessonPlan: Partial<LessonPlan>): Partial<Record<keyof LessonPlanRow, any>> {
-  const result: Partial<Record<keyof LessonPlanRow, any>> = {};
-  
-  if (lessonPlan.id !== undefined) result.id = lessonPlan.id;
-  if (lessonPlan.title !== undefined) result.title = lessonPlan.title;
-  if (lessonPlan.date !== undefined) result.date = lessonPlan.date;
-  if (lessonPlan.duration !== undefined) result.duration = lessonPlan.duration;
-  if (lessonPlan.objectives !== undefined) result.objectives = lessonPlan.objectives;
-  if (lessonPlan.contents !== undefined) result.contents = lessonPlan.contents;
-  if (lessonPlan.activities !== undefined) result.activities = lessonPlan.activities;
-  if (lessonPlan.resources !== undefined) result.resources = lessonPlan.resources;
-  if (lessonPlan.notes !== undefined) result.notes = lessonPlan.notes;
-  if (lessonPlan.evaluation !== undefined) result.evaluation = lessonPlan.evaluation;
-  if (lessonPlan.homework !== undefined) result.homework = lessonPlan.homework;
-  if (lessonPlan.teachingPlanId !== undefined) result.teaching_plan_id = lessonPlan.teachingPlanId;
-  
-  return result;
-}
+// Material mappers
+export const mapMaterialFromDb = (dbMaterial: MaterialRow): Material => ({
+  id: dbMaterial.id,
+  title: dbMaterial.title,
+  description: safeNull(dbMaterial.description),
+  type: dbMaterial.type,
+  url: safeNull(dbMaterial.url),
+  filePath: safeNull(dbMaterial.file_path),
+  fileSize: safeNull(dbMaterial.file_size),
+  thumbnailUrl: safeNull(dbMaterial.thumbnail_url),
+  subjectId: safeNull(dbMaterial.subject_id),
+  tags: dbMaterial.tags || [],
+  created_at: dbMaterial.created_at,
+  updated_at: dbMaterial.updated_at,
+});
 
-/**
- * Maps snake_case database fields to camelCase frontend fields for Assessment
- */
-export function mapAssessmentFromDb(row: AssessmentRow): Assessment {
-  return {
-    id: row.id,
-    title: row.title,
-    description: row.description || undefined,
-    type: row.type,
-    totalPoints: row.total_points,
-    date: row.date,
-    dueDate: row.due_date || undefined,
-    subjectId: row.subject_id,
-    teachingPlanId: row.teaching_plan_id || undefined,
-    created_at: row.created_at,
-    updated_at: row.updated_at
-  };
-}
-
-/**
- * Maps camelCase frontend fields to snake_case database fields for Assessment
- */
-export function mapAssessmentToDb(assessment: Partial<Assessment>): Partial<Record<keyof AssessmentRow, any>> {
-  const result: Partial<Record<keyof AssessmentRow, any>> = {};
-  
-  if (assessment.id !== undefined) result.id = assessment.id;
-  if (assessment.title !== undefined) result.title = assessment.title;
-  if (assessment.description !== undefined) result.description = assessment.description;
-  if (assessment.type !== undefined) result.type = assessment.type;
-  if (assessment.totalPoints !== undefined) result.total_points = assessment.totalPoints;
-  if (assessment.date !== undefined) result.date = assessment.date;
-  if (assessment.dueDate !== undefined) result.due_date = assessment.dueDate;
-  if (assessment.subjectId !== undefined) result.subject_id = assessment.subjectId;
-  if (assessment.teachingPlanId !== undefined) result.teaching_plan_id = assessment.teachingPlanId;
-  
-  return result;
-}
-
-/**
- * Maps snake_case database fields to camelCase frontend fields for Material
- */
-export function mapMaterialFromDb(row: MaterialRow): Material {
-  return {
-    id: row.id,
-    title: row.title,
-    description: row.description || undefined,
-    url: row.url || undefined,
-    filePath: row.file_path || undefined,
-    fileSize: row.file_size || undefined,
-    type: row.type,
-    tags: row.tags,
-    subjectId: row.subject_id || undefined,
-    thumbnailUrl: row.thumbnail_url || undefined,
-    notes: row.notes || undefined,
-    created_at: row.created_at,
-    updated_at: row.updated_at
-  };
-}
-
-/**
- * Maps camelCase frontend fields to snake_case database fields for Material
- */
-export function mapMaterialToDb(material: Partial<Material>): Partial<Record<keyof MaterialRow, any>> {
-  const result: Partial<Record<keyof MaterialRow, any>> = {};
+export const mapMaterialToDb = (material: Partial<Material>): Partial<MaterialRow> => {
+  const result: Partial<MaterialRow> = {};
   
   if (material.id !== undefined) result.id = material.id;
   if (material.title !== undefined) result.title = material.title;
   if (material.description !== undefined) result.description = material.description;
+  if (material.type !== undefined) result.type = material.type;
   if (material.url !== undefined) result.url = material.url;
   if (material.filePath !== undefined) result.file_path = material.filePath;
   if (material.fileSize !== undefined) result.file_size = material.fileSize;
-  if (material.type !== undefined) result.type = material.type;
-  if (material.tags !== undefined) result.tags = material.tags;
-  if (material.subjectId !== undefined) result.subject_id = material.subjectId;
   if (material.thumbnailUrl !== undefined) result.thumbnail_url = material.thumbnailUrl;
-  if (material.notes !== undefined) result.notes = material.notes;
+  if (material.subjectId !== undefined) result.subject_id = material.subjectId;
+  if (material.tags !== undefined) result.tags = material.tags;
   
   return result;
-}
+};
 
-/**
- * Maps snake_case database fields to camelCase frontend fields for CalendarEvent
- */
-export function mapCalendarEventFromDb(row: CalendarEventRow): CalendarEvent {
-  return {
-    id: row.id,
-    title: row.title,
-    description: row.description || undefined,
-    startDate: row.start_date,
-    endDate: row.end_date || undefined,
-    allDay: row.all_day,
-    type: row.type,
-    subjectId: row.subject_id || undefined,
-    lessonPlanId: row.lesson_plan_id || undefined,
-    assessmentId: row.assessment_id || undefined,
-    location: row.location || undefined,
-    color: row.color || undefined,
-    created_at: row.created_at,
-    sourceType: row.source_type as EventSourceType || undefined,
-    sourceId: row.source_id || undefined
-  };
-}
+// Assessment mappers
+export const mapAssessmentFromDb = (dbAssessment: AssessmentRow): Assessment => ({
+  id: dbAssessment.id,
+  title: dbAssessment.title,
+  description: safeNull(dbAssessment.description),
+  type: dbAssessment.type,
+  date: dbAssessment.date,
+  dueDate: safeNull(dbAssessment.due_date),
+  subjectId: dbAssessment.subject_id,
+  teachingPlanId: safeNull(dbAssessment.teaching_plan_id),
+  created_at: dbAssessment.created_at,
+  updated_at: dbAssessment.updated_at,
+});
 
-/**
- * Maps camelCase frontend fields to snake_case database fields for CalendarEvent
- */
-export function mapCalendarEventToDb(event: Partial<CalendarEvent>): Partial<Record<keyof CalendarEventRow, any>> {
-  const result: Partial<Record<keyof CalendarEventRow, any>> = {};
+export const mapAssessmentToDb = (assessment: Partial<Assessment>): Partial<AssessmentRow> => {
+  const result: Partial<AssessmentRow> = {};
+
+  if (assessment.id !== undefined) result.id = assessment.id;
+  if (assessment.title !== undefined) result.title = assessment.title;
+  if (assessment.description !== undefined) result.description = assessment.description;
+  if (assessment.type !== undefined) result.type = assessment.type;
+  if (assessment.date !== undefined) result.date = assessment.date;
+  if (assessment.dueDate !== undefined) result.due_date = assessment.dueDate;
+  if (assessment.subjectId !== undefined) result.subject_id = assessment.subjectId;
+  if (assessment.teachingPlanId !== undefined) result.teaching_plan_id = assessment.teachingPlanId;
+
+  return result;
+};
+
+// Lesson Plan mappers
+export const mapLessonPlanFromDb = (dbLessonPlan: LessonPlanRow): LessonPlan => ({
+  id: dbLessonPlan.id,
+  title: dbLessonPlan.title,
+  date: dbLessonPlan.date,
+  duration: safeNull(dbLessonPlan.duration),
+  teachingPlanId: dbLessonPlan.teaching_plan_id,
+  objectives: dbLessonPlan.objectives || [],
+  contents: dbLessonPlan.contents || [],
+  methodology: safeNull(dbLessonPlan.methodology),
+  assessment: safeNull(dbLessonPlan.assessment),
+  resources: dbLessonPlan.resources || [],
+  notes: safeNull(dbLessonPlan.notes),
+  created_at: dbLessonPlan.created_at,
+  updated_at: dbLessonPlan.updated_at,
+});
+
+export const mapLessonPlanToDb = (lessonPlan: Partial<LessonPlan>): Partial<LessonPlanRow> => {
+  const result: Partial<LessonPlanRow> = {};
+
+  if (lessonPlan.id !== undefined) result.id = lessonPlan.id;
+  if (lessonPlan.title !== undefined) result.title = lessonPlan.title;
+  if (lessonPlan.date !== undefined) result.date = lessonPlan.date;
+  if (lessonPlan.duration !== undefined) result.duration = lessonPlan.duration;
+  if (lessonPlan.teachingPlanId !== undefined) result.teaching_plan_id = lessonPlan.teachingPlanId;
+  if (lessonPlan.objectives !== undefined) result.objectives = lessonPlan.objectives;
+  if (lessonPlan.contents !== undefined) result.contents = lessonPlan.contents;
+  if (lessonPlan.methodology !== undefined) result.methodology = lessonPlan.methodology;
+  if (lessonPlan.assessment !== undefined) result.assessment = lessonPlan.assessment;
+  if (lessonPlan.resources !== undefined) result.resources = lessonPlan.resources;
+  if (lessonPlan.notes !== undefined) result.notes = lessonPlan.notes;
+
+  return result;
+};
+
+// Teaching Plan mappers
+export const mapTeachingPlanFromDb = (dbTeachingPlan: TeachingPlanRow): TeachingPlan => ({
+  id: dbTeachingPlan.id,
+  title: dbTeachingPlan.title,
+  description: safeNull(dbTeachingPlan.description),
+  startDate: dbTeachingPlan.start_date,
+  endDate: dbTeachingPlan.end_date,
+  subjectId: dbTeachingPlan.subject_id,
+  annualPlanId: safeNull(dbTeachingPlan.annual_plan_id),
+  objectives: dbTeachingPlan.objectives || [],
+  contents: dbTeachingPlan.contents || [],
+  methodology: safeNull(dbTeachingPlan.methodology),
+  assessment: safeNull(dbTeachingPlan.assessment),
+  resources: dbTeachingPlan.resources || [],
+  created_at: dbTeachingPlan.created_at,
+  updated_at: dbTeachingPlan.updated_at,
+});
+
+export const mapTeachingPlanToDb = (teachingPlan: Partial<TeachingPlan>): Partial<TeachingPlanRow> => {
+  const result: Partial<TeachingPlanRow> = {};
+
+  if (teachingPlan.id !== undefined) result.id = teachingPlan.id;
+  if (teachingPlan.title !== undefined) result.title = teachingPlan.title;
+  if (teachingPlan.description !== undefined) result.description = teachingPlan.description;
+  if (teachingPlan.startDate !== undefined) result.start_date = teachingPlan.startDate;
+  if (teachingPlan.endDate !== undefined) result.end_date = teachingPlan.endDate;
+  if (teachingPlan.subjectId !== undefined) result.subject_id = teachingPlan.subjectId;
+  if (teachingPlan.annualPlanId !== undefined) result.annual_plan_id = teachingPlan.annualPlanId;
+  if (teachingPlan.objectives !== undefined) result.objectives = teachingPlan.objectives;
+  if (teachingPlan.contents !== undefined) result.contents = teachingPlan.contents;
+  if (teachingPlan.methodology !== undefined) result.methodology = teachingPlan.methodology;
+  if (teachingPlan.assessment !== undefined) result.assessment = teachingPlan.assessment;
+  if (teachingPlan.resources !== undefined) result.resources = teachingPlan.resources;
+
+  return result;
+};
+
+// Student Assessment mappers
+export const mapStudentAssessmentFromDb = (dbStudentAssessment: StudentAssessmentRow): StudentAssessment => ({
+  id: dbStudentAssessment.id,
+  studentId: dbStudentAssessment.student_id,
+  assessmentId: dbStudentAssessment.assessment_id,
+  grade: safeNull(dbStudentAssessment.grade),
+  notes: safeNull(dbStudentAssessment.notes),
+  created_at: dbStudentAssessment.created_at,
+  updated_at: dbStudentAssessment.updated_at,
+});
+
+export const mapStudentAssessmentToDb = (studentAssessment: Partial<StudentAssessment>): Partial<StudentAssessmentRow> => {
+  const result: Partial<StudentAssessmentRow> = {};
+
+  if (studentAssessment.id !== undefined) result.id = studentAssessment.id;
+  if (studentAssessment.studentId !== undefined) result.student_id = studentAssessment.studentId;
+  if (studentAssessment.assessmentId !== undefined) result.assessment_id = studentAssessment.assessmentId;
+  if (studentAssessment.grade !== undefined) result.grade = studentAssessment.grade;
+  if (studentAssessment.notes !== undefined) result.notes = studentAssessment.notes;
+
+  return result;
+};
+
+// Calendar Event mappers
+export const mapCalendarEventFromDb = (dbEvent: CalendarEventRow): CalendarEvent => ({
+  id: dbEvent.id,
+  title: dbEvent.title,
+  description: safeNull(dbEvent.description),
+  startDate: dbEvent.start_date,
+  endDate: safeNull(dbEvent.end_date),
+  allDay: dbEvent.all_day,
+  type: dbEvent.type,
+  subjectId: safeNull(dbEvent.subject_id),
+  lessonPlanId: safeNull(dbEvent.lesson_plan_id),
+  assessmentId: safeNull(dbEvent.assessment_id),
+  teachingPlanId: safeNull(dbEvent.teaching_plan_id),
+  location: safeNull(dbEvent.location),
+  color: safeNull(dbEvent.color),
+  created_at: dbEvent.created_at,
+  // Include source_type and source_id only if they're in the database schema
+  sourceType: (dbEvent as any).source_type,
+  sourceId: (dbEvent as any).source_id,
+});
+
+export const mapCalendarEventToDb = (event: Partial<CalendarEvent>): Partial<CalendarEventRow> & { source_type?: string, source_id?: string } => {
+  const result: Partial<CalendarEventRow> & { source_type?: string, source_id?: string } = {};
   
   if (event.id !== undefined) result.id = event.id;
   if (event.title !== undefined) result.title = event.title;
@@ -184,52 +211,13 @@ export function mapCalendarEventToDb(event: Partial<CalendarEvent>): Partial<Rec
   if (event.subjectId !== undefined) result.subject_id = event.subjectId;
   if (event.lessonPlanId !== undefined) result.lesson_plan_id = event.lessonPlanId;
   if (event.assessmentId !== undefined) result.assessment_id = event.assessmentId;
+  if (event.teachingPlanId !== undefined) result.teaching_plan_id = event.teachingPlanId;
   if (event.location !== undefined) result.location = event.location;
   if (event.color !== undefined) result.color = event.color;
-  if (event.sourceType !== undefined) result.source_type = event.sourceType;
-  if (event.sourceId !== undefined) result.source_id = event.sourceId;
+  
+  // Include source_type and source_id in the database fields if they're in the event object
+  if ((event as any).sourceType !== undefined) result.source_type = (event as any).sourceType;
+  if ((event as any).sourceId !== undefined) result.source_id = (event as any).sourceId;
   
   return result;
-}
-
-/**
- * Maps snake_case database fields to camelCase frontend fields for StudentAssessment
- */
-export function mapStudentAssessmentFromDb(row: StudentAssessmentRow): StudentAssessment {
-  // Derive status from dates
-  let status: 'pending' | 'submitted' | 'graded' = 'pending';
-  if (row.graded_date) {
-    status = 'graded';
-  } else if (row.submitted_date) {
-    status = 'submitted';
-  }
-
-  return {
-    id: row.id,
-    studentId: row.student_id,
-    assessmentId: row.assessment_id,
-    score: row.score || undefined,
-    feedback: row.feedback || undefined,
-    submittedDate: row.submitted_date || undefined,
-    gradedDate: row.graded_date || undefined,
-    status,
-    created_at: row.created_at
-  };
-}
-
-/**
- * Maps camelCase frontend fields to snake_case database fields for StudentAssessment
- */
-export function mapStudentAssessmentToDb(assessment: Partial<StudentAssessment>): Partial<Record<keyof StudentAssessmentRow, any>> {
-  const result: Partial<Record<keyof StudentAssessmentRow, any>> = {};
-  
-  if (assessment.id !== undefined) result.id = assessment.id;
-  if (assessment.studentId !== undefined) result.student_id = assessment.studentId;
-  if (assessment.assessmentId !== undefined) result.assessment_id = assessment.assessmentId;
-  if (assessment.score !== undefined) result.score = assessment.score;
-  if (assessment.feedback !== undefined) result.feedback = assessment.feedback;
-  if (assessment.submittedDate !== undefined) result.submitted_date = assessment.submittedDate;
-  if (assessment.gradedDate !== undefined) result.graded_date = assessment.gradedDate;
-  
-  return result;
-}
+};

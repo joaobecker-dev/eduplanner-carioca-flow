@@ -1,9 +1,10 @@
+
 import { CalendarEvent } from '@/types';
 import { createService, handleError } from '../baseService';
 import { supabase } from "@/integrations/supabase/client";
 import { mapToCamelCase, normalizeToISO } from '@/integrations/supabase/supabaseAdapter';
 import { deleteBySourceEvent } from './wrapperOperations';
-import { syncFromAssessment, syncFromLessonPlan, syncFromTeachingPlan, syncFromStudentAssessment } from './syncOperations';
+import { syncFromAssessment, syncFromLessonPlan, syncFromTeachingPlan } from './syncOperations';
 
 const tableName = "calendar_events";
 
@@ -160,7 +161,6 @@ export const calendarEventService = {
   syncFromAssessment,
   syncFromLessonPlan,
   syncFromTeachingPlan,
-  syncFromStudentAssessment,
   deleteBySource: deleteBySourceEvent,
   
   // Add proper delete event function that was expected by other components

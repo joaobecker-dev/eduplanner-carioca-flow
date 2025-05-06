@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -60,7 +61,7 @@ const AnnualPlanForm: React.FC<AnnualPlanFormProps> = ({
       generalContent: initialData?.generalContent || "",
       methodology: initialData?.methodology || "",
       evaluation: initialData?.evaluation || "",
-      referenceMaterials: Array.isArray(initialData?.referencesMaterials) ? initialData?.referencesMaterials : [],
+      referenceMaterials: Array.isArray(initialData?.referenceMaterials) ? initialData?.referenceMaterials : [],
     }
   });
 
@@ -76,7 +77,7 @@ const AnnualPlanForm: React.FC<AnnualPlanFormProps> = ({
         generalContent: initialData.generalContent || "",
         methodology: initialData.methodology || "",
         evaluation: initialData.evaluation || "",
-        referenceMaterials: Array.isArray(initialData.referencesMaterials) ? initialData.referencesMaterials : [],
+        referenceMaterials: Array.isArray(initialData.referenceMaterials) ? initialData.referenceMaterials : [],
       });
     }
   }, [initialData, form]);
