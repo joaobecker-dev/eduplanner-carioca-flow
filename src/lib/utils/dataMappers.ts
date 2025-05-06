@@ -1,4 +1,3 @@
-
 import { 
   Assessment, 
   CalendarEvent, 
@@ -198,7 +197,6 @@ export const mapCalendarEventFromDb = (dbEvent: CalendarEventRow): CalendarEvent
   subjectId: safeNull(dbEvent.subject_id),
   lessonPlanId: safeNull(dbEvent.lesson_plan_id),
   assessmentId: safeNull(dbEvent.assessment_id),
-  teachingPlanId: safeNull(dbEvent.teaching_plan_id),
   location: safeNull(dbEvent.location),
   color: safeNull(dbEvent.color),
   created_at: dbEvent.created_at,
@@ -220,7 +218,6 @@ export const mapCalendarEventToDb = (event: Partial<CalendarEvent>): Partial<Cal
   if (event.subjectId !== undefined) result.subject_id = event.subjectId;
   if (event.lessonPlanId !== undefined) result.lesson_plan_id = event.lessonPlanId;
   if (event.assessmentId !== undefined) result.assessment_id = event.assessmentId;
-  if (event.teachingPlanId !== undefined) result.teaching_plan_id = event.teachingPlanId;
   if (event.location !== undefined) result.location = event.location;
   if (event.color !== undefined) result.color = event.color;
   

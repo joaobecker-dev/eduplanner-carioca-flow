@@ -1,50 +1,25 @@
 
 import { CalendarEvent } from '@/types';
-import { CalendarEventDatabaseFields } from './types';
-import { normalizeToISO } from '@/integrations/supabase/supabaseAdapter';
+import { CalendarEventRow } from '@/types/database';
 
-// Data mapping helper for converting DB rows to CalendarEvent objects
-export const mapToCamelCaseEvent = (data: any): CalendarEvent => {
+// Helper to map database rows to frontend models
+export const mapToCamelCaseEvent = (row: CalendarEventRow): CalendarEvent => {
   return {
-    id: data.id,
-    title: data.title,
-    description: data.description,
-    startDate: data.start_date,
-    endDate: data.end_date,
-    allDay: data.all_day,
-    type: data.type,
-    subjectId: data.subject_id,
-    lessonPlanId: data.lesson_plan_id,
-    assessmentId: data.assessment_id,
-    teachingPlanId: data.teaching_plan_id,
-    location: data.location,
-    color: data.color,
-    sourceType: data.source_type,
-    sourceId: data.source_id,
-    created_at: data.created_at
+    id: row.id,
+    title: row.title,
+    description: row.description || undefined,
+    startDate: row.start_date,
+    endDate: row.end_date || undefined,
+    allDay: row.all_day || false,
+    type: row.type,
+    subjectId: row.subject_id || undefined,
+    lessonPlanId: row.lesson_plan_id || undefined,
+    assessmentId: row.assessment_id || undefined,
+    // teachingPlanId field removed as it doesn't exist in the database schema
+    location: row.location || undefined,
+    color: row.color || undefined,
+    sourceType: (row as any).source_type,
+    sourceId: (row as any).source_id,
+    created_at: row.created_at
   };
-};
-
-// Prepare data for database operations with explicit typing
-export const prepareEventData = (eventData: Partial<CalendarEvent>): Partial<CalendarEventDatabaseFields> => {
-  // Create a base object with required fields
-  const updateData: Partial<CalendarEventDatabaseFields> = {};
-  
-  // Add fields only if they exist
-  if (eventData.title !== undefined) updateData.title = eventData.title;
-  if (eventData.type !== undefined) updateData.type = eventData.type;
-  if (eventData.startDate !== undefined) updateData.start_date = normalizeToISO(eventData.startDate);
-  if (eventData.description !== undefined) updateData.description = eventData.description;
-  if (eventData.endDate !== undefined) updateData.end_date = normalizeToISO(eventData.endDate);
-  if (eventData.allDay !== undefined) updateData.all_day = eventData.allDay;
-  if (eventData.subjectId !== undefined) updateData.subject_id = eventData.subjectId;
-  if (eventData.lessonPlanId !== undefined) updateData.lesson_plan_id = eventData.lessonPlanId;
-  if (eventData.assessmentId !== undefined) updateData.assessment_id = eventData.assessmentId;
-  if (eventData.teachingPlanId !== undefined) updateData.teaching_plan_id = eventData.teachingPlanId;
-  if (eventData.location !== undefined) updateData.location = eventData.location;
-  if (eventData.color !== undefined) updateData.color = eventData.color;
-  if (eventData.sourceType !== undefined) updateData.source_type = eventData.sourceType;
-  if (eventData.sourceId !== undefined) updateData.source_id = eventData.sourceId;
-
-  return updateData;
 };

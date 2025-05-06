@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Plus, Edit } from 'lucide-react';
 import { AssessmentsModals } from './Assessments/AssessmentsModals';
-import { StudentAssessmentModals } from './Assessments/StudentAssessmentModals';
+import StudentAssessmentModals from './Assessments/StudentAssessmentModals';
 import { useQuery } from '@tanstack/react-query';
 import { subjectService, assessmentService, studentService, studentAssessmentService } from '@/lib/services';
 

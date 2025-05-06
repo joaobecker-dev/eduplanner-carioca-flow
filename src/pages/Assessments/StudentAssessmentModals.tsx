@@ -16,7 +16,7 @@ import { studentAssessmentSchema, StudentAssessmentFormValues } from '@/schemas/
 import InputField from '@/components/forms/fields/InputField';
 import DatePickerField from '@/components/forms/fields/DatePickerField';
 import TextAreaField from '@/components/forms/fields/TextAreaField';
-import { SelectField } from '@/components/forms/fields/SelectField';
+import SelectField from '@/components/forms/fields/SelectField';
 
 interface StudentAssessmentModalProps {
   isOpen: boolean;
@@ -75,7 +75,7 @@ const StudentAssessmentModals: React.FC<StudentAssessmentModalProps> = ({
         feedback: data.feedback,
         submittedDate: data.submittedDate,
         gradedDate: data.gradedDate,
-        status: data.gradedDate ? 'graded' : (data.submittedDate ? 'submitted' : 'pending'),
+        status: data.gradedDate ? 'graded' as const : (data.submittedDate ? 'submitted' as const : 'pending' as const),
         created_at: new Date().toISOString()
       };
 
