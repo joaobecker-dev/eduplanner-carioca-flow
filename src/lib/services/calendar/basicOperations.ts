@@ -1,6 +1,8 @@
-import { mapToCamelCase, mapToSnakeCase } from '@/lib/utils/dataMappers';
+
+import { mapToCamelCase } from '@/lib/utils/dataMappers';
 import { supabase } from '@/integrations/supabase/client';
 import { CalendarEvent } from '@/types';
+import { EventSourceType } from '@/types/database';
 
 export const createEvent = async (event: Omit<CalendarEvent, 'id'>): Promise<CalendarEvent> => {
   const eventToInsert = {
@@ -55,3 +57,24 @@ export const updateEvent = async (id: string, event: Partial<Omit<CalendarEvent,
   
   return mapToCamelCase(data) as CalendarEvent;
 };
+
+// Add missing deleteBySource function
+export const deleteBySource = async (sourceType: EventSourceType, sourceId: string): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from('calendar_events')
+      .delete()
+      .eq('source_type', sourceType)
+      .eq('source_id', sourceId);
+
+    if (error) throw error;
+    return true;
+  } catch (error) {
+    console.error(`Error deleting events by source (${sourceType}, ${sourceId}):`, error);
+    return false;
+  }
+};
+
+// Add createCalendarEvent and updateCalendarEvent functions for syncOperations.ts
+export const createCalendarEvent = createEvent;
+export const updateCalendarEvent = updateEvent;
