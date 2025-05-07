@@ -3,7 +3,12 @@ import { CalendarEvent, ID } from '@/types';
 import { EventSourceType } from '@/types/database';
 import { handleError } from '../baseService';
 import { supabase } from "@/integrations/supabase/client";
-import { mapToCamelCaseEvent } from './utils';
+import { mapToCamelCase } from '@/lib/utils/caseConverters';
+
+// Helper function to map calendar events without recursive type issues
+export const mapToCamelCaseEvent = (event: any): CalendarEvent => {
+  return mapToCamelCase(event) as CalendarEvent;
+};
 
 // Query methods
 export const getByDateRange = async (startDate: string, endDate: string): Promise<CalendarEvent[]> => {

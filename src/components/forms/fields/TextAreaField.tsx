@@ -1,8 +1,6 @@
 
 import React from 'react';
-import { useFormContext } from 'react-hook-form';
-import { Path, FieldValues } from 'react-hook-form';
-
+import { Control, FieldValues, Path } from 'react-hook-form';
 import { Textarea } from '@/components/ui/textarea';
 import {
   FormControl,
@@ -10,47 +8,38 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-  FormDescription,
 } from '@/components/ui/form';
-import { cn } from '@/lib/utils';
 
-interface TextAreaFieldProps<T extends FieldValues> {
-  name: Path<T>;
+export interface TextAreaFieldProps<T extends FieldValues> {
   label: string;
-  placeholder?: string;
-  description?: string;
+  name: Path<T>;
+  placeholder: string;
+  control: Control<T>;
   disabled?: boolean;
-  rows?: number;
-  className?: string;
 }
 
 function TextAreaField<T extends FieldValues>({
-  name,
   label,
+  name,
   placeholder,
-  description,
+  control,
   disabled = false,
-  rows = 3,
-  className,
 }: TextAreaFieldProps<T>) {
-  const form = useFormContext<T>();
-  
   return (
     <FormField
-      control={form.control}
+      control={control}
       name={name}
       render={({ field }) => (
-        <FormItem className={cn(className)}>
+        <FormItem>
           <FormLabel>{label}</FormLabel>
           <FormControl>
-            <Textarea 
+            <Textarea
               placeholder={placeholder}
-              rows={rows}
               disabled={disabled}
+              className="min-h-[100px]"
               {...field}
             />
           </FormControl>
-          {description && <FormDescription>{description}</FormDescription>}
           <FormMessage />
         </FormItem>
       )}

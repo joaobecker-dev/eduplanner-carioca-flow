@@ -33,31 +33,29 @@ const MaterialsPage: React.FC = () => {
     return date.toLocaleDateString('pt-BR');
   };
 
-  const deleteMaterialMutation = useMutation(
-    async (id: string) => {
+  const deleteMaterialMutation = useMutation({
+    mutationFn: async (id: string) => {
       setIsLoadingDelete(true);
       return services.material.delete(id);
     },
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries(['materials']);
-        toast({
-          title: "Material excluído",
-          description: "O material foi excluído com sucesso!",
-        });
-      },
-      onError: (error: any) => {
-        toast({
-          title: "Erro",
-          description: "Ocorreu um erro ao excluir o material.",
-          variant: "destructive",
-        });
-      },
-      onSettled: () => {
-        setIsLoadingDelete(false);
-      },
-    }
-  );
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['materials'] });
+      toast({
+        title: "Material excluído",
+        description: "O material foi excluído com sucesso!",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erro",
+        description: "Ocorreu um erro ao excluir o material.",
+        variant: "destructive",
+      });
+    },
+    onSettled: () => {
+      setIsLoadingDelete(false);
+    },
+  });
 
   const handleDelete = async (id: string) => {
     if (window.confirm("Tem certeza que deseja excluir este material?")) {

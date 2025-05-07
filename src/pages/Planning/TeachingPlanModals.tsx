@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -143,4 +142,8 @@ const TeachingPlanModals: React.FC<TeachingPlanModalsProps> = ({
   );
 };
 
+// Export the component as default
 export default TeachingPlanModals;
+
+// Also export it as a named export for backward compatibility
+export { TeachingPlanModals };

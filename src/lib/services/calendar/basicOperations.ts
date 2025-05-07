@@ -61,3 +61,24 @@ export const updateEvent = async (id: string, event: Partial<Omit<CalendarEvent,
   // Use the simplified utility to avoid deep type instantiation
   return mapToCamelCase(data) as CalendarEvent;
 };
+
+// Add the deleteBySource function to fix the reference in wrapperOperations.ts
+export const deleteBySource = async (sourceType: string, sourceId: string): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from('calendar_events')
+      .delete()
+      .eq('source_type', sourceType)
+      .eq('source_id', sourceId);
+
+    if (error) throw error;
+    return true;
+  } catch (error) {
+    console.error(`Error deleting events by source (${sourceType}/${sourceId}):`, error);
+    return false;
+  }
+};
+
+// Export aliases for functions required by syncOperations.ts
+export const createCalendarEvent = createEvent;
+export const updateCalendarEvent = updateEvent;

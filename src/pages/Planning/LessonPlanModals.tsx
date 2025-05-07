@@ -111,4 +111,8 @@ const LessonPlanModals: React.FC<LessonPlanModalProps> = ({
   );
 };
 
+// Export the component as default
 export default LessonPlanModals;
+
+// Also export it as a named export for backward compatibility
+export { LessonPlanModals };

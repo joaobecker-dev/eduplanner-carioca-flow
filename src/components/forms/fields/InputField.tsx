@@ -1,8 +1,6 @@
 
 import React from 'react';
-import { useFormContext } from 'react-hook-form';
-import { Path, FieldValues } from 'react-hook-form';
-
+import { Control, Controller, FieldValues, Path } from 'react-hook-form';
 import { Input } from '@/components/ui/input';
 import {
   FormControl,
@@ -10,37 +8,31 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-  FormDescription,
 } from '@/components/ui/form';
-import { cn } from '@/lib/utils';
 
 export interface InputFieldProps<T extends FieldValues> {
-  name: Path<T>;
   label: string;
-  placeholder?: string;
-  description?: string;
-  type?: "text" | "email" | "number" | "password";
+  name: Path<T>;
+  type?: string;
+  placeholder: string;
+  control: Control<T>;
   disabled?: boolean;
-  className?: string;
 }
 
 function InputField<T extends FieldValues>({
-  name,
   label,
+  name,
+  type = 'text',
   placeholder,
-  description,
-  type = "text",
+  control,
   disabled = false,
-  className,
 }: InputFieldProps<T>) {
-  const form = useFormContext<T>();
-  
   return (
     <FormField
-      control={form.control}
+      control={control}
       name={name}
       render={({ field }) => (
-        <FormItem className={cn(className)}>
+        <FormItem>
           <FormLabel>{label}</FormLabel>
           <FormControl>
             <Input
@@ -50,7 +42,6 @@ function InputField<T extends FieldValues>({
               {...field}
             />
           </FormControl>
-          {description && <FormDescription>{description}</FormDescription>}
           <FormMessage />
         </FormItem>
       )}

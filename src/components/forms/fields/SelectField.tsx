@@ -1,15 +1,12 @@
 
 import React from 'react';
-import { useFormContext } from 'react-hook-form';
-import { Path, FieldValues } from 'react-hook-form';
-
+import { Control, Controller, FieldValues, Path } from 'react-hook-form';
 import {
   FormControl,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
-  FormDescription,
 } from '@/components/ui/form';
 import {
   Select,
@@ -18,51 +15,41 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { cn } from '@/lib/utils';
+
+export interface SelectOption {
+  label: string;
+  value: string;
+}
 
 export interface SelectFieldProps<T extends FieldValues> {
-  name: Path<T>;
   label: string;
+  name: Path<T>;
   placeholder: string;
-  options: { label: string; value: string }[];
-  description?: string;
+  options: SelectOption[];
+  control: Control<T>;
   disabled?: boolean;
-  className?: string;
-  onValueChange?: (value: string) => void;
 }
 
 function SelectField<T extends FieldValues>({
-  name,
   label,
+  name,
   placeholder,
   options,
-  description,
+  control,
   disabled = false,
-  className,
-  onValueChange,
 }: SelectFieldProps<T>) {
-  const form = useFormContext<T>();
-  
-  // Filter out options with Empty string values to prevent the Radix UI error
-  const validOptions = options.filter(option => option.value.trim() !== '');
-  
   return (
     <FormField
-      control={form.control}
+      control={control}
       name={name}
       render={({ field }) => (
-        <FormItem className={cn(className)}>
+        <FormItem>
           <FormLabel>{label}</FormLabel>
-          <Select 
-            onValueChange={(value) => {
-              field.onChange(value);
-              if (onValueChange) {
-                onValueChange(value);
-              }
-            }}
-            defaultValue={field.value} 
+          <Select
             disabled={disabled}
-            value={field.value || undefined}
+            onValueChange={field.onChange}
+            value={field.value}
+            defaultValue={field.value}
           >
             <FormControl>
               <SelectTrigger>
@@ -70,17 +57,13 @@ function SelectField<T extends FieldValues>({
               </SelectTrigger>
             </FormControl>
             <SelectContent>
-              {validOptions.map((option) => (
-                <SelectItem 
-                  key={option.value} 
-                  value={option.value || 'none'} // Ensure no empty string values
-                >
+              {options.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
                   {option.label}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
-          {description && <FormDescription>{description}</FormDescription>}
           <FormMessage />
         </FormItem>
       )}

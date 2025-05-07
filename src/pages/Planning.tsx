@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -18,22 +17,26 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Skeleton } from '@/components/ui/skeleton';
+import { AnnualPlanModals } from './Planning/AnnualPlanModals';
+import TeachingPlanModals from './Planning/TeachingPlanModals';
+import LessonPlanModals from './Planning/LessonPlanModals';
+import { AssessmentModals } from './Planning/AssessmentModals';
 
 const PlanningPage: React.FC = () => {
-  const { data: annualPlans, isLoading: isLoadingAnnualPlans } = useQuery(
-    ['annualPlans'],
-    () => services.annualPlan.getAll()
-  );
+  const { data: annualPlans, isLoading: isLoadingAnnualPlans } = useQuery({
+    queryKey: ['annualPlans'],
+    queryFn: services.annualPlan.getAll
+  });
 
-  const { data: teachingPlans, isLoading: isLoadingTeachingPlans } = useQuery(
-    ['teachingPlans'],
-    () => services.teachingPlan.getAll()
-  );
+  const { data: teachingPlans, isLoading: isLoadingTeachingPlans } = useQuery({
+    queryKey: ['teachingPlans'],
+    queryFn: services.teachingPlan.getAll
+  });
 
-  const { data: lessonPlans, isLoading: isLoadingLessonPlans } = useQuery(
-    ['lessonPlans'],
-    () => services.lessonPlan.getAll()
-  );
+  const { data: lessonPlans, isLoading: isLoadingLessonPlans } = useQuery({
+    queryKey: ['lessonPlans'],
+    queryFn: services.lessonPlan.getAll
+  });
 
   // Helper function to format dates
   const formatDate = (dateString: string) => {

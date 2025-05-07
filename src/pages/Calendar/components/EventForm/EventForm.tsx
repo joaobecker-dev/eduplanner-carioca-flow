@@ -1,29 +1,16 @@
 
 import React from 'react';
-import { EventFormValues } from '@/schemas/eventSchema';
-import { CalendarEvent } from '@/types';
 import EventFormContent from './EventFormContent';
+import { EventFormProps } from './types';
 
-interface EventFormProps {
-  onSubmit: (values: EventFormValues) => Promise<void> | void;
-  eventToEdit?: CalendarEvent | null;
-  isSubmitting?: boolean;
-  subjects?: any[];
-}
-
-const EventForm: React.FC<EventFormProps> = ({ 
-  onSubmit, 
-  eventToEdit, 
-  isSubmitting,
-  subjects 
-}) => {
+const EventForm: React.FC<EventFormProps> = ({ onSubmit, eventToEdit }) => {
   return (
-    <EventFormContent 
-      onSubmit={onSubmit} 
-      eventToEdit={eventToEdit}
-      isSubmitting={isSubmitting}
-      subjects={subjects}
-    />
+    <div className="space-y-4">
+      <EventFormContent
+        onSubmit={onSubmit}
+        eventToEdit={eventToEdit}
+      />
+    </div>
   );
 };
 
