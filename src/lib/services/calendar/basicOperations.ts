@@ -1,6 +1,10 @@
-import { mapToCamelCase, mapToSnakeCase } from '@/lib/utils/dataMappers';
+
+import { mapToSnakeCase } from '@/lib/utils/dataMappers';
 import { supabase } from '@/integrations/supabase/client';
 import { CalendarEvent } from '@/types';
+
+// Import the simplified utility function to avoid recursive type checking
+import { mapToCamelCase } from '@/lib/utils/caseConverters';
 
 export const createEvent = async (event: Omit<CalendarEvent, 'id'>): Promise<CalendarEvent> => {
   const eventToInsert = {
@@ -26,6 +30,7 @@ export const createEvent = async (event: Omit<CalendarEvent, 'id'>): Promise<Cal
 
   if (error) throw new Error(`Error creating event: ${error.message}`);
   
+  // Use the simplified utility to avoid deep type instantiation
   return mapToCamelCase(data) as CalendarEvent;
 };
 
@@ -53,5 +58,6 @@ export const updateEvent = async (id: string, event: Partial<Omit<CalendarEvent,
 
   if (error) throw new Error(`Error updating event: ${error.message}`);
   
+  // Use the simplified utility to avoid deep type instantiation
   return mapToCamelCase(data) as CalendarEvent;
 };
