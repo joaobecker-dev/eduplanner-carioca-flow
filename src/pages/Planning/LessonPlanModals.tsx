@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback } from 'react';
 import {
   Dialog,
@@ -37,7 +38,7 @@ const LessonPlanModals: React.FC<LessonPlanModalProps> = ({
     setSubmitting(true);
     try {
       // Process arrays from newline-separated strings
-      const processedValues: Omit<LessonPlan, "id" | "created_at" | "updated_at"> = {
+      const processedValues: Omit<LessonPlan, "id"> = {
         title: values.title,
         teachingPlanId: values.teachingPlanId,
         date: values.date.toISOString(), // Convert Date to string
@@ -48,7 +49,9 @@ const LessonPlanModals: React.FC<LessonPlanModalProps> = ({
         resources: values.resources ? values.resources.split('\n').filter(Boolean) : [],
         homework: values.homework || undefined,
         evaluation: values.evaluation || undefined,
-        notes: values.notes || undefined
+        notes: values.notes || undefined,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       };
 
       if (lessonPlan) {

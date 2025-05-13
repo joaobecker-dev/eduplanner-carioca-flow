@@ -1,102 +1,93 @@
-import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { toast } from "sonner";
-import { annualPlanService, subjectService } from "@/lib/services";
-import { Subject } from "@/types";
-import { normalizeToISO } from "@/integrations/supabase/supabaseAdapter";
 
-// Define AnnualPlanFormData type locally
-interface AnnualPlanFormData {
-  title: string;
-  description?: string;
-  subjectId: string;
-  generalContent: string;
-  objectives: string[];
-  methodology: string;
-  evaluation: string;
-  referenceMaterials?: string[];
-}
+import React from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useQuery, useMutation } from '@tanstack/react-query';
+import { annualPlanService } from '@/lib/services/annualPlanService';
+import { subjectService } from '@/lib/services/subjectService';
+import { academicPeriodService } from '@/lib/services/academicPeriodService';
+import { toast } from '@/hooks/use-toast';
+import { AnnualPlanFormValues } from '@/components/forms/AnnualPlanForm';
+import { ArrowLeft } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import AnnualPlanForm from '@/components/forms/AnnualPlanForm';
 
-export default function AnnualPlanEdit() {
+const AnnualPlanEdit = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [initialData, setInitialData] = useState<AnnualPlanFormData | null>(null);
 
-  const { data: subjects, isLoading: subjectsLoading } = useQuery({
-    queryKey: ["subjects"],
-    queryFn: subjectService.getAll,
-  });
-
-  const { data: annualPlan, isLoading: annualPlanLoading } = useQuery({
-    queryKey: ["annual-plan", id],
+  const { data: annualPlan, isLoading: isLoadingAnnualPlan } = useQuery({
+    queryKey: ['annualPlan', id],
     queryFn: () => annualPlanService.getById(id as string),
     enabled: !!id,
   });
 
-  useEffect(() => {
-    if (annualPlan) {
-      const defaultValues = {
-        title: annualPlan?.title || '',
-        description: annualPlan?.description || '',
-        academicPeriodId: annualPlan?.academicPeriodId || '',
-        subjectId: annualPlan?.subjectId || '',
-        objectives: annualPlan?.objectives?.join('\n') || '',
-        generalContent: annualPlan?.generalContent || '',
-        methodology: annualPlan?.methodology || '',
-        evaluation: annualPlan?.evaluation || '',
-        referenceMaterials: annualPlan?.referenceMaterials?.join('\n') || ''
-      };
-
-      setInitialData({
-        title: defaultValues.title,
-        description: defaultValues.description || "",
-        subjectId: defaultValues.subjectId,
-        generalContent: defaultValues.generalContent || annualPlan.generalContent || annualPlan.general_content || "",
-        objectives: annualPlan.objectives || [],
-        methodology: annualPlan.methodology,
-        evaluation: annualPlan.evaluation,
-        referenceMaterials: annualPlan.referenceMaterials || []
-      });
-    }
-  }, [annualPlan]);
-
-  const mutation = useMutation({
-    mutationFn: (data: AnnualPlanFormData) => annualPlanService.update(id as string, {
-      ...data
-    }),
-    onSuccess: () => {
-      toast.success("Plano anual atualizado com sucesso!");
-      navigate("/planejamento");
-    },
-    onError: (error) => {
-      console.error(error);
-      toast.error("Erro ao atualizar plano anual");
-    }
+  const { data: subjects = [], isLoading: isLoadingSubjects } = useQuery({
+    queryKey: ['subjects'],
+    queryFn: subjectService.getAll,
   });
 
-  if (annualPlanLoading || subjectsLoading) {
-    return <div className="container py-10">Carregando...</div>;
+  const { data: academicPeriods = [], isLoading: isLoadingAcademicPeriods } = useQuery({
+    queryKey: ['academicPeriods'],
+    queryFn: academicPeriodService.getAll,
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: (data: AnnualPlanFormValues) =>
+      annualPlanService.update(id as string, data),
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "O plano anual foi atualizado com sucesso!",
+      });
+      navigate(`/annual-plans/${id}`);
+    },
+    onError: (error) => {
+      console.error("Error updating annual plan:", error);
+      toast({
+        title: "Error",
+        description: "Ocorreu um erro ao atualizar o plano anual.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  if (isLoadingAnnualPlan || isLoadingSubjects || isLoadingAcademicPeriods) {
+    return <div>Loading...</div>;
   }
 
-  // Since we can't find the AnnualPlanForm component, we'll create a placeholder
+  if (!annualPlan) {
+    return <div>Annual plan not found</div>;
+  }
+
+  // Map the data to the form structure
+  const initialData = {
+    ...annualPlan,
+    generalContent: annualPlan.generalContent,
+    referenceMaterials: annualPlan.referenceMaterials || [],
+  };
+
   return (
-    <div className="container py-10">
-      {initialData && (
+    <div className="container mx-auto py-6 space-y-6">
+      <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold mb-6">Editar Plano Anual</h1>
-          <p>Formulário do plano anual seria renderizado aqui</p>
-          {/* Actual form would be implemented here, but since we can't find the component,
-              we'll just show placeholder content */}
-          <pre>{JSON.stringify(initialData, null, 2)}</pre>
-          <button 
-            className="mt-4 bg-blue-500 text-white px-4 py-2 rounded"
-            onClick={() => navigate("/planejamento")}
-          >
-            Voltar
-          </button>
+          <Button variant="ghost" onClick={() => navigate(-1)} className="mb-2">
+            <ArrowLeft className="mr-2 h-4 w-4" /> Voltar
+          </Button>
+          <h1 className="text-2xl font-bold">Editar Plano Anual</h1>
         </div>
-      )}
+      </div>
+
+      <div className="bg-background rounded-lg border p-6">
+        <AnnualPlanForm
+          initialData={initialData}
+          subjects={subjects}
+          academicPeriods={academicPeriods}
+          onSubmit={updateMutation.mutate}
+          isSubmitting={updateMutation.isPending}
+        />
+      </div>
     </div>
   );
-}
+};
+
+export default AnnualPlanEdit;

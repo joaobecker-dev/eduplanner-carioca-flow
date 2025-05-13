@@ -1,89 +1,102 @@
 
 import React, { useState } from 'react';
-import { useFormContext } from 'react-hook-form';
-import { Plus, X } from 'lucide-react';
-import { FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
+import { Control, FieldValues, Path, useFieldArray } from 'react-hook-form';
+import { PlusCircle, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import {
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 
-interface ArrayInputFieldProps {
-  name: string;
+export interface ArrayInputFieldProps<T extends FieldValues> {
   label: string;
+  name: Path<T>;
   placeholder: string;
+  control: Control<T>;
 }
 
-const ArrayInputField: React.FC<ArrayInputFieldProps> = ({
-  name,
+function ArrayInputField<T extends FieldValues>({
   label,
+  name,
   placeholder,
-}) => {
-  const [newItem, setNewItem] = useState<string>('');
-  const { control, getValues, setValue } = useFormContext();
+  control,
+}: ArrayInputFieldProps<T>) {
+  const [newItem, setNewItem] = useState('');
+  
+  // Use useFieldArray to manage the array of items
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: name as any,
+  });
 
-  const addItem = () => {
+  const handleAddItem = () => {
     if (newItem.trim()) {
-      const currentItems = getValues(name) || [];
-      setValue(name, [...currentItems, newItem.trim()]);
+      append(newItem.trim() as any);
       setNewItem('');
     }
   };
 
-  const removeItem = (index: number) => {
-    const currentItems = getValues(name) || [];
-    setValue(name, currentItems.filter((_, i) => i !== index));
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      addItem();
+      handleAddItem();
     }
   };
 
   return (
-    <FormField
-      control={control}
-      name={name}
-      render={({ field }) => (
-        <FormItem>
-          <FormLabel>{label}</FormLabel>
-          <div className="flex space-x-2">
-            <Input
-              placeholder={placeholder}
-              value={newItem}
-              onChange={(e) => setNewItem(e.target.value)}
-              onKeyDown={handleKeyDown}
-            />
-            <Button
-              type="button"
-              onClick={addItem}
-              variant="secondary"
-            >
-              <Plus size={16} />
-            </Button>
-          </div>
-          <div className="mt-2 flex flex-wrap gap-2">
-            {field.value?.map((item: string, index: number) => (
-              <Badge
-                key={index}
-                variant="secondary"
-                className="px-2 py-1 text-sm flex items-center gap-1"
+    <FormItem>
+      <FormLabel>{label}</FormLabel>
+      <div className="space-y-2">
+        <div className="flex gap-2">
+          <Input
+            placeholder={placeholder}
+            value={newItem}
+            onChange={(e) => setNewItem(e.target.value)}
+            onKeyPress={handleKeyPress}
+            className="flex-1"
+          />
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            onClick={handleAddItem}
+          >
+            <PlusCircle className="h-4 w-4" />
+          </Button>
+        </div>
+        
+        <FormMessage />
+        
+        <div className="space-y-2 mt-2">
+          {fields.map((field, index) => (
+            <div key={field.id} className="flex items-center gap-2">
+              <div className="bg-secondary text-secondary-foreground px-3 py-2 rounded-md flex-1 text-sm">
+                {field.value}
+              </div>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={() => remove(index)}
               >
-                {item}
-                <X
-                  size={14}
-                  className="cursor-pointer text-gray-500 hover:text-red-500"
-                  onClick={() => removeItem(index)}
-                />
-              </Badge>
-            ))}
-          </div>
-          <FormMessage />
-        </FormItem>
-      )}
-    />
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          ))}
+          
+          {fields.length === 0 && (
+            <div className="text-sm text-muted-foreground py-2">
+              Sem itens. Adicione um novo item acima.
+            </div>
+          )}
+        </div>
+      </div>
+    </FormItem>
   );
-};
+}
 
 export default ArrayInputField;

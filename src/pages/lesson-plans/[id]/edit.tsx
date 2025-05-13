@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery, useMutation } from '@tanstack/react-query';
@@ -39,7 +40,14 @@ const LessonPlanEdit: React.FC = () => {
 
   // Update mutation
   const mutation = useMutation({
-    mutationFn: (values: LessonPlanFormValues) => lessonPlanService.update(id as string, values),
+    mutationFn: (values: LessonPlanFormValues) => {
+      // Convert string date to ISO string if needed
+      const formattedValues = {
+        ...values,
+        date: values.date instanceof Date ? values.date.toISOString() : values.date
+      };
+      return lessonPlanService.update(id as string, formattedValues);
+    },
     onSuccess: () => {
       toast({
         title: "Plano de aula atualizado",

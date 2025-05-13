@@ -110,10 +110,10 @@ const AssessmentEdit: React.FC = () => {
   // Format data for the form
   const formInitialData = {
     ...assessment,
-    // Map snake_case to camelCase properties as needed
-    totalPoints: assessment.total_points || assessment.totalPoints,
-    dueDate: assessment.due_date || assessment.dueDate,
-    teachingPlanId: assessment.teaching_plan_id || assessment.teachingPlanId
+    // Use camelCase properties
+    totalPoints: assessment.totalPoints,
+    dueDate: assessment.dueDate,
+    teachingPlanId: assessment.teachingPlanId
   };
 
   return (

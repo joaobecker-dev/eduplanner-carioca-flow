@@ -147,12 +147,14 @@ const TeachingPlanForm: React.FC<TeachingPlanFormProps> = ({
                 name="title"
                 label="Título do Plano de Ensino"
                 placeholder="Ex: Plano de Ensino de Matemática - 2º Bimestre"
+                control={form.control}
               />
               
               <TextAreaField
                 name="description"
                 label="Descrição (opcional)"
                 placeholder="Breve descrição sobre este plano de ensino"
+                control={form.control}
               />
             </FormSection>
             
@@ -163,6 +165,7 @@ const TeachingPlanForm: React.FC<TeachingPlanFormProps> = ({
                   label="Disciplina"
                   placeholder="Selecione a disciplina"
                   options={subjectOptions}
+                  control={form.control}
                 />
                 
                 <SelectField
@@ -171,6 +174,7 @@ const TeachingPlanForm: React.FC<TeachingPlanFormProps> = ({
                   placeholder="Selecione o plano anual"
                   options={annualPlanOptions}
                   disabled={!form.watch("subjectId") || filteredAnnualPlans.length === 0}
+                  control={form.control}
                 />
               </div>
             </FormSection>
@@ -181,6 +185,7 @@ const TeachingPlanForm: React.FC<TeachingPlanFormProps> = ({
                   name="startDate"
                   label="Data de Início"
                   placeholder="Selecione uma data"
+                  control={form.control}
                 />
                 
                 <DatePickerField
@@ -188,6 +193,7 @@ const TeachingPlanForm: React.FC<TeachingPlanFormProps> = ({
                   label="Data de Término"
                   placeholder="Selecione uma data"
                   disabledBefore={form.watch("startDate")}
+                  control={form.control}
                 />
               </div>
             </FormSection>
@@ -200,6 +206,7 @@ const TeachingPlanForm: React.FC<TeachingPlanFormProps> = ({
               name="objectives"
               label="Objetivos"
               placeholder="Digite um objetivo"
+              control={form.control}
             />
             
             {/* Using ArrayInputField component for contents */}
@@ -207,6 +214,7 @@ const TeachingPlanForm: React.FC<TeachingPlanFormProps> = ({
               name="contents"
               label="Conteúdos"
               placeholder="Digite um conteúdo"
+              control={form.control}
             />
           </FormSection>
         </div>
@@ -218,6 +226,7 @@ const TeachingPlanForm: React.FC<TeachingPlanFormProps> = ({
               label="Metodologia"
               placeholder="Descreva a metodologia que será utilizada"
               rows={4}
+              control={form.control}
             />
             
             <TextAreaField
@@ -225,6 +234,7 @@ const TeachingPlanForm: React.FC<TeachingPlanFormProps> = ({
               label="Avaliação"
               placeholder="Descreva os métodos de avaliação que serão utilizados"
               rows={4}
+              control={form.control}
             />
           </FormSection>
           
@@ -234,6 +244,7 @@ const TeachingPlanForm: React.FC<TeachingPlanFormProps> = ({
               name="resources"
               label="Recursos"
               placeholder="Digite um recurso"
+              control={form.control}
             />
             
             {/* Using ArrayInputField component for BNCC references */}
@@ -241,6 +252,7 @@ const TeachingPlanForm: React.FC<TeachingPlanFormProps> = ({
               name="bnccReferences"
               label="Referências BNCC (opcional)"
               placeholder="Ex: EF02MA01"
+              control={form.control}
             />
           </FormSection>
         </div>
