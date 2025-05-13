@@ -82,6 +82,7 @@ const LessonPlanForm: React.FC<LessonPlanFormProps> = ({
             label="Título*"
             placeholder="Aula: Operações com frações"
             disabled={isSubmitting}
+            control={form.control}
           />
 
           <SelectField
@@ -90,6 +91,7 @@ const LessonPlanForm: React.FC<LessonPlanFormProps> = ({
             placeholder="Selecione um plano de ensino"
             options={teachingPlanOptions}
             disabled={isSubmitting}
+            control={form.control}
           />
         </FormSection>
 
@@ -101,13 +103,16 @@ const LessonPlanForm: React.FC<LessonPlanFormProps> = ({
               placeholder="Selecione uma data"
               disabled={isSubmitting}
               disabledBefore={new Date("2000-01-01")}
+              control={form.control}
             />
 
             <InputField
               name="duration"
               label="Duração (minutos)*"
               type="number"
+              placeholder="50"
               disabled={isSubmitting}
+              control={form.control}
             />
           </div>
         </FormSection>
@@ -122,6 +127,7 @@ Aplicar os conceitos em situações do cotidiano"
             disabled={isSubmitting}
             rows={3}
             className="min-h-[100px]"
+            control={form.control}
           />
 
           <TextAreaField
@@ -133,6 +139,7 @@ Resolução de problemas"
             disabled={isSubmitting}
             rows={3}
             className="min-h-[100px]"
+            control={form.control}
           />
         </FormSection>
 
@@ -146,6 +153,7 @@ Correção coletiva (15min)"
             disabled={isSubmitting}
             rows={3}
             className="min-h-[100px]"
+            control={form.control}
           />
 
           <TextAreaField
@@ -158,6 +166,7 @@ Folhas de atividades"
             disabled={isSubmitting}
             rows={3}
             className="min-h-[100px]"
+            control={form.control}
           />
         </FormSection>
 
@@ -169,6 +178,7 @@ Folhas de atividades"
             disabled={isSubmitting}
             rows={2}
             className="min-h-[80px]"
+            control={form.control}
           />
 
           <TextAreaField
@@ -180,6 +190,7 @@ Participação nas discussões"
             disabled={isSubmitting}
             rows={2}
             className="min-h-[80px]"
+            control={form.control}
           />
 
           <TextAreaField
@@ -189,6 +200,7 @@ Participação nas discussões"
             disabled={isSubmitting}
             rows={2}
             className="min-h-[80px]"
+            control={form.control}
           />
         </FormSection>
         

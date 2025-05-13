@@ -16,6 +16,8 @@ export interface TextAreaFieldProps<T extends FieldValues> {
   placeholder: string;
   control: Control<T>;
   disabled?: boolean;
+  rows?: number;
+  className?: string;
 }
 
 function TextAreaField<T extends FieldValues>({
@@ -24,6 +26,8 @@ function TextAreaField<T extends FieldValues>({
   placeholder,
   control,
   disabled = false,
+  rows,
+  className,
 }: TextAreaFieldProps<T>) {
   return (
     <FormField
@@ -36,7 +40,8 @@ function TextAreaField<T extends FieldValues>({
             <Textarea
               placeholder={placeholder}
               disabled={disabled}
-              className="min-h-[100px]"
+              className={className || "min-h-[100px]"}
+              rows={rows}
               {...field}
             />
           </FormControl>

@@ -28,6 +28,7 @@ export interface SelectFieldProps<T extends FieldValues> {
   options: SelectOption[];
   control: Control<T>;
   disabled?: boolean;
+  onValueChange?: (value: string) => void;
 }
 
 function SelectField<T extends FieldValues>({
@@ -37,6 +38,7 @@ function SelectField<T extends FieldValues>({
   options,
   control,
   disabled = false,
+  onValueChange,
 }: SelectFieldProps<T>) {
   return (
     <FormField
@@ -47,7 +49,12 @@ function SelectField<T extends FieldValues>({
           <FormLabel>{label}</FormLabel>
           <Select
             disabled={disabled}
-            onValueChange={field.onChange}
+            onValueChange={(value) => {
+              field.onChange(value);
+              if (onValueChange) {
+                onValueChange(value);
+              }
+            }}
             value={field.value}
             defaultValue={field.value}
           >

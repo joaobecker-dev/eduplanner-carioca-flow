@@ -101,6 +101,7 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
             label="Título*"
             placeholder="Avaliação: Frações e Decimais"
             disabled={isSubmitting}
+            control={form.control}
           />
         </FormSection>
 
@@ -112,6 +113,7 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
               placeholder="Selecione uma disciplina"
               options={subjectOptions}
               disabled={isSubmitting}
+              control={form.control}
               onValueChange={() => form.setValue('teachingPlanId', '')}
             />
 
@@ -121,6 +123,7 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
               placeholder="Selecione o tipo"
               options={assessmentTypeOptions}
               disabled={isSubmitting}
+              control={form.control}
             />
           </div>
 
@@ -130,6 +133,7 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
             placeholder="Selecione um plano de ensino (opcional)"
             options={teachingPlanOptions}
             disabled={isSubmitting || !selectedSubjectId}
+            control={form.control}
           />
 
           <TextAreaField
@@ -138,6 +142,7 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
             placeholder="Descrição detalhada da avaliação"
             rows={4}
             disabled={isSubmitting}
+            control={form.control}
           />
         </FormSection>
 
@@ -146,7 +151,9 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
             name="totalPoints"
             label="Total de Pontos*"
             type="number"
+            placeholder="10"
             disabled={isSubmitting}
+            control={form.control}
           />
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -156,6 +163,7 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
               placeholder="Selecione uma data"
               disabled={isSubmitting}
               disabledBefore={new Date("2000-01-01")}
+              control={form.control}
             />
 
             <DatePickerField
@@ -164,6 +172,7 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
               placeholder="Selecione uma data (opcional)"
               disabled={isSubmitting}
               disabledBefore={form.getValues("date")}
+              control={form.control}
             />
           </div>
         </FormSection>

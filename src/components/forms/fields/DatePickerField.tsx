@@ -26,6 +26,8 @@ export interface DatePickerFieldProps<T extends FieldValues> {
   placeholder: string;
   control: Control<T>;
   disabled?: boolean;
+  disabledBefore?: Date;
+  disabledAfter?: Date;
 }
 
 function DatePickerField<T extends FieldValues>({
@@ -34,6 +36,8 @@ function DatePickerField<T extends FieldValues>({
   placeholder,
   control,
   disabled = false,
+  disabledBefore,
+  disabledAfter,
 }: DatePickerFieldProps<T>) {
   return (
     <FormField
@@ -67,9 +71,19 @@ function DatePickerField<T extends FieldValues>({
                 mode="single"
                 selected={field.value}
                 onSelect={field.onChange}
-                disabled={disabled}
+                disabled={(date) => {
+                  let isDisabled = false;
+                  if (disabledBefore && date < disabledBefore) {
+                    isDisabled = true;
+                  }
+                  if (disabledAfter && date > disabledAfter) {
+                    isDisabled = true;
+                  }
+                  return isDisabled;
+                }}
                 initialFocus
                 locale={ptBR}
+                className="p-3 pointer-events-auto"
               />
             </PopoverContent>
           </Popover>

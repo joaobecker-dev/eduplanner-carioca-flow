@@ -162,12 +162,14 @@ const AnnualPlanForm: React.FC<AnnualPlanFormProps> = ({
               name="title"
               label="Título do Plano Anual"
               placeholder="Ex: Plano Anual de Matemática - 5º Ano"
+              control={form.control}
             />
             
             <TextAreaField
               name="description"
               label="Descrição (opcional)"
               placeholder="Breve descrição sobre este plano anual"
+              control={form.control}
             />
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -176,6 +178,7 @@ const AnnualPlanForm: React.FC<AnnualPlanFormProps> = ({
                 label="Período Acadêmico"
                 placeholder="Selecione o período"
                 options={academicPeriodOptions}
+                control={form.control}
               />
               
               <SelectField
@@ -184,6 +187,7 @@ const AnnualPlanForm: React.FC<AnnualPlanFormProps> = ({
                 placeholder="Selecione a disciplina"
                 options={subjectOptions}
                 disabled={!form.watch("academicPeriodId") || filteredSubjects.length === 0}
+                control={form.control}
               />
             </div>
           </FormSection>
@@ -194,6 +198,7 @@ const AnnualPlanForm: React.FC<AnnualPlanFormProps> = ({
               name="objectives"
               label="Objetivos"
               placeholder="Digite um objetivo"
+              control={form.control}
             />
           </FormSection>
         </div>
@@ -205,6 +210,7 @@ const AnnualPlanForm: React.FC<AnnualPlanFormProps> = ({
               label="Conteúdo Geral"
               placeholder="Descreva o conteúdo geral que será abordado durante o ano"
               rows={4}
+              control={form.control}
             />
             
             <TextAreaField
@@ -212,6 +218,7 @@ const AnnualPlanForm: React.FC<AnnualPlanFormProps> = ({
               label="Metodologia"
               placeholder="Descreva a metodologia que será utilizada"
               rows={4}
+              control={form.control}
             />
           </FormSection>
           
@@ -221,6 +228,7 @@ const AnnualPlanForm: React.FC<AnnualPlanFormProps> = ({
               label="Avaliação"
               placeholder="Descreva os métodos de avaliação que serão utilizados"
               rows={4}
+              control={form.control}
             />
             
             {/* Reference Materials Section */}
@@ -228,6 +236,7 @@ const AnnualPlanForm: React.FC<AnnualPlanFormProps> = ({
               name="referenceMaterials"
               label="Materiais de Referência (opcional)"
               placeholder="Ex: Livro X, Apostila Y"
+              control={form.control}
             />
           </FormSection>
         </div>
