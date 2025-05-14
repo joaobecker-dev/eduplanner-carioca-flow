@@ -30,8 +30,11 @@ export const createEvent = async (event: Omit<CalendarEvent, 'id'>): Promise<Cal
 
   if (error) throw new Error(`Error creating event: ${error.message}`);
   
-  // Use explicit type conversion to avoid deep type instantiation
-  return convertToCalendarEvent(data);
+  // Use the data returned from Supabase which includes the id
+  return { 
+    id: data.id,
+    ...convertToCalendarEvent(data)
+  };
 };
 
 export const updateEvent = async (id: string, event: Partial<Omit<CalendarEvent, 'id'>>): Promise<CalendarEvent> => {
@@ -59,8 +62,11 @@ export const updateEvent = async (id: string, event: Partial<Omit<CalendarEvent,
 
   if (error) throw new Error(`Error updating event: ${error.message}`);
   
-  // Use explicit type conversion to avoid deep type instantiation
-  return convertToCalendarEvent(data);
+  // Return the full event with id
+  return { 
+    id: data.id,
+    ...convertToCalendarEvent(data)
+  };
 };
 
 // Add the deleteBySource function to fix the reference in wrapperOperations.ts

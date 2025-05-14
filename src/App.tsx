@@ -37,7 +37,8 @@ const queryClient = new QueryClient();
 // Wrapper component to provide the ID param
 const AssessmentGradingWrapper = () => {
   const { assessmentId } = useParams<{ assessmentId: string }>();
-  return <StudentAssessmentGradingPage assessmentId={assessmentId} />;
+  // Pass the assessmentId directly to the component to fix the missing 'id' prop error
+  return assessmentId ? <StudentAssessmentGradingPage assessmentId={assessmentId} /> : null;
 };
 
 const App = () => (
