@@ -1,53 +1,69 @@
 
 import React from 'react';
-import { TeachingPlanModal } from './TeachingPlanModals';
-import { AnnualPlanModal } from './AnnualPlanModals';
-import { LessonPlanModal } from './LessonPlanModals';
+import TeachingPlanModals from './TeachingPlanModals';
+import { AnnualPlanModals } from './AnnualPlanModals';
+import LessonPlanModals from './LessonPlanModals';
+
+interface PlanningModalsProps {
+  modalType?: string; 
+  isOpen?: boolean;
+  closeModal?: () => void;
+  onSuccess?: () => void;
+  teachingPlans?: any[];
+  planId?: string | null;
+  refreshData?: () => void;
+  subjects?: any[];
+  academicPeriods?: any[];
+  annualPlans?: any[];
+}
 
 // This is a simplified version - the actual component might be more complex
-// Update the props or usage pattern as needed
-const PlanningModals = ({ 
+const PlanningModals: React.FC<PlanningModalsProps> = ({ 
   modalType, 
-  isOpen, 
-  closeModal, 
-  onSuccess, 
+  isOpen = false, 
+  closeModal = () => {}, 
+  onSuccess = () => {}, 
   teachingPlans = [], 
   planId = null,
-  refreshData, // Add missing refreshData prop
+  refreshData = () => {},
+  subjects = [],
+  academicPeriods = [],
+  annualPlans = []
 }) => {
   // We'll adapt according to what's available in the codebase
-  // This is a simplified example
   
   switch (modalType) {
     case 'teachingPlan':
       return (
-        <TeachingPlanModal 
-          isOpen={isOpen} 
-          closeModal={closeModal} 
-          onSuccess={onSuccess}
-          planId={planId}
-          refreshData={refreshData}
+        <TeachingPlanModals 
+          showCreateModal={isOpen}
+          setShowCreateModal={() => closeModal()}
+          showDeleteModal={false}
+          setShowDeleteModal={() => {}}
+          selectedPlan={planId ? { id: planId } : null}
+          setSelectedPlan={() => {}}
+          showEditModal={false}
+          setShowEditModal={() => {}}
+          subjects={subjects}
+          annualPlans={annualPlans}
+          refreshPlans={refreshData}
         />
       );
     case 'annualPlan':
       return (
-        <AnnualPlanModal 
-          isOpen={isOpen} 
-          closeModal={closeModal} 
-          onSuccess={onSuccess}
-          planId={planId}
+        <AnnualPlanModals
+          subjects={subjects}
+          academicPeriods={academicPeriods}
           refreshData={refreshData}
         />
       );
     case 'lessonPlan':
       return (
-        <LessonPlanModal 
-          isOpen={isOpen} 
-          closeModal={closeModal} 
-          onSuccess={onSuccess}
-          planId={planId}
+        <LessonPlanModals 
+          isOpen={isOpen}
+          setIsOpen={() => closeModal()}
           teachingPlans={teachingPlans}
-          refreshData={refreshData}
+          onSuccess={onSuccess}
         />
       );
     default:

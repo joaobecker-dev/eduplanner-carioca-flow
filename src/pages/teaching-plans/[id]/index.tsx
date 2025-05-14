@@ -46,20 +46,20 @@ const TeachingPlanDetail = () => {
 
     return (
       <div className="space-y-6">
-        <DetailSection title="Título">
+        <DetailSection title="Título" className="bg-white">
           <p>{teachingPlan.title}</p>
         </DetailSection>
-        <DetailSection title="Descrição">
+        <DetailSection title="Descrição" className="bg-white">
           <p>{teachingPlan.description}</p>
         </DetailSection>
-        <DetailSection title="Objetivos">
+        <DetailSection title="Objetivos" className="bg-white">
           <ul className="list-disc pl-5">
             {teachingPlan.objectives.map((objective, index) => (
               <li key={index}>{objective}</li>
             ))}
           </ul>
         </DetailSection>
-        <DetailSection title="Referências BNCC">
+        <DetailSection title="Referências BNCC" className="bg-white">
           {teachingPlan.bnccReferences && teachingPlan.bnccReferences.length > 0 && (
             <ul className="list-disc pl-5">
               {teachingPlan.bnccReferences.map((ref, index) => (
@@ -68,20 +68,20 @@ const TeachingPlanDetail = () => {
             </ul>
           )}
         </DetailSection>
-        <DetailSection title="Conteúdos">
+        <DetailSection title="Conteúdos" className="bg-white">
           <ul className="list-disc pl-5">
             {teachingPlan.contents.map((content, index) => (
               <li key={index}>{content}</li>
             ))}
           </ul>
         </DetailSection>
-        <DetailSection title="Metodologia">
+        <DetailSection title="Metodologia" className="bg-white">
           <p>{teachingPlan.methodology}</p>
         </DetailSection>
-        <DetailSection title="Avaliação">
+        <DetailSection title="Avaliação" className="bg-white">
           <p>{teachingPlan.evaluation}</p>
         </DetailSection>
-        <DetailSection title="Recursos">
+        <DetailSection title="Recursos" className="bg-white">
           <ul className="list-disc pl-5">
             {teachingPlan.resources.map((resource, index) => (
               <li key={index}>{resource}</li>

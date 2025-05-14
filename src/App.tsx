@@ -36,7 +36,7 @@ const queryClient = new QueryClient();
 
 // Wrapper component to provide the ID param
 const AssessmentGradingWrapper = () => {
-  const { assessmentId } = useParams();
+  const { assessmentId } = useParams<{ assessmentId: string }>();
   return <StudentAssessmentGradingPage assessmentId={assessmentId} />;
 };
 

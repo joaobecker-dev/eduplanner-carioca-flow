@@ -1,10 +1,9 @@
 
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { useStudentAssessments } from '@/hooks/useStudentAssessments';
-import { Assessment, StudentAssessment } from '@/types';
+import { Assessment } from '@/types';
 import { assessmentService } from '@/lib/services';
-import StudentAssessmentTable from '@/components/StudentAssessmentTable';
+import { StudentAssessmentTable } from '@/components/StudentAssessmentTable';
 
 interface StudentAssessmentGradingPageProps {
   assessmentId?: string;
@@ -17,7 +16,6 @@ const StudentAssessmentGradingPage: React.FC<StudentAssessmentGradingPageProps> 
   
   const [assessment, setAssessment] = useState<Assessment | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
-  const { studentAssessments, isLoading, error, updateStudentAssessment } = useStudentAssessments(assessmentId as string);
 
   useEffect(() => {
     const fetchAssessment = async () => {
@@ -36,21 +34,11 @@ const StudentAssessmentGradingPage: React.FC<StudentAssessmentGradingPageProps> 
     fetchAssessment();
   }, [assessmentId]);
 
-  const handleSaveGrade = async (studentAssessment: StudentAssessment) => {
-    try {
-      await updateStudentAssessment(studentAssessment);
-      return true;
-    } catch (error) {
-      console.error("Error saving grade:", error);
-      return false;
-    }
-  };
-
-  if (loading || isLoading) {
+  if (loading) {
     return <div>Carregando...</div>;
   }
 
-  if (error || !assessment) {
+  if (!assessment) {
     return <div>Erro ao carregar dados da avaliação</div>;
   }
 
@@ -80,8 +68,7 @@ const StudentAssessmentGradingPage: React.FC<StudentAssessmentGradingPageProps> 
       </div>
 
       <StudentAssessmentTable
-        studentAssessments={studentAssessments}
-        onSaveGrade={handleSaveGrade}
+        assessmentId={assessmentId as string}
       />
     </div>
   );

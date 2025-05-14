@@ -30,8 +30,8 @@ export const createEvent = async (event: Omit<CalendarEvent, 'id'>): Promise<Cal
 
   if (error) throw new Error(`Error creating event: ${error.message}`);
   
-  // Use the simplified utility to avoid deep type instantiation
-  return mapToCamelCase(data) as CalendarEvent;
+  // Use explicit type conversion to avoid deep type instantiation
+  return convertToCalendarEvent(data);
 };
 
 export const updateEvent = async (id: string, event: Partial<Omit<CalendarEvent, 'id'>>): Promise<CalendarEvent> => {
@@ -59,7 +59,8 @@ export const updateEvent = async (id: string, event: Partial<Omit<CalendarEvent,
 
   if (error) throw new Error(`Error updating event: ${error.message}`);
   
-  return mapToCamelCase(data) as CalendarEvent;
+  // Use explicit type conversion to avoid deep type instantiation
+  return convertToCalendarEvent(data);
 };
 
 // Add the deleteBySource function to fix the reference in wrapperOperations.ts

@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Planning from '../Planning';
-import { PlanningModals } from './PlanningModals';
+import PlanningModals from './PlanningModals';
 import { 
   academicPeriodService, 
   subjectService, 

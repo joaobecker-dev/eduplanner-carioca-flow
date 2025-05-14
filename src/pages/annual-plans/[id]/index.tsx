@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { annualPlanService } from '@/lib/services';
@@ -37,13 +38,13 @@ const AnnualPlanDetail = () => {
 
     return (
       <div className="space-y-6">
-        <DetailSection title="Título">
+        <DetailSection title="Título" className="bg-white">
           <p>{annualPlan.title}</p>
         </DetailSection>
-        <DetailSection title="Descrição">
+        <DetailSection title="Descrição" className="bg-white">
           <p>{annualPlan.description}</p>
         </DetailSection>
-        <DetailSection title="Objetivos">
+        <DetailSection title="Objetivos" className="bg-white">
           <ul className="list-disc pl-5">
             {annualPlan.objectives.map((objective, index) => (
               <li key={index}>{objective}</li>
@@ -51,7 +52,7 @@ const AnnualPlanDetail = () => {
           </ul>
         </DetailSection>
         {annualPlan.referenceMaterials && annualPlan.referenceMaterials.length > 0 && (
-          <DetailSection title="Materiais de referência">
+          <DetailSection title="Materiais de referência" className="bg-white">
             <ul className="list-disc pl-5">
               {annualPlan.referenceMaterials.map((material, index) => (
                 <li key={index}>{material}</li>
