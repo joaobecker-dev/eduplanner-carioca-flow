@@ -75,7 +75,8 @@ function ArrayInputField<T extends FieldValues>({
           {fields.map((field, index) => (
             <div key={field.id} className="flex items-center gap-2">
               <div className="bg-secondary text-secondary-foreground px-3 py-2 rounded-md flex-1 text-sm">
-                {field.value}
+                {/* Fixed: accessing field value correctly */}
+                {String(field) || ''}
               </div>
               <Button
                 type="button"
