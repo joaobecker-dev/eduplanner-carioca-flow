@@ -18,7 +18,7 @@ export type DateTimeString = string;
 export type EventType = DbEventType;
 export type AssessmentType = DbAssessmentType;
 export type MaterialType = DbMaterialType;
-export { EventSourceType };
+export type { EventSourceType };
 
 // User related types
 export interface User {

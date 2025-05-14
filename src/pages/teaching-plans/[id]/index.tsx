@@ -1,148 +1,100 @@
+import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/router';
+import { teachingPlanService } from '@/lib/services';
+import { TeachingPlan } from '@/types';
+import DetailSection from '@/components/DetailSection';
+import LoadingSpinner from '@/components/LoadingSpinner';
+import ErrorMessage from '@/components/ErrorMessage';
 
-import React from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import { teachingPlanService } from "@/lib/services/teachingPlanService";
-import { subjectService } from "@/lib/services/subjectService";
-import { annualPlanService } from "@/lib/services/annualPlanService";
-import { Button } from "@/components/ui/button";
-import { DetailSection } from "@/components/ui/detail-section";
-import { DetailField } from "@/components/ui/detail-field";
-import { DetailList } from "@/components/ui/detail-list";
-import { ArrowLeft, Edit } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
-import { formatDate } from "@/lib/utils/date-formatter";
+const TeachingPlanDetail = () => {
+  const router = useRouter();
+  const { id } = router.query;
+  const [teachingPlan, setTeachingPlan] = useState<TeachingPlan | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-const TeachingPlanDetail: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
+  useEffect(() => {
+    const fetchTeachingPlan = async () => {
+      if (id) {
+        try {
+          const data = await teachingPlanService.getById(id as string);
+          setTeachingPlan(data);
+        } catch (err) {
+          setError('Failed to load teaching plan');
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
 
-  const { data: teachingPlan, isLoading, error } = useQuery({
-    queryKey: ["teachingPlan", id],
-    queryFn: () => teachingPlanService.getById(id as string),
-    enabled: !!id,
-  });
+    fetchTeachingPlan();
+  }, [id]);
 
-  // Handle error using useEffect instead of inline onError
-  React.useEffect(() => {
-    if (error) {
-      toast({
-        title: "Erro ao carregar plano de ensino",
-        description: (error as Error).message || "Não foi possível carregar os dados do plano de ensino.",
-        variant: "destructive",
-      });
+  const renderContent = () => {
+    if (loading) {
+      return <LoadingSpinner />;
     }
-  }, [error]);
 
-  const { data: subject } = useQuery({
-    queryKey: ["subject", teachingPlan?.subjectId],
-    queryFn: () => subjectService.getById(teachingPlan?.subjectId as string),
-    enabled: !!teachingPlan?.subjectId,
-  });
+    if (error) {
+      return <ErrorMessage message={error} />;
+    }
 
-  const { data: annualPlan } = useQuery({
-    queryKey: ["annualPlan", teachingPlan?.annualPlanId],
-    queryFn: () => annualPlanService.getById(teachingPlan?.annualPlanId as string),
-    enabled: !!teachingPlan?.annualPlanId,
-  });
+    if (!teachingPlan) {
+      return <ErrorMessage message="Teaching plan not found." />;
+    }
 
-  if (isLoading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <p>Carregando plano de ensino...</p>
+      <div className="space-y-6">
+        <DetailSection title="Título">
+          <p>{teachingPlan.title}</p>
+        </DetailSection>
+        <DetailSection title="Descrição">
+          <p>{teachingPlan.description}</p>
+        </DetailSection>
+        <DetailSection title="Objetivos">
+          <ul className="list-disc pl-5">
+            {teachingPlan.objectives.map((objective, index) => (
+              <li key={index}>{objective}</li>
+            ))}
+          </ul>
+        </DetailSection>
+        <DetailSection title="Referências BNCC">
+          {teachingPlan.bnccReferences && teachingPlan.bnccReferences.length > 0 && (
+            <ul className="list-disc pl-5">
+              {teachingPlan.bnccReferences.map((ref, index) => (
+                <li key={index}>{ref}</li>
+              ))}
+            </ul>
+          )}
+        </DetailSection>
+        <DetailSection title="Conteúdos">
+          <ul className="list-disc pl-5">
+            {teachingPlan.contents.map((content, index) => (
+              <li key={index}>{content}</li>
+            ))}
+          </ul>
+        </DetailSection>
+        <DetailSection title="Metodologia">
+          <p>{teachingPlan.methodology}</p>
+        </DetailSection>
+        <DetailSection title="Avaliação">
+          <p>{teachingPlan.evaluation}</p>
+        </DetailSection>
+        <DetailSection title="Recursos">
+          <ul className="list-disc pl-5">
+            {teachingPlan.resources.map((resource, index) => (
+              <li key={index}>{resource}</li>
+            ))}
+          </ul>
+        </DetailSection>
       </div>
     );
-  }
-
-  if (error || !teachingPlan) {
-    return (
-      <div className="flex flex-col items-center justify-center h-64">
-        <p className="text-red-500 mb-4">Erro ao carregar o plano de ensino. O ID informado pode ser inválido.</p>
-        <Button variant="outline" onClick={() => navigate(-1)}>
-          <ArrowLeft className="mr-2 h-4 w-4" /> Voltar
-        </Button>
-      </div>
-    );
-  }
+  };
 
   return (
-    <div className="container mx-auto py-6">
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <Button variant="ghost" onClick={() => navigate(-1)} className="mb-2">
-            <ArrowLeft className="mr-2 h-4 w-4" /> Voltar
-          </Button>
-          <h1 className="text-2xl font-bold">{teachingPlan.title}</h1>
-          {teachingPlan.description && (
-            <p className="text-gray-600 mt-1">{teachingPlan.description}</p>
-          )}
-        </div>
-        <Button onClick={() => navigate(`/teaching-plans/${id}/edit`)}>
-          <Edit className="mr-2 h-4 w-4" /> Editar
-        </Button>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        <DetailSection title="Informações Gerais">
-          <DetailField 
-            label="Disciplina" 
-            value={subject?.name || "–"} 
-          />
-          <DetailField 
-            label="Plano Anual" 
-            value={annualPlan?.title || "–"} 
-          />
-        </DetailSection>
-
-        <DetailSection title="Período">
-          <DetailField 
-            label="Data de Início" 
-            value={formatDate(teachingPlan.startDate)} 
-          />
-          <DetailField 
-            label="Data de Término" 
-            value={formatDate(teachingPlan.endDate)} 
-          />
-        </DetailSection>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        <DetailSection title="Objetivos">
-          <DetailList items={teachingPlan.objectives || []} />
-        </DetailSection>
-
-        <DetailSection title="Conteúdos">
-          <DetailList items={teachingPlan.contents || []} />
-        </DetailSection>
-      </div>
-
-      <div className="grid grid-cols-1 gap-6">
-        <DetailSection title="Metodologia">
-          <div className="whitespace-pre-wrap">
-            {teachingPlan.methodology || "Não informado"}
-          </div>
-        </DetailSection>
-
-        <DetailSection title="Avaliação">
-          <div className="whitespace-pre-wrap">
-            {teachingPlan.evaluation || "Não informado"}
-          </div>
-        </DetailSection>
-
-        <DetailSection title="Recursos">
-          <DetailList 
-            items={teachingPlan.resources || []} 
-            emptyMessage="Nenhum recurso informado" 
-          />
-        </DetailSection>
-
-        <DetailSection title="Referências BNCC">
-          <DetailList 
-            items={teachingPlan.bncc_references || []} 
-            emptyMessage="Nenhuma referência BNCC informada" 
-          />
-        </DetailSection>
-      </div>
+    <div>
+      <h1 className="text-2xl font-bold">Detalhes do Plano de Ensino</h1>
+      {renderContent()}
     </div>
   );
 };

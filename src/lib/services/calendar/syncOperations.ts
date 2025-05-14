@@ -1,7 +1,7 @@
 
 import { Assessment, LessonPlan, TeachingPlan, EventType } from '@/types';
 import { EventSourceType } from '@/types/database';
-import { CalendarEventDatabaseFields } from './types';
+import { CalendarEventDatabaseFields, convertToCalendarEvent } from './types';
 import { getCalendarEventsBySource, deleteCalendarEventsBySource } from './queryOperations';
 import { createCalendarEvent, updateCalendarEvent } from './basicOperations';
 import { mapAssessmentFromDb, mapLessonPlanFromDb, mapTeachingPlanFromDb } from '@/lib/utils/dataMappers';
@@ -57,7 +57,9 @@ export const syncFromAssessment = async (assessmentOrId: Assessment | string): P
       start_date: assessment.date,
       subject_id: assessment.subjectId,
       source_type: 'assessment' as EventSourceType,
-      source_id: assessment.id
+      source_id: assessment.id,
+      all_day: true,
+      created_at: new Date().toISOString()
     };
     
     // Add due date if present
@@ -67,10 +69,10 @@ export const syncFromAssessment = async (assessmentOrId: Assessment | string): P
     
     if (existingEvents.length === 0) {
       // Create new calendar event
-      await createCalendarEvent(eventData);
+      await createCalendarEvent(convertToCalendarEvent(eventData));
     } else {
       // Update existing calendar event
-      await updateCalendarEvent(existingEvents[0].id, eventData);
+      await updateCalendarEvent(existingEvents[0].id, convertToCalendarEvent(eventData));
     }
   } catch (error) {
     console.error('Error syncing assessment to calendar:', error);
@@ -120,15 +122,17 @@ export const syncFromLessonPlan = async (lessonPlanOrId: LessonPlan | string): P
       subject_id: subjectId || undefined,
       lesson_plan_id: lessonPlan.id,
       source_type: 'lesson_plan' as EventSourceType,
-      source_id: lessonPlan.id
+      source_id: lessonPlan.id,
+      all_day: false,
+      created_at: new Date().toISOString()
     };
     
     if (existingEvents.length === 0) {
       // Create new calendar event
-      await createCalendarEvent(eventData);
+      await createCalendarEvent(convertToCalendarEvent(eventData));
     } else {
       // Update existing calendar event
-      await updateCalendarEvent(existingEvents[0].id, eventData);
+      await updateCalendarEvent(existingEvents[0].id, convertToCalendarEvent(eventData));
     }
   } catch (error) {
     console.error('Error syncing lesson plan to calendar:', error);
@@ -171,15 +175,16 @@ export const syncFromTeachingPlan = async (teachingPlanOrId: TeachingPlan | stri
       subject_id: teachingPlan.subjectId,
       teaching_plan_id: teachingPlan.id,
       source_type: 'teaching_plan' as EventSourceType,
-      source_id: teachingPlan.id
+      source_id: teachingPlan.id,
+      created_at: new Date().toISOString()
     };
     
     if (existingEvents.length === 0) {
       // Create new calendar event
-      await createCalendarEvent(eventData);
+      await createCalendarEvent(convertToCalendarEvent(eventData));
     } else {
       // Update existing calendar event
-      await updateCalendarEvent(existingEvents[0].id, eventData);
+      await updateCalendarEvent(existingEvents[0].id, convertToCalendarEvent(eventData));
     }
   } catch (error) {
     console.error('Error syncing teaching plan to calendar:', error);

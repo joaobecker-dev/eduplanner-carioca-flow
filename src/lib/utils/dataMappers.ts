@@ -1,3 +1,4 @@
+
 import { 
   Assessment, 
   CalendarEvent, 
@@ -197,6 +198,7 @@ export const mapCalendarEventFromDb = (dbEvent: CalendarEventRow): CalendarEvent
   subjectId: safeNull(dbEvent.subject_id),
   lessonPlanId: safeNull(dbEvent.lesson_plan_id),
   assessmentId: safeNull(dbEvent.assessment_id),
+  teachingPlanId: safeNull(dbEvent.teaching_plan_id), // Add this line
   location: safeNull(dbEvent.location),
   color: safeNull(dbEvent.color),
   created_at: dbEvent.created_at,
@@ -218,12 +220,25 @@ export const mapCalendarEventToDb = (event: Partial<CalendarEvent>): Partial<Cal
   if (event.subjectId !== undefined) result.subject_id = event.subjectId;
   if (event.lessonPlanId !== undefined) result.lesson_plan_id = event.lessonPlanId;
   if (event.assessmentId !== undefined) result.assessment_id = event.assessmentId;
+  if (event.teachingPlanId !== undefined) result.teaching_plan_id = event.teachingPlanId; // Add this line
   if (event.location !== undefined) result.location = event.location;
   if (event.color !== undefined) result.color = event.color;
   
   // Include source_type and source_id in the database fields if they're in the event object
   if ((event as any).sourceType !== undefined) result.source_type = (event as any).sourceType;
   if ((event as any).sourceId !== undefined) result.source_id = (event as any).sourceId;
+  
+  return result;
+};
+
+// Add utility function for converting from camelCase to snake_case
+export const mapToSnakeCase = (obj: Record<string, any>): Record<string, any> => {
+  const result: Record<string, any> = {};
+  
+  Object.keys(obj).forEach(key => {
+    const snakeKey = key.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
+    result[snakeKey] = obj[key];
+  });
   
   return result;
 };

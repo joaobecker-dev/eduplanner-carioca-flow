@@ -1,129 +1,72 @@
+import React, { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import { annualPlanService } from '@/lib/services';
+import DetailSection from '@/components/DetailSection';
+import LoadingSpinner from '@/components/LoadingSpinner';
+import ErrorMessage from '@/components/ErrorMessage';
 
-import React from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import { annualPlanService } from "@/lib/services/annualPlanService";
-import { subjectService } from "@/lib/services/subjectService";
-import { academicPeriodService } from "@/lib/services/academicPeriodService";
-import { Button } from "@/components/ui/button";
-import { DetailSection } from "@/components/ui/detail-section";
-import { DetailField } from "@/components/ui/detail-field";
-import { DetailList } from "@/components/ui/detail-list";
-import { ArrowLeft, Edit } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
+const AnnualPlanDetail = () => {
+  const { id } = useParams();
+  const [annualPlan, setAnnualPlan] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-const AnnualPlanDetail: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
+  useEffect(() => {
+    const fetchAnnualPlan = async () => {
+      try {
+        const data = await annualPlanService.getById(id);
+        setAnnualPlan(data);
+      } catch (err) {
+        setError(err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const { data: annualPlan, isLoading, error } = useQuery({
-    queryKey: ["annualPlan", id],
-    queryFn: () => annualPlanService.getById(id as string),
-    enabled: !!id,
-  });
+    fetchAnnualPlan();
+  }, [id]);
 
-  // Handle error using useEffect instead of inline onError
-  React.useEffect(() => {
-    if (error) {
-      toast({
-        title: "Erro ao carregar plano anual",
-        description: (error as Error).message || "Não foi possível carregar os dados do plano anual.",
-        variant: "destructive",
-      });
+  const renderContent = () => {
+    if (loading) {
+      return <LoadingSpinner />;
     }
-  }, [error]);
 
-  const { data: subject } = useQuery({
-    queryKey: ["subject", annualPlan?.subjectId],
-    queryFn: () => subjectService.getById(annualPlan?.subjectId as string),
-    enabled: !!annualPlan?.subjectId,
-  });
+    if (error) {
+      return <ErrorMessage message="Failed to load annual plan." />;
+    }
 
-  const { data: academicPeriod } = useQuery({
-    queryKey: ["academicPeriod", annualPlan?.academicPeriodId],
-    queryFn: () => academicPeriodService.getById(annualPlan?.academicPeriodId as string),
-    enabled: !!annualPlan?.academicPeriodId,
-  });
-
-  if (isLoading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <p>Carregando plano anual...</p>
+      <div className="space-y-6">
+        <DetailSection title="Título">
+          <p>{annualPlan.title}</p>
+        </DetailSection>
+        <DetailSection title="Descrição">
+          <p>{annualPlan.description}</p>
+        </DetailSection>
+        <DetailSection title="Objetivos">
+          <ul className="list-disc pl-5">
+            {annualPlan.objectives.map((objective, index) => (
+              <li key={index}>{objective}</li>
+            ))}
+          </ul>
+        </DetailSection>
+        {annualPlan.referenceMaterials && annualPlan.referenceMaterials.length > 0 && (
+          <DetailSection title="Materiais de referência">
+            <ul className="list-disc pl-5">
+              {annualPlan.referenceMaterials.map((material, index) => (
+                <li key={index}>{material}</li>
+              ))}
+            </ul>
+          </DetailSection>
+        )}
       </div>
     );
-  }
-
-  if (error || !annualPlan) {
-    return (
-      <div className="flex flex-col items-center justify-center h-64">
-        <p className="text-red-500 mb-4">Erro ao carregar o plano anual. O ID informado pode ser inválido.</p>
-        <Button variant="outline" onClick={() => navigate(-1)}>
-          <ArrowLeft className="mr-2 h-4 w-4" /> Voltar
-        </Button>
-      </div>
-    );
-  }
+  };
 
   return (
-    <div className="container mx-auto py-6">
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <Button variant="ghost" onClick={() => navigate(-1)} className="mb-2">
-            <ArrowLeft className="mr-2 h-4 w-4" /> Voltar
-          </Button>
-          <h1 className="text-2xl font-bold">{annualPlan.title}</h1>
-          {annualPlan.description && (
-            <p className="text-gray-600 mt-1">{annualPlan.description}</p>
-          )}
-        </div>
-        <Button onClick={() => navigate(`/annual-plans/${id}/edit`)}>
-          <Edit className="mr-2 h-4 w-4" /> Editar
-        </Button>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        <DetailSection title="Informações Gerais">
-          <DetailField 
-            label="Período Acadêmico" 
-            value={academicPeriod?.name || "–"} 
-          />
-          <DetailField 
-            label="Disciplina" 
-            value={subject?.name || "–"} 
-          />
-        </DetailSection>
-
-        <DetailSection title="Objetivos">
-          <DetailList items={annualPlan.objectives || []} />
-        </DetailSection>
-      </div>
-
-      <div className="grid grid-cols-1 gap-6">
-        <DetailSection title="Conteúdo Geral">
-          <div className="whitespace-pre-wrap">
-            {annualPlan.generalContent || "Não informado"}
-          </div>
-        </DetailSection>
-
-        <DetailSection title="Metodologia">
-          <div className="whitespace-pre-wrap">
-            {annualPlan.methodology || "Não informado"}
-          </div>
-        </DetailSection>
-
-        <DetailSection title="Avaliação">
-          <div className="whitespace-pre-wrap">
-            {annualPlan.evaluation || "Não informado"}
-          </div>
-        </DetailSection>
-
-        <DetailSection title="Materiais de Referência">
-          <DetailList 
-            items={annualPlan.reference_materials || []} 
-            emptyMessage="Nenhum material de referência informado" 
-          />
-        </DetailSection>
-      </div>
+    <div>
+      <h1 className="text-2xl font-bold">Detalhes do Plano Anual</h1>
+      {renderContent()}
     </div>
   );
 };

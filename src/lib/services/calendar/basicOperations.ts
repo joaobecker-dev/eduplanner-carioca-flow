@@ -5,6 +5,7 @@ import { CalendarEvent } from '@/types';
 
 // Import the simplified utility function to avoid recursive type checking
 import { mapToCamelCase } from '@/lib/utils/caseConverters';
+import { convertToCalendarEvent } from './types';
 
 export const createEvent = async (event: Omit<CalendarEvent, 'id'>): Promise<CalendarEvent> => {
   const eventToInsert = {
