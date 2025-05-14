@@ -1,4 +1,3 @@
-
 // Type definitions for the application
 import { 
   EventType as DbEventType,

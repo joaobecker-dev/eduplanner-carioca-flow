@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useParams } from "react-router-dom";
 import Layout from "./components/Layout";
 import Dashboard from "./pages/Dashboard";
 import Planning from "./pages/Planning";
@@ -34,6 +34,12 @@ import MaterialDetail from "./pages/Materials/[id]";
 
 const queryClient = new QueryClient();
 
+// Wrapper component to provide the ID param
+const AssessmentGradingWrapper = () => {
+  const { assessmentId } = useParams();
+  return <StudentAssessmentGradingPage assessmentId={assessmentId} />;
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -46,7 +52,7 @@ const App = () => (
             <Route path="/planejamento" element={<Planning />} />
             <Route path="/avaliacoes" element={<Assessments />} />
             <Route path="/avaliacoes/atribuir" element={<AssignAssessmentPage />} />
-            <Route path="/avaliacoes/correcao/:assessmentId" element={<StudentAssessmentGradingPage />} />
+            <Route path="/avaliacoes/correcao/:assessmentId" element={<AssessmentGradingWrapper />} />
             <Route path="/materiais" element={<Materials />} />
             <Route path="/materiais/:id" element={<MaterialDetail />} />
             <Route path="/calendario" element={<Calendar />} />

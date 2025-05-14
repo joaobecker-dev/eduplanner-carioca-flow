@@ -1,5 +1,4 @@
 
-import { mapToSnakeCase } from '@/lib/utils/dataMappers';
 import { supabase } from '@/integrations/supabase/client';
 import { CalendarEvent } from '@/types';
 
@@ -36,6 +35,7 @@ export const createEvent = async (event: Omit<CalendarEvent, 'id'>): Promise<Cal
 };
 
 export const updateEvent = async (id: string, event: Partial<Omit<CalendarEvent, 'id'>>): Promise<CalendarEvent> => {
+  // Use explicit field mapping to avoid recursive type issues
   const eventToUpdate: Record<string, any> = {};
   
   if (event.title !== undefined) eventToUpdate.title = event.title;
@@ -59,7 +59,6 @@ export const updateEvent = async (id: string, event: Partial<Omit<CalendarEvent,
 
   if (error) throw new Error(`Error updating event: ${error.message}`);
   
-  // Use the simplified utility to avoid deep type instantiation
   return mapToCamelCase(data) as CalendarEvent;
 };
 

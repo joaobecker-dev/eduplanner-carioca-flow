@@ -1,13 +1,7 @@
 
-// This code has a refreshData prop missing for LessonPlanModal
-// Let's fix that by checking if the component is defined in a read-only file
-// If it is, we should adapt our code to match its expected props
-// If we can edit the file, we'll add the missing prop
-
-// Since Planning/PlanningModals.tsx appears in the allowed files list, we need to update
-// the usage of LessonPlanModal or modify the component itself
 import React from 'react';
-import { TeachingPlanModal, AnnualPlanModal } from './PlanningModals';
+import { TeachingPlanModal } from './TeachingPlanModals';
+import { AnnualPlanModal } from './AnnualPlanModals';
 import { LessonPlanModal } from './LessonPlanModals';
 
 // This is a simplified version - the actual component might be more complex
@@ -18,7 +12,8 @@ const PlanningModals = ({
   closeModal, 
   onSuccess, 
   teachingPlans = [], 
-  planId = null 
+  planId = null,
+  refreshData, // Add missing refreshData prop
 }) => {
   // We'll adapt according to what's available in the codebase
   // This is a simplified example
@@ -31,6 +26,7 @@ const PlanningModals = ({
           closeModal={closeModal} 
           onSuccess={onSuccess}
           planId={planId}
+          refreshData={refreshData}
         />
       );
     case 'annualPlan':
@@ -40,6 +36,7 @@ const PlanningModals = ({
           closeModal={closeModal} 
           onSuccess={onSuccess}
           planId={planId}
+          refreshData={refreshData}
         />
       );
     case 'lessonPlan':
@@ -50,7 +47,7 @@ const PlanningModals = ({
           onSuccess={onSuccess}
           planId={planId}
           teachingPlans={teachingPlans}
-          // Remove the refreshData prop if it's not expected by LessonPlanModal
+          refreshData={refreshData}
         />
       );
     default:

@@ -1,5 +1,6 @@
+
 import React from 'react';
-import { useRouter } from 'next/router';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { assessmentService } from '@/lib/services';
 import { formatDate } from '@/lib/utils/formatters';
@@ -23,8 +24,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Assessment } from '@/types';
 
 const AssessmentDetail = () => {
-  const router = useRouter();
-  const { id } = router.query;
+  const { id } = useParams();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
 
@@ -42,7 +43,7 @@ const AssessmentDetail = () => {
         title: 'Avaliação excluída',
         description: 'A avaliação foi excluída com sucesso.',
       });
-      router.push('/assessments');
+      navigate('/assessments');
     },
     onError: (error: any) => {
       toast({
@@ -122,14 +123,14 @@ const AssessmentDetail = () => {
         {assessment.subjectId && (
           <DetailField
             label="Disciplina"
-            value={assessment.subject?.name || assessment.subjectId}
+            value={assessment.subjectId}
           />
         )}
 
         {assessment.teachingPlanId && (
           <DetailField
             label="Plano de ensino"
-            value={assessment.teachingPlan?.title || assessment.teachingPlanId}
+            value={assessment.teachingPlanId}
           />
         )}
       </div>
@@ -159,7 +160,7 @@ const AssessmentDetail = () => {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => router.back()}
+              onClick={() => navigate(-1)}
             >
               <ArrowLeft className="mr-2 h-4 w-4" />
               Voltar
@@ -167,7 +168,7 @@ const AssessmentDetail = () => {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => router.push(`/assessments/${id}/edit`)}
+              onClick={() => navigate(`/assessments/${id}/edit`)}
             >
               <Pencil className="mr-2 h-4 w-4" />
               Editar
@@ -175,7 +176,7 @@ const AssessmentDetail = () => {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => router.push(`/assessments/${id}/grades`)}
+              onClick={() => navigate(`/assessments/${id}/grades`)}
             >
               <Calendar className="mr-2 h-4 w-4" />
               Notas

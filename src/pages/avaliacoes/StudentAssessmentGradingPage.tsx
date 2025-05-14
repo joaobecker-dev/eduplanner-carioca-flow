@@ -1,66 +1,90 @@
 
-import React from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { Button } from '@/components/ui/button';
-import { StudentAssessmentTable } from '@/components/StudentAssessmentTable';
+import React, { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import { useStudentAssessments } from '@/hooks/useStudentAssessments';
+import { Assessment, StudentAssessment } from '@/types';
 import { assessmentService } from '@/lib/services';
-import { ArrowLeft } from 'lucide-react';
+import StudentAssessmentTable from '@/components/StudentAssessmentTable';
 
-export default function StudentAssessmentGradingPage() {
-  const { assessmentId = '' } = useParams<{ assessmentId: string }>();
-  const navigate = useNavigate();
+interface StudentAssessmentGradingPageProps {
+  assessmentId?: string;
+}
+
+const StudentAssessmentGradingPage: React.FC<StudentAssessmentGradingPageProps> = ({ assessmentId: propAssessmentId }) => {
+  const { assessmentId: paramAssessmentId } = useParams();
+  // Use the prop if provided, otherwise use the param
+  const assessmentId = propAssessmentId || paramAssessmentId;
   
-  const { data: assessment, isLoading, error } = useQuery({
-    queryKey: ['assessment', assessmentId],
-    queryFn: () => assessmentService.getById(assessmentId),
-    enabled: !!assessmentId,
-  });
+  const [assessment, setAssessment] = useState<Assessment | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const { studentAssessments, isLoading, error, updateStudentAssessment } = useStudentAssessments(assessmentId as string);
 
-  const handleBack = () => {
-    navigate('/avaliacoes');
+  useEffect(() => {
+    const fetchAssessment = async () => {
+      if (assessmentId) {
+        try {
+          const data = await assessmentService.getById(assessmentId);
+          setAssessment(data);
+        } catch (error) {
+          console.error("Error fetching assessment:", error);
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchAssessment();
+  }, [assessmentId]);
+
+  const handleSaveGrade = async (studentAssessment: StudentAssessment) => {
+    try {
+      await updateStudentAssessment(studentAssessment);
+      return true;
+    } catch (error) {
+      console.error("Error saving grade:", error);
+      return false;
+    }
   };
 
-  if (isLoading) {
-    return <div className="container mx-auto py-8">Carregando...</div>;
+  if (loading || isLoading) {
+    return <div>Carregando...</div>;
   }
 
   if (error || !assessment) {
-    return (
-      <div className="container mx-auto py-8">
-        <div className="rounded-md bg-destructive/10 p-4 mb-4">
-          <p className="text-destructive">
-            Erro ao carregar a avaliação. Verifique se o ID está correto.
-          </p>
-        </div>
-        <Button onClick={handleBack}>Voltar para Avaliações</Button>
-      </div>
-    );
+    return <div>Erro ao carregar dados da avaliação</div>;
   }
 
   return (
-    <div className="container mx-auto py-8 space-y-6">
-      <div className="flex justify-between items-center">
-        <div className="space-y-1">
-          <div className="flex items-center">
-            <Button variant="outline" size="sm" onClick={handleBack} className="mr-4">
-              <ArrowLeft className="h-4 w-4 mr-1" /> Voltar
-            </Button>
-            <h1 className="text-2xl font-bold">{assessment.title}</h1>
+    <div className="container mx-auto py-6">
+      <h1 className="text-2xl font-bold mb-6">Correção de Avaliação</h1>
+      
+      <div className="bg-white shadow rounded-lg p-6 mb-6">
+        <h2 className="text-xl font-semibold">{assessment.title}</h2>
+        {assessment.description && (
+          <p className="text-gray-600 mt-2">{assessment.description}</p>
+        )}
+        <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <p className="text-sm text-gray-500">Tipo</p>
+            <p>{assessment.type}</p>
           </div>
-          <p className="text-muted-foreground">
-            Correção de avaliação • {assessment.type === 'diagnostic' ? 'Diagnóstica' : 
-                                     assessment.type === 'formative' ? 'Formativa' : 
-                                     assessment.type === 'summative' ? 'Somativa' : ''}
-          </p>
+          <div>
+            <p className="text-sm text-gray-500">Data</p>
+            <p>{new Date(assessment.date).toLocaleDateString()}</p>
+          </div>
+          <div>
+            <p className="text-sm text-gray-500">Pontuação Máxima</p>
+            <p>{assessment.totalPoints || '-'}</p>
+          </div>
         </div>
       </div>
 
-      <div className="bg-white rounded-md border shadow-sm">
-        <div className="p-6">
-          <StudentAssessmentTable assessmentId={assessmentId} />
-        </div>
-      </div>
+      <StudentAssessmentTable
+        studentAssessments={studentAssessments}
+        onSaveGrade={handleSaveGrade}
+      />
     </div>
   );
-}
+};
+
+export default StudentAssessmentGradingPage;
