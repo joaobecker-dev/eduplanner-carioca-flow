@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -34,11 +33,16 @@ import MaterialDetail from "./pages/Materials/[id]";
 
 const queryClient = new QueryClient();
 
-// Wrapper component to provide the ID param
+// Wrapper component to provide the ID param for assessment grading
 const AssessmentGradingWrapper = () => {
   const { assessmentId } = useParams<{ assessmentId: string }>();
-  // Pass the assessmentId directly to the component to fix the missing 'id' prop error
   return assessmentId ? <StudentAssessmentGradingPage assessmentId={assessmentId} /> : null;
+};
+
+// Wrapper component to provide the ID param for material detail
+const MaterialDetailWrapper = () => {
+  const { id } = useParams<{ id: string }>();
+  return id ? <MaterialDetail id={id} /> : null;
 };
 
 const App = () => (
@@ -55,26 +59,26 @@ const App = () => (
             <Route path="/avaliacoes/atribuir" element={<AssignAssessmentPage />} />
             <Route path="/avaliacoes/correcao/:assessmentId" element={<AssessmentGradingWrapper />} />
             <Route path="/materiais" element={<Materials />} />
-            <Route path="/materiais/:id" element={<MaterialDetail />} />
+            <Route path="/materiais/:id" element={<MaterialDetailWrapper />} />
             <Route path="/calendario" element={<Calendar />} />
             <Route path="/desempenho" element={<StudentPerformancePage />} />
-            
+
             {/* Annual Plan routes */}
             <Route path="/annual-plans/:id" element={<AnnualPlanDetail />} />
             <Route path="/annual-plans/:id/edit" element={<AnnualPlanEdit />} />
-            
+
             {/* Teaching Plan routes */}
             <Route path="/teaching-plans/:id" element={<TeachingPlanDetail />} />
             <Route path="/teaching-plans/:id/edit" element={<TeachingPlanEdit />} />
-            
+
             {/* Lesson Plan routes */}
             <Route path="/lesson-plans/:id" element={<LessonPlanDetail />} />
             <Route path="/lesson-plans/:id/edit" element={<LessonPlanEdit />} />
-            
+
             {/* Assessment routes */}
             <Route path="/assessments/:id" element={<AssessmentDetail />} />
             <Route path="/assessments/:id/edit" element={<AssessmentEdit />} />
-            
+
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
