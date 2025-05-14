@@ -1,5 +1,6 @@
+
 import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/router';
+import { useParams, useNavigate } from 'react-router-dom';
 import { teachingPlanService } from '@/lib/services';
 import { TeachingPlan } from '@/types';
 import DetailSection from '@/components/DetailSection';
@@ -7,8 +8,8 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 import ErrorMessage from '@/components/ErrorMessage';
 
 const TeachingPlanDetail = () => {
-  const router = useRouter();
-  const { id } = router.query;
+  const { id } = useParams();
+  const navigate = useNavigate();
   const [teachingPlan, setTeachingPlan] = useState<TeachingPlan | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

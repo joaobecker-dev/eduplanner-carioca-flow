@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -7,7 +8,7 @@ import { lessonPlanSchema } from '@/schemas/lessonPlanSchema';
 import { toast } from '@/hooks/use-toast';
 
 const EditLessonPlan = ({ id }) => {
-  const { register, handleSubmit, setValue } = useForm({
+  const { register, handleSubmit: formSubmit, setValue } = useForm({
     resolver: zodResolver(lessonPlanSchema),
   });
 
@@ -32,7 +33,7 @@ const EditLessonPlan = ({ id }) => {
     fetchLessonPlan();
   }, [id]);
 
-  const handleSubmit = async (values) => {
+  const onSubmit = async (values) => {
     try {
       const lessonPlanData: Partial<LessonPlan> = {
         title: values.title,
@@ -67,7 +68,7 @@ const EditLessonPlan = ({ id }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={formSubmit(onSubmit)}>
       <input {...register('title')} placeholder="Título" />
       <input type="date" {...register('date')} />
       <input type="number" {...register('duration')} placeholder="Duração (minutos)" />
